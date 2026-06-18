@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "agentique.resourceBundle.v1",
+  "resource": {
+    "id": "example.visual-guide",
+    "version": "0.1.0",
+    "title": "Example Visual Guide",
+    "summary": "Small example bundle used to validate the public Agentique UI contract."
+  },
+  "package": {
+    "layoutVersion": "agentique.bundleLayout.v1",
+    "files": [
+      {
+        "path": "docs/README.md",
+        "mediaType": "text/markdown",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sizeBytes": 2048
+      }
+    ]
+  },
+  "support": {
+    "modes": ["catalog-only", "visualizable", "external-handoff"],
+    "primaryMode": "visualizable",
+    "minimumCompleteUx": "Show documentation, metadata, artifact summary, and reversible external handoff instructions.",
+    "handoffTargets": ["codex", "claude-code"]
+  },
+  "compatibility": {
+    "agentiqueUi": ">=0.1.0",
+    "platforms": ["windows", "macos", "linux"]
+  },
+  "capabilityRefs": ["capability:read-docs"],
+  "provenance": {
+    "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "publishedDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "verificationStatus": "verified",
+    "signer": "agentique-example"
+  },
+  "artifacts": {
+    "contract": "agentique.artifactContract.v1",
+    "viewerHints": ["markdown", "json", "graph"]
+  },
+  "secretRefs": ["secret-ref:optional-api-token"]
+}

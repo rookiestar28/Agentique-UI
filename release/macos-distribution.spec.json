@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "agentique.macosReleaseGate.v1",
+  "platform": "macos",
+  "bundleTargets": ["app", "dmg"],
+  "buildCommand": "npm run tauri:build:macos",
+  "artifactPolicy": {
+    "commitArtifacts": false,
+    "allowedExtensions": [".app", ".dmg"],
+    "checksum": "sha256"
+  },
+  "signing": {
+    "requiredForPublicRelease": true,
+    "identityKind": "Developer ID Application",
+    "credentialInputs": [
+      {
+        "name": "APPLE_CERTIFICATE",
+        "kind": "certificate"
+      },
+      {
+        "name": "APPLE_CERTIFICATE_PASSWORD",
+        "kind": "secret"
+      },
+      {
+        "name": "APPLE_SIGNING_IDENTITY",
+        "kind": "identity"
+      }
+    ],
+    "verificationCommands": [
+      "codesign --verify --deep --strict <artifact>",
+      "spctl --assess --type execute <artifact>"
+    ]
+  },
+  "notarization": {
+    "requiredForPublicRelease": true,
+    "credentialInputs": [
+      {
+        "name": "APPLE_ID",
+        "kind": "account"
+      },
+      {
+        "name": "APPLE_APP_SPECIFIC_PASSWORD",
+        "kind": "secret"
+      },
+      {
+        "name": "APPLE_TEAM_ID",
+        "kind": "team"
+      }
+    ],
+    "staplingRequired": true
+  },
+  "smoke": {
+    "requiredChecks": ["quarantine", "launch", "version", "uninstall"],
+    "cleanupRequired": true,
+    "redactedLogsRequired": true
+  },
+  "publication": {
+    "adHocArtifacts": "local-smoke-only",
+    "publicTrustRequires": ["developer-id-signature", "notarization", "stapled-ticket", "quarantine-launch-smoke"]
+  }
+}

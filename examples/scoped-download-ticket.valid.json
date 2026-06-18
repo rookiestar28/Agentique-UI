@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "agentique.scopedDownloadTicket.v1",
+  "ticketId": "ticket_Aq2ULu3DZpaSSx7dlS6k8w",
+  "audience": "agentique-ui",
+  "scope": "resource-download",
+  "resource": {
+    "id": "example.visual-guide",
+    "version": "0.1.0"
+  },
+  "download": {
+    "url": "https://www.agentique.io/api/resources/example.visual-guide/versions/0.1.0/download",
+    "method": "GET",
+    "maxBytes": 10485760
+  },
+  "integrity": {
+    "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "sizeBytes": 4096,
+    "signer": "agentique-example"
+  },
+  "replayPolicy": {
+    "singleUse": true,
+    "nonce": "Aq2ULu3DZpaSSx7dlS6k8w"
+  },
+  "issuedAt": "2026-06-11T00:00:00.000Z",
+  "expiresAt": "2026-06-11T00:10:00.000Z"
+}

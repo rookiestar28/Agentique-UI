@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "agentique.releasePackagingPreflight.v1",
+  "decisionPolicy": {
+    "goRequiresEveryEntryReady": true,
+    "noGoWhenAnyEntryBlocked": true,
+    "ownerReviewRequiredForGo": true
+  },
+  "requiredEntries": [
+    "windows-installer",
+    "macos-package",
+    "linux-package",
+    "signing-and-notarization",
+    "updater-metadata",
+    "checksums",
+    "sbom-and-provenance",
+    "clean-install-update-uninstall-smoke",
+    "rollback",
+    "public-boundary-scan",
+    "owner-review"
+  ],
+  "blockedPublicationClaims": {
+    "releasedInstaller": false,
+    "signedUpdater": false,
+    "productionRuntime": false
+  }
+}

@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"App shell plus runner command boundary, with no resource execution permissions.","local":true,"windows":["main"],"permissions":[]}}

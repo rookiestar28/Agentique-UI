@@ -1,0 +1,14 @@
+node_modules/
+coverage/
+dist/
+.tmp/
+src-tauri/target/
+*.log
+.env
+*.token
+*.secret
+*.key
+*.pem
+*.p12
+*.pfx
+IMPROVEMENT_RECOMMENDATIONS.md

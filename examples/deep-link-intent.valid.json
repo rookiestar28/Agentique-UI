@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "agentique.importIntent.v1",
+  "action": "import",
+  "resource": {
+    "id": "agent:alpha",
+    "version": "version_1"
+  },
+  "origin": {
+    "site": "https://www.agentique.io",
+    "httpsRequired": true
+  },
+  "readbackUrl": "/api/public/v1/resources/agent%3Aalpha/readback",
+  "nonce": "Aq2ULu3DZpaS",
+  "issuedAt": "2026-06-11T00:00:00.000Z",
+  "expiresAt": "2026-06-11T00:10:00.000Z",
+  "security": {
+    "grantsAuthorization": false,
+    "grantsDownload": false,
+    "grantsExecution": false,
+    "grantsPermission": false,
+    "requiresReadbackVerification": true
+  }
+}

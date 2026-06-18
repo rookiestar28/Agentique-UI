@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "agentique.releaseSmokeGate.v1",
+  "platforms": {
+    "windows": {
+      "script": "scripts/release-smoke-windows.ps1",
+      "artifactTypes": ["nsis", "msi"]
+    },
+    "macos": {
+      "script": "scripts/release-smoke-macos.sh",
+      "artifactTypes": ["app", "dmg"]
+    },
+    "linux": {
+      "script": "scripts/release-smoke-linux.sh",
+      "artifactTypes": ["deb", "rpm", "appimage"]
+    }
+  },
+  "requiredChecks": ["artifact", "signature", "install", "launch", "version", "update", "uninstall", "cleanup", "redacted-logs"],
+  "failClosed": {
+    "missingArtifact": true,
+    "missingSignature": true,
+    "missingUpdaterManifest": true,
+    "failedCleanup": true,
+    "unredactedLogs": true
+  },
+  "logPolicy": {
+    "redactionRequired": true,
+    "pathNeutralEvidence": true,
+    "rawLogsCommitted": false
+  },
+  "environmentPolicy": {
+    "cleanEnvironmentRequired": true,
+    "disposableRunnerRecommended": true,
+    "userProfileIsolationRequired": true
+  }
+}

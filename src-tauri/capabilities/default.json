@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "App shell plus runner command boundary, with no resource execution permissions.",
+  "windows": ["main"],
+  "permissions": []
+}

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.agentique.io/ui/deep-link-intent.v1.schema.json",
+  "title": "Agentique UI Deep Link Intent",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "action",
+    "resource",
+    "origin",
+    "readbackUrl",
+    "nonce",
+    "issuedAt",
+    "expiresAt",
+    "security"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "agentique.importIntent.v1"
+    },
+    "action": {
+      "const": "import"
+    },
+    "resource": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|[._:-](?=[A-Za-z0-9])){0,127}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|[._+-](?=[A-Za-z0-9])){0,95}$"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "origin": {
+      "type": "object",
+      "required": ["site", "httpsRequired"],
+      "properties": {
+        "site": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "httpsRequired": {
+          "const": true
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "readbackUrl": {
+      "type": "string",
+      "pattern": "^(https://[^\\s]+/api/public/v1/resources/[^\\s]+/readback|/api/public/v1/resources/[^\\s]+/readback)$"
+    },
+    "nonce": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{12,96}$"
+    },
+    "issuedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "grantsAuthorization",
+        "grantsDownload",
+        "grantsExecution",
+        "grantsPermission",
+        "requiresReadbackVerification"
+      ],
+      "properties": {
+        "grantsAuthorization": { "const": false },
+        "grantsDownload": { "const": false },
+        "grantsExecution": { "const": false },
+        "grantsPermission": { "const": false },
+        "requiresReadbackVerification": { "const": true }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "unevaluatedProperties": false
+}

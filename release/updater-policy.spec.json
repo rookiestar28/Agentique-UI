@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "agentique.updaterReleaseGate.v1",
+  "manifestSchema": "release/updater-manifest.schema.json",
+  "requiredPlatforms": ["windows-x86_64", "darwin-aarch64", "linux-x86_64"],
+  "keyCustody": {
+    "privateKeyStorage": "external-secret-store",
+    "publicKeyConfigTiming": "after-final-release-url",
+    "privateKeysInRepository": false
+  },
+  "configurationPolicy": {
+    "createUpdaterArtifactsBeforeSigning": false,
+    "endpointRequiredForPublication": true,
+    "publicKeyRequiredForPublication": true
+  },
+  "verification": {
+    "requiredChecks": ["signature", "download", "version", "bad-signature", "no-update", "rollback"],
+    "latestJsonHost": "static-release-url"
+  },
+  "rollback": {
+    "required": true,
+    "channelPolicy": "replace-or-revoke-latest-json"
+  },
+  "publication": {
+    "unsignedUpdaterArtifacts": "not-publishable",
+    "publicTrustRequires": ["external-key-custody", "signed-artifacts", "latest-json", "download-checks", "rollback-test"]
+  }
+}

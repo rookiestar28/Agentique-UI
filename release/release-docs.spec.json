@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "agentique.releaseDocsGate.v1",
+  "requiredDocs": [
+    {
+      "path": "docs/release/final-readiness.md",
+      "requiredPhrases": [
+        "No-Go for public installer or updater publication",
+        "publicationAllowed=false",
+        "public-safe GitHub workflow run identifier"
+      ]
+    },
+    {
+      "path": "docs/release/github-actions.md",
+      "requiredPhrases": [
+        "workflow_dispatch",
+        "draft mode",
+        "checksums",
+        "SBOM",
+        "provenance attestations"
+      ]
+    },
+    {
+      "path": "docs/release/updater.md",
+      "requiredPhrases": [
+        "createUpdaterArtifacts",
+        "signing key custody",
+        "latest.json",
+        "bad-signature update rejection",
+        "rollback"
+      ]
+    },
+    {
+      "path": "docs/release/install.md",
+      "requiredPhrases": [
+        "no released installer or updater yet",
+        "not a released desktop installer",
+        "No signed update channel is published yet"
+      ]
+    },
+    {
+      "path": "docs/release/rollback.md",
+      "requiredPhrases": ["rollback path before publication", "No signed updater channel is published yet"]
+    },
+    {
+      "path": "docs/governance/release-publication-policy.md",
+      "requiredPhrases": [
+        "A stable public release requires maintainer review",
+        "Runtime secrets, signing keys, certificates, release credentials, and local smoke logs must never be committed"
+      ]
+    }
+  ],
+  "requiredEvidenceFamilies": [
+    {
+      "id": "checksums",
+      "terms": ["checksums", "SHA-256"]
+    },
+    {
+      "id": "sbom",
+      "terms": ["SBOM"]
+    },
+    {
+      "id": "cargo-metadata",
+      "terms": ["Cargo metadata"]
+    },
+    {
+      "id": "provenance-attestation",
+      "terms": ["provenance", "attestations"]
+    },
+    {
+      "id": "draft-release",
+      "terms": ["draft", "maintainer review"]
+    },
+    {
+      "id": "public-safe-workflow-run-id",
+      "terms": ["public-safe GitHub workflow run identifier"]
+    },
+    {
+      "id": "clean-environment-smoke",
+      "terms": ["clean-environment", "smoke"]
+    },
+    {
+      "id": "rollback",
+      "terms": ["rollback"]
+    }
+  ],
+  "forbiddenClaims": [
+    "production desktop runtime is released",
+    "signed updater is published",
+    "stable public installer is available",
+    "universal workflow runtime is supported",
+    "automatic arbitrary-resource execution is supported"
+  ]
+}

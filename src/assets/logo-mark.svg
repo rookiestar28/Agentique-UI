@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Agentique UI">
+  <defs>
+    <linearGradient id="agentique-mark" x1="10" y1="20" x2="54" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#20d4ff"/>
+      <stop offset="0.52" stop-color="#8f7dff"/>
+      <stop offset="1" stop-color="#ff4ec5"/>
+    </linearGradient>
+  </defs>
+  <path d="M12 25.5 20.5 16h23L52 25.5 32 49 12 25.5Z" fill="none" stroke="url(#agentique-mark)" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M20.5 16 32 49 43.5 16M12 25.5h40M20.5 16l8 9.5m15-9.5-8 9.5" fill="none" stroke="url(#agentique-mark)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

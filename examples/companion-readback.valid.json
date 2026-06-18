@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "agentique.uiCompanionReadback.v1",
+  "resource": {
+    "id": "example.visual-guide",
+    "version": "0.1.0",
+    "title": "Example Visual Guide",
+    "summary": "Public readback fixture for Agentique UI compatibility checks.",
+    "canonicalUrl": "https://www.agentique.io/resources/example.visual-guide"
+  },
+  "download": {
+    "ticketEndpoint": "https://www.agentique.io/api/resources/example.visual-guide/versions/0.1.0/download-ticket",
+    "maxBytes": 10485760
+  },
+  "support": {
+    "modes": ["catalog-only", "visualizable", "external-handoff"],
+    "primaryMode": "visualizable",
+    "minimumCompleteUx": "Show documentation, metadata, artifact summary, and reversible external handoff instructions."
+  },
+  "provenance": {
+    "publishedDigest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "verificationStatus": "verified",
+    "signer": "agentique-example"
+  },
+  "compatibility": {
+    "agentiqueUi": ">=0.1.0",
+    "platforms": ["windows", "macos", "linux"],
+    "schemaRefs": [
+      "https://schemas.agentique.io/ui/agentique-resource-bundle.v1.schema.json",
+      "https://schemas.agentique.io/ui/scoped-download-ticket.v1.schema.json"
+    ]
+  }
+}

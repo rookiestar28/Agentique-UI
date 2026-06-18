@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.agentique.io/ui/runner-capability.v1.schema.json",
+  "title": "Agentique Runner Capability",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "resource",
+    "runner",
+    "adapter",
+    "permissions",
+    "artifactContract",
+    "lifecycle",
+    "claims"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "agentique.runnerCapability.v1"
+    },
+    "resource": {
+      "type": "object",
+      "required": ["id", "version", "supportMode"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|[._:-](?=[A-Za-z0-9])){0,127}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|[._+-](?=[A-Za-z0-9])){0,95}$"
+        },
+        "supportMode": {
+          "enum": [
+            "catalog-only",
+            "visualizable",
+            "editable",
+            "dry-runnable",
+            "locally-runnable",
+            "external-handoff",
+            "unsupported"
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "runner": {
+      "type": "object",
+      "required": ["mode", "requiresNativeBackend", "startsFromWebLayer"],
+      "properties": {
+        "mode": {
+          "enum": ["disabled", "dry-run", "local-run", "external-handoff"]
+        },
+        "requiresNativeBackend": {
+          "type": "boolean"
+        },
+        "startsFromWebLayer": {
+          "const": false
+        },
+        "nativeCommand": {
+          "type": "string",
+          "pattern": "^agentique\\.runner\\.[a-z][a-z0-9-]{2,40}$"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "adapter": {
+      "type": "object",
+      "required": ["id", "version", "runtime", "digest"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^adapter\\.[a-z0-9][a-z0-9._-]{1,80}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][A-Za-z0-9._-]+)?$"
+        },
+        "runtime": {
+          "enum": ["python", "node", "wasm", "container"]
+        },
+        "digest": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "permissions": {
+      "type": "object",
+      "required": [
+        "files",
+        "network",
+        "shell",
+        "environment",
+        "gpu",
+        "containers",
+        "externalProviders",
+        "secrets",
+        "sidecars",
+        "browserData"
+      ],
+      "properties": {
+        "files": { "$ref": "#/$defs/decision" },
+        "network": { "$ref": "#/$defs/decision" },
+        "shell": { "const": "deny" },
+        "environment": { "$ref": "#/$defs/decision" },
+        "gpu": { "$ref": "#/$defs/decision" },
+        "containers": { "$ref": "#/$defs/decision" },
+        "externalProviders": { "$ref": "#/$defs/decision" },
+        "secrets": { "$ref": "#/$defs/decision" },
+        "sidecars": { "$ref": "#/$defs/decision" },
+        "browserData": { "const": "deny" }
+      },
+      "unevaluatedProperties": false
+    },
+    "artifactContract": {
+      "type": "object",
+      "required": ["contract", "logRedaction", "maxLogBytes", "maxArtifactBytes", "outputPaths"],
+      "properties": {
+        "contract": {
+          "const": "agentique.artifactContract.v1"
+        },
+        "logRedaction": {
+          "const": "required"
+        },
+        "maxLogBytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 10485760
+        },
+        "maxArtifactBytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 104857600
+        },
+        "outputPaths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "pattern": "^(outputs|artifacts|logs)/[A-Za-z0-9._/-]+$"
+          },
+          "uniqueItems": true
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": ["timeoutMs", "cancel", "cleanup", "retry"],
+      "properties": {
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 3600000
+        },
+        "cancel": {
+          "enum": ["graceful", "immediate-deny"]
+        },
+        "cleanup": {
+          "const": "process-tree"
+        },
+        "retry": {
+          "type": "object",
+          "required": ["maxAttempts"],
+          "properties": {
+            "maxAttempts": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            }
+          },
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "claims": {
+      "type": "object",
+      "required": [
+        "localRunAvailable",
+        "universalRuntime",
+        "automaticExecution",
+        "hostedRuntime",
+        "genericShell",
+        "ambientEnvironment",
+        "browserData",
+        "packageLifecycle",
+        "installerUpdater"
+      ],
+      "properties": {
+        "localRunAvailable": {
+          "type": "boolean"
+        },
+        "universalRuntime": { "const": false },
+        "automaticExecution": { "const": false },
+        "hostedRuntime": { "const": false },
+        "genericShell": { "const": false },
+        "ambientEnvironment": { "const": false },
+        "browserData": { "const": false },
+        "packageLifecycle": { "const": false },
+        "installerUpdater": { "const": false }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "unevaluatedProperties": false,
+  "$defs": {
+    "decision": {
+      "enum": ["deny", "ask", "allow"]
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

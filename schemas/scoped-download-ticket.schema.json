@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.agentique.io/ui/scoped-download-ticket.v1.schema.json",
+  "title": "Agentique UI Scoped Download Ticket",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "ticketId",
+    "audience",
+    "scope",
+    "resource",
+    "download",
+    "integrity",
+    "replayPolicy",
+    "issuedAt",
+    "expiresAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "agentique.scopedDownloadTicket.v1"
+    },
+    "ticketId": {
+      "type": "string",
+      "pattern": "^ticket_[A-Za-z0-9_-]{16,96}$"
+    },
+    "audience": {
+      "const": "agentique-ui"
+    },
+    "scope": {
+      "const": "resource-download"
+    },
+    "resource": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,120}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?$"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "download": {
+      "type": "object",
+      "required": ["url", "method", "maxBytes"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "method": {
+          "const": "GET"
+        },
+        "maxBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483648
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "integrity": {
+      "type": "object",
+      "required": ["sha256", "sizeBytes"],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483648
+        },
+        "signer": {
+          "type": "string",
+          "maxLength": 160
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "replayPolicy": {
+      "type": "object",
+      "required": ["singleUse", "nonce"],
+      "properties": {
+        "singleUse": {
+          "const": true
+        },
+        "nonce": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{22,128}$"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "issuedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "unevaluatedProperties": false
+}

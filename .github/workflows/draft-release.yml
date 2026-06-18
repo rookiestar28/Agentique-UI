@@ -1,0 +1,139 @@
+name: Draft Desktop Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to prepare as a draft"
+        required: true
+        default: "v0.1.0"
+      publish_draft:
+        description: "Create or update a GitHub draft release after artifacts are built"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: draft-desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate public repository
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full validation
+        run: npm run validate
+
+  build:
+    name: Build ${{ matrix.platform }} artifacts
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            os: windows-latest
+            build_script: tauri:build:windows
+          - platform: macos
+            os: macos-14
+            build_script: tauri:build:macos
+          - platform: linux
+            os: ubuntu-22.04
+            build_script: tauri:build:linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Verify Rust toolchain
+        run: rustup show
+
+      - name: Install Linux package dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf rpm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run platform release gate
+        run: npm run validate:release-${{ matrix.platform }}
+
+      - name: Build platform bundle
+        run: npm run ${{ matrix.build_script }}
+
+      - name: Generate SBOM and cargo metadata
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release-output | Out-Null
+          npm sbom --json | Set-Content -Encoding utf8 -Path release-output/npm-sbom.json
+          cargo metadata --format-version 1 --manifest-path src-tauri/Cargo.toml | Set-Content -Encoding utf8 -Path release-output/cargo-metadata.json
+
+      - name: Generate checksums
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release-output | Out-Null
+          $files = Get-ChildItem src-tauri/target/release/bundle -Recurse -File
+          $lines = $files | ForEach-Object {
+            $hash = Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName
+            "$($hash.Hash)  $($_.Name)"
+          }
+          $lines | Set-Content -Encoding utf8 -Path release-output/checksums-${{ matrix.platform }}.txt
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentique-ui-${{ matrix.platform }}-${{ inputs.tag }}
+          if-no-files-found: error
+          path: |
+            release-output/**
+            src-tauri/target/release/bundle/**
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: |
+            release-output/**
+            src-tauri/target/release/bundle/**
+
+  draft-release:
+    name: Assemble draft release
+    needs: build
+    if: inputs.publish_draft == true
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ inputs.tag }}" release-artifacts/** --draft --verify-tag --title "Agentique UI ${{ inputs.tag }}" --notes "Draft release generated for maintainer review. Do not publish until platform signing, updater, smoke, checksums, SBOM, provenance, and public docs gates pass."

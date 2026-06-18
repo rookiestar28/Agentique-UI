@@ -1,0 +1,518 @@
+.run-workspace .run-plan-gate {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 0;
+}
+
+.run-plan-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.run-plan-counts span {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-control);
+  background: rgba(3, 6, 11, 0.42);
+  padding: 0 8px;
+}
+
+.runner-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.runner-log-list,
+.runner-artifact-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.runner-log-list li,
+.runner-artifact-list li {
+  min-width: 0;
+  border-bottom: 1px solid var(--agent-border);
+  color: var(--agent-text-muted);
+  font-size: 12px;
+  padding: 6px 0;
+  overflow-wrap: anywhere;
+}
+
+.runner-node-result-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.runner-node-result-list.compact {
+  margin-top: 12px;
+}
+
+.permission-preflight-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.permission-preflight-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.permission-grant-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.permission-grant-list.compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.runner-node-result-list li,
+.runner-cleanup-receipt,
+.permission-preflight-strip > div,
+.permission-grant-list li,
+.blocked-run-plan-strip {
+  min-width: 0;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.42);
+  padding: 9px;
+}
+
+.runner-node-result-list li.failed,
+.runner-node-result-list li.skipped,
+.runner-node-result-list li.canceled,
+.permission-grant-list li.blocked,
+.permission-grant-list li.revoked,
+.permission-grant-list li.missing {
+  border-color: rgba(255, 138, 76, 0.38);
+}
+
+.permission-grant-list li.allowed,
+.permission-grant-list li.granted {
+  border-color: rgba(116, 214, 151, 0.32);
+}
+
+.run-history-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.34);
+  padding: 10px;
+}
+
+.run-history-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.run-history-grid.compact {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.run-history-list,
+.run-evidence-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.run-history-list li,
+.run-history-grid > div,
+.run-evidence-list li {
+  min-width: 0;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.42);
+}
+
+.run-history-grid > div,
+.run-evidence-list li {
+  padding: 9px;
+}
+
+.run-history-list li.failed,
+.run-history-list li.canceled,
+.run-history-list li.timed-out,
+.run-history-list li.cleanup-required,
+.run-history-list li.recovered {
+  border-color: rgba(255, 138, 76, 0.38);
+}
+
+.run-history-list li.succeeded,
+.run-history-list li.cleaned {
+  border-color: rgba(116, 214, 151, 0.32);
+}
+
+.run-history-record {
+  display: grid;
+  width: 100%;
+  min-height: 76px;
+  gap: 3px;
+  border: 0;
+  border-radius: var(--agent-radius-surface);
+  background: transparent;
+  color: var(--agent-text);
+  padding: 9px;
+  text-align: left;
+}
+
+.run-history-record[aria-pressed="true"],
+.run-history-record:hover,
+.run-history-record:focus-visible {
+  background: rgba(0, 213, 255, 0.1);
+}
+
+.run-evidence-browser {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--agent-border);
+  padding-top: 10px;
+}
+
+.run-evidence-list.timeline {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.run-history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.runner-timeline-strip,
+.runner-event-list,
+.runner-node-timeline,
+.runner-dependency-chain,
+.runner-log-preview {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.runner-timeline-strip {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.runner-event-timeline {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.34);
+  padding: 10px;
+}
+
+.runner-event-list,
+.runner-node-timeline,
+.runner-dependency-chain,
+.runner-log-preview {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.runner-event-list.compact {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.runner-timeline-strip li,
+.runner-event-list li,
+.runner-node-timeline li,
+.runner-dependency-chain li,
+.runner-log-preview li {
+  min-width: 0;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.42);
+  padding: 9px;
+}
+
+.runner-event-list li.failed,
+.runner-event-list li.skipped,
+.runner-event-list li.canceled,
+.runner-node-timeline li.failed,
+.runner-node-timeline li.skipped,
+.runner-node-timeline li.canceled,
+.runner-dependency-chain li.failed,
+.runner-dependency-chain li.skipped,
+.runner-dependency-chain li.canceled {
+  border-color: rgba(255, 138, 76, 0.38);
+}
+
+.runner-event-list li.succeeded,
+.runner-event-list li.adapter-succeeded,
+.runner-node-timeline li.succeeded {
+  border-color: rgba(116, 214, 151, 0.32);
+}
+
+.approval-checkpoint-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.34);
+  padding: 10px;
+}
+
+.approval-checkpoint-grid,
+.approval-timeline-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.approval-checkpoint-grid.compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.approval-action-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.approval-checkpoint-grid > div,
+.approval-timeline-list li {
+  min-width: 0;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.42);
+  padding: 9px;
+}
+
+.approval-timeline-list li.canceled,
+.approval-timeline-list li.handoff-required {
+  border-color: rgba(255, 138, 76, 0.38);
+}
+
+.approval-timeline-list li.resumed {
+  border-color: rgba(116, 214, 151, 0.32);
+}
+
+.external-handoff-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.34);
+  padding: 10px;
+}
+
+.external-handoff-grid,
+.external-handoff-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.external-handoff-grid.compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.external-handoff-grid > div,
+.external-handoff-list li {
+  min-width: 0;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.42);
+  padding: 9px;
+}
+
+.external-handoff-list li.blocked,
+.external-handoff-list li.handoff-only,
+.external-handoff-list li.permission-required {
+  border-color: rgba(255, 138, 76, 0.38);
+}
+
+.curated-adapter-lane-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.34);
+  padding: 10px;
+}
+
+.curated-adapter-lane-grid,
+.curated-adapter-evidence-list,
+.curated-adapter-block-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.curated-adapter-lane-grid.compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.curated-adapter-lane-grid > div,
+.curated-adapter-evidence-list li,
+.curated-adapter-block-list li {
+  min-width: 0;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-radius-surface);
+  background: rgba(3, 6, 11, 0.42);
+  padding: 9px;
+}
+
+.curated-adapter-block-list li {
+  border-color: rgba(255, 138, 76, 0.38);
+}
+
+.runner-node-result-list span,
+.runner-node-result-list small,
+.runner-cleanup-receipt span,
+.runner-cleanup-receipt small,
+.permission-preflight-strip span,
+.permission-preflight-strip small,
+.permission-grant-list span,
+.permission-grant-list small,
+.run-history-grid span,
+.run-history-grid small,
+.run-history-list span,
+.run-history-list small,
+.run-evidence-list span,
+.run-evidence-list small,
+.runner-timeline-strip span,
+.runner-timeline-strip small,
+.runner-event-list span,
+.runner-event-list small,
+.runner-node-timeline span,
+.runner-node-timeline small,
+.runner-dependency-chain span,
+.runner-dependency-chain small,
+.runner-log-preview span,
+.runner-log-preview small,
+.approval-checkpoint-grid span,
+.approval-checkpoint-grid small,
+.approval-timeline-list span,
+.approval-timeline-list small,
+.external-handoff-grid span,
+.external-handoff-grid small,
+.external-handoff-list span,
+.external-handoff-list small,
+.curated-adapter-lane-grid span,
+.curated-adapter-lane-grid small,
+.curated-adapter-evidence-list span,
+.curated-adapter-evidence-list small,
+.curated-adapter-block-list span,
+.curated-adapter-block-list small,
+.blocked-run-plan-strip span,
+.blocked-run-plan-strip small {
+  display: block;
+  color: var(--agent-text-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+
+.runner-node-result-list strong,
+.runner-cleanup-receipt strong,
+.permission-preflight-strip strong,
+.permission-grant-list strong,
+.run-history-grid strong,
+.run-history-list strong,
+.run-evidence-list strong,
+.runner-timeline-strip strong,
+.runner-event-list strong,
+.runner-node-timeline strong,
+.runner-dependency-chain strong,
+.runner-log-preview strong,
+.approval-checkpoint-grid strong,
+.approval-timeline-list strong,
+.external-handoff-grid strong,
+.external-handoff-list strong,
+.curated-adapter-lane-grid strong,
+.curated-adapter-evidence-list strong,
+.curated-adapter-block-list strong,
+.blocked-run-plan-strip strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--agent-text);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.runner-cleanup-receipt,
+.blocked-run-plan-strip {
+  display: grid;
+  gap: 3px;
+}
+
+.blocked-run-plan-strip {
+  margin-top: 12px;
+}
+
+.runner-mini-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.runner-mini-evidence span {
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.graph-workspace .node-inspector .section-heading {
+  margin-bottom: 8px;
+}
+
+.graph-workspace .node-inspector h3 {
+  color: #fff;
+  font-size: 14px;
+}
+
+.graph-workspace .inspector-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.graph-workspace .inspector-fields div {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 7px 0;
+}
+
+.graph-workspace .graph-overlays {
+  margin-inline: 0;
+}

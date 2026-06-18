@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "agentique.finalReleaseGate.v1",
+  "decisionPolicy": {
+    "goRequiresEveryGateReady": true,
+    "noGoWhenAnyGateBlocked": true,
+    "requirePublicSafeWorkflowRunIdForGo": true
+  },
+  "requiredGates": [
+    "release-metadata",
+    "windows",
+    "macos",
+    "linux",
+    "updater",
+    "workflow",
+    "smoke",
+    "docs"
+  ],
+  "publicationClaims": {
+    "releasedInstaller": false,
+    "signedUpdater": false,
+    "productionRuntime": false
+  }
+}

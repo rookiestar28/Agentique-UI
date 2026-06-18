@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "agentique.windowsReleaseGate.v1",
+  "platform": "windows",
+  "bundleTargets": ["nsis", "msi"],
+  "buildCommand": "npm run tauri:build:windows",
+  "artifactPolicy": {
+    "commitArtifacts": false,
+    "allowedExtensions": [".exe", ".msi"],
+    "checksum": "sha256"
+  },
+  "signing": {
+    "requiredForPublicRelease": true,
+    "timestampRequired": true,
+    "credentialInputs": [
+      {
+        "name": "WINDOWS_SIGNING_CERTIFICATE_BASE64",
+        "kind": "certificate"
+      },
+      {
+        "name": "WINDOWS_SIGNING_CERTIFICATE_PASSWORD",
+        "kind": "secret"
+      }
+    ],
+    "verificationCommands": [
+      "signtool verify /pa <artifact>",
+      "signtool verify /pa /tw <artifact>"
+    ]
+  },
+  "smartScreen": {
+    "caveat": "Unsigned or newly signed Windows installers can trigger Microsoft Defender SmartScreen warnings until reputation is established."
+  },
+  "smoke": {
+    "requiredChecks": ["install", "launch", "version", "uninstall"],
+    "cleanupRequired": true,
+    "redactedLogsRequired": true
+  },
+  "publication": {
+    "unsignedArtifacts": "local-smoke-only",
+    "publicTrustRequires": ["verified-signature", "trusted-timestamp", "install-smoke", "uninstall-smoke"]
+  }
+}

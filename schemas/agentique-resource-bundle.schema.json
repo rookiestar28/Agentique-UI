@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.agentique.io/ui/agentique-resource-bundle.v1.schema.json",
+  "title": "Agentique Resource Bundle Manifest",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "resource",
+    "package",
+    "support",
+    "compatibility",
+    "capabilityRefs",
+    "provenance",
+    "artifacts"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "agentique.resourceBundle.v1"
+    },
+    "resource": {
+      "type": "object",
+      "required": ["id", "version", "title"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|[._:-](?=[A-Za-z0-9])){0,127}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|[._+-](?=[A-Za-z0-9])){0,95}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "package": {
+      "type": "object",
+      "required": ["layoutVersion", "files"],
+      "properties": {
+        "layoutVersion": {
+          "const": "agentique.bundleLayout.v1"
+        },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["path", "mediaType", "sha256", "sizeBytes"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "pattern": "^(docs|source|artifacts|schemas|metadata)/[A-Za-z0-9._/-]+$"
+              },
+              "mediaType": {
+                "type": "string",
+                "minLength": 3
+              },
+              "sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483648
+              }
+            },
+            "unevaluatedProperties": false
+          }
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "support": {
+      "type": "object",
+      "required": ["modes", "primaryMode", "minimumCompleteUx"],
+      "properties": {
+        "modes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "catalog-only",
+              "visualizable",
+              "editable",
+              "dry-runnable",
+              "locally-runnable",
+              "external-handoff"
+            ]
+          }
+        },
+        "primaryMode": {
+          "enum": [
+            "catalog-only",
+            "visualizable",
+            "editable",
+            "dry-runnable",
+            "locally-runnable",
+            "external-handoff"
+          ]
+        },
+        "minimumCompleteUx": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 500
+        },
+        "handoffTargets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{1,80}$"
+          },
+          "uniqueItems": true
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "compatibility": {
+      "type": "object",
+      "required": ["agentiqueUi", "platforms"],
+      "properties": {
+        "agentiqueUi": {
+          "type": "string",
+          "pattern": "^>=\\d+\\.\\d+\\.\\d+$"
+        },
+        "platforms": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": ["windows", "macos", "linux"]
+          },
+          "uniqueItems": true
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "capabilityRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^capability:[a-z0-9][a-z0-9._-]{1,80}$"
+      },
+      "uniqueItems": true
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["sourceDigest", "publishedDigest", "verificationStatus"],
+      "properties": {
+        "sourceDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "publishedDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "verificationStatus": {
+          "enum": ["verified", "reviewed", "unverified"]
+        },
+        "signer": {
+          "type": "string",
+          "maxLength": 160
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "artifacts": {
+      "type": "object",
+      "required": ["contract"],
+      "properties": {
+        "contract": {
+          "const": "agentique.artifactContract.v1"
+        },
+        "viewerHints": {
+          "type": "array",
+          "items": {
+            "enum": ["markdown", "json", "csv", "image", "video-metadata", "pdf", "graph", "html-sandbox", "mermaid-sandbox"]
+          },
+          "uniqueItems": true
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "secretRefs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^secret-ref:[a-z0-9][a-z0-9._-]{1,80}$"
+      },
+      "uniqueItems": true
+    }
+  },
+  "unevaluatedProperties": false,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

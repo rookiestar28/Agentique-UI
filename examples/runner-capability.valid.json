@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "agentique.runnerCapability.v1",
+  "resource": {
+    "id": "example.visual-guide",
+    "version": "0.1.0",
+    "supportMode": "locally-runnable"
+  },
+  "runner": {
+    "mode": "local-run",
+    "requiresNativeBackend": true,
+    "startsFromWebLayer": false,
+    "nativeCommand": "agentique.runner.start"
+  },
+  "adapter": {
+    "id": "adapter.local-python",
+    "version": "0.1.0",
+    "runtime": "python",
+    "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "permissions": {
+    "files": "ask",
+    "network": "deny",
+    "shell": "deny",
+    "environment": "deny",
+    "gpu": "deny",
+    "containers": "deny",
+    "externalProviders": "deny",
+    "secrets": "ask",
+    "sidecars": "ask",
+    "browserData": "deny"
+  },
+  "artifactContract": {
+    "contract": "agentique.artifactContract.v1",
+    "logRedaction": "required",
+    "maxLogBytes": 262144,
+    "maxArtifactBytes": 5242880,
+    "outputPaths": ["outputs/result.json", "artifacts/result.json"]
+  },
+  "lifecycle": {
+    "timeoutMs": 60000,
+    "cancel": "graceful",
+    "cleanup": "process-tree",
+    "retry": {
+      "maxAttempts": 0
+    }
+  },
+  "claims": {
+    "localRunAvailable": true,
+    "universalRuntime": false,
+    "automaticExecution": false,
+    "hostedRuntime": false,
+    "genericShell": false,
+    "ambientEnvironment": false,
+    "browserData": false,
+    "packageLifecycle": false,
+    "installerUpdater": false
+  }
+}

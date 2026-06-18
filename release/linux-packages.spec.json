@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "agentique.linuxReleaseGate.v1",
+  "platform": "linux",
+  "bundleTargets": ["deb", "rpm", "appimage"],
+  "buildCommand": "npm run tauri:build:linux",
+  "baseline": {
+    "documentedFamilies": ["Ubuntu 22.04", "Debian 12"],
+    "requiresWebKitGtk": true,
+    "requiresGlibcCompatibility": true
+  },
+  "artifactPolicy": {
+    "commitArtifacts": false,
+    "allowedExtensions": [".deb", ".rpm", ".AppImage"],
+    "checksum": "sha256"
+  },
+  "packageMetadata": {
+    "requiredChecks": ["name", "version", "architecture", "dependencies", "desktop-entry"]
+  },
+  "compatibilitySmoke": {
+    "requiredChecks": ["launch", "webkitgtk", "glibc", "sandbox-warning-review", "uninstall"],
+    "cleanupRequired": true,
+    "redactedLogsRequired": true
+  },
+  "updater": {
+    "firstSupportedArtifact": "appimage",
+    "debAndRpmUpdaterStatus": "not-selected-until-proven"
+  },
+  "publication": {
+    "unsignedArtifacts": "local-smoke-only",
+    "publicTrustRequires": ["package-metadata", "dependency-check", "appimage-compatibility-smoke", "checksums", "release-provenance"]
+  }
+}
