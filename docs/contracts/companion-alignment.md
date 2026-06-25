@@ -38,6 +38,8 @@ Schema changes should be versioned. Existing accepted fixtures should remain sta
 
 Agentique UI includes a local read-only companion readback adapter for public resource projections. The adapter is allowed to normalize public resource detail, download metadata, trust state, parser-variant state, agent-native state, and badge state for display in the local workspace.
 
+When public `sourcePackage` metadata is present, the adapter treats it as authoritative for download availability. Legacy top-level availability cannot make metadata-only or malformed canonical source-package rows downloadable.
+
 The adapter must not add upload submission, publication, approval, moderation, release governance, package publication, installer availability, updater availability, hosted runtime, universal runtime, or automatic execution behavior. Requests are GET-only, do not carry authorization headers, and must use HTTPS outside loopback development.
 
 Private projection fields, prototype-pollution keys, sensitive download URLs, raw credentials, browser data, and local absolute paths are stripped or rejected before UI display.
@@ -54,7 +56,7 @@ Local validator proof is not platform approval, safety certification, moderation
 
 Agentique UI includes a local proof adapter for companion download metadata. The adapter turns public readback metadata into a bounded acquisition plan and a local acquisition proof.
 
-The plan requires a user-selected destination, no-overwrite by default, safe filenames, workspace-bounded path references, bounded redirect origins, max-byte limits, expected byte count, and SHA-256 digest metadata before acquisition can be considered locally ready. The proof requires matching byte count and digest evidence, atomic temp-write-to-final-rename evidence, cleanup receipt handling for failed or partial writes, and fail-closed findings for unsafe URLs, sensitive query material, traversal, unsafe filenames, oversize results, digest mismatch, size mismatch, and missing cleanup.
+The plan requires canonical `sourcePackage` readiness when that metadata is present: `DOWNLOADABLE` status, POST ticket endpoint, safe filename and content type, positive byte size, and SHA-256 digest. Metadata-only, malformed, placeholder, source-index, schema-only, review-only, review-guide, demo-only, or example-only public package labels stay blocked. The plan also requires a user-selected destination, no-overwrite by default, workspace-bounded path references, bounded redirect origins, max-byte limits, expected byte count, and SHA-256 digest metadata before acquisition can be considered locally ready. The proof requires matching byte count and digest evidence, atomic temp-write-to-final-rename evidence, cleanup receipt handling for failed or partial writes, and fail-closed findings for unsafe URLs, sensitive query material, traversal, unsafe filenames, oversize results, digest mismatch, size mismatch, and missing cleanup.
 
 This proof surface must not install, extract, open, approve, certify, publish, release, or execute downloaded artifacts. It is not platform approval, safety certification, moderation approval, package publication evidence, direct-install evidence, hosted runtime availability, universal runtime compatibility, or a broad byte-transfer claim.
 

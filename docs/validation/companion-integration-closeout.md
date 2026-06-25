@@ -13,6 +13,8 @@ Accepted local-static surfaces:
 
 The desktop workspace keeps these features local and bounded. Readback is GET-only; validator and intake surfaces are static and no-execution; download acquisition is a proof boundary with explicit destination, size, digest, atomic-write, and cleanup evidence; uploader support remains review-only with `liveUploadAvailable=false`.
 
+Later readback/acquisition alignment keeps the same public boundary while tightening fail-closed semantics: canonical `sourcePackage` metadata is authoritative for download availability, `DOWNLOADABLE` requires a POST ticket endpoint plus safe file metadata and SHA-256 digest, and metadata-only, malformed, placeholder, source-index, schema-only, or review-only package metadata stays blocked before acquisition proof.
+
 ## Drift Gate
 
 The closeout gate fails closed when:

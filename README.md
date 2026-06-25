@@ -29,7 +29,7 @@ Agentique UI is the local-first desktop workspace for Agentique resources. It he
 - Review-only expansion gates: adapter registry trust policy, repo-local task lane, external agent-client descriptors, MCP bridge readiness descriptors, WASM/WASI sandbox preflight, rootless container preflight, browser automation consent review, local vault references, and descriptor-only diagnostics support bundles.
 - Explicit local language choice: Settings can switch app chrome and workspace controls across the initial static catalog without browser-language auto-detection or remote translation services.
 - Execution evidence discipline: source-preserving round-trip handoff, release-grade execution validation pack, and secondary workflow format compatibility backlog stay documented without widening runtime claims.
-- Companion package alignment: read-only readback badges, no-execution validator proof, safe download acquisition proof, browser-local intake scanning, and review-only uploader previews.
+- Companion package alignment: read-only readback badges, no-execution validator proof, canonical source-package download acquisition proof, browser-local intake scanning, and review-only uploader previews.
 - Release discipline: installer, updater, package, smoke, provenance, rollback, and public-boundary gates remain explicit and fail closed until evidence exists.
 
 ## Workspace Features
@@ -142,7 +142,8 @@ Agentique UI is a local workspace for resources and workflow evidence. [`agentiq
 - MCP, WASM/WASI, rootless container, and browser automation surfaces are readiness or consent review gates only unless a separate runtime evidence gate accepts execution. They do not start bridges, execute WebAssembly, start containers, pull images, launch browsers, connect browser profiles, or automate external providers.
 - Diagnostics support bundle review is descriptor-only. It does not create archives, upload support tickets, collect raw logs, collect raw artifacts, collect browser data, or collect environment snapshots.
 - n8n, Dify, and LangGraph are the currently validated first-class workflow import formats. Node-RED, Serverless Workflow, Argo Workflows, Flowise, Langflow, GitHub Actions, Airflow, BPMN, Haystack, Kestra, AutoGen, LlamaIndex Workflows, and CrewAI remain backlog/reference candidates only.
-- Companion package semantics are consumed as local evidence only: [`@agentique.io/readback`](https://www.npmjs.com/package/@agentique.io/readback) for read-only projections, [`@agentique.io/validator`](https://www.npmjs.com/package/@agentique.io/validator) for static proof, [`@agentique.io/uploader`](https://www.npmjs.com/package/@agentique.io/uploader) for review-only previews, and [`@agentique.io/action`](https://www.npmjs.com/package/@agentique.io/action) as a CI reference.
+- Companion package semantics are consumed as local evidence only: [`@agentique.io/readback`](https://www.npmjs.com/package/@agentique.io/readback) for read-only projections and canonical source-package download metadata normalization, [`@agentique.io/validator`](https://www.npmjs.com/package/@agentique.io/validator) for static proof, [`@agentique.io/uploader`](https://www.npmjs.com/package/@agentique.io/uploader) for review-only previews, and [`@agentique.io/action`](https://www.npmjs.com/package/@agentique.io/action) as a CI reference.
+- Download acquisition treats public `sourcePackage` metadata as authoritative: `DOWNLOADABLE` status, a POST ticket endpoint, safe filename and content type, positive byte size, and SHA-256 digest are required before local acquisition can be considered ready. Metadata-only, malformed, placeholder, source-index, schema-only, or review-only package metadata remains blocked.
 - The uploader surface is not a live upload path. It keeps `submissionMode: review-only` and `liveUploadAvailable: false`, exposes no submit/status action, and does not store upload tokens.
 - Agentique UI does not yet ship a desktop installer. There is no released installer, signed updater, production desktop runtime, hosted runtime, automatic execution of arbitrary downloaded resources, universal workflow runtime claim, authenticated upload flow, or upload status polling.
 
@@ -156,7 +157,7 @@ Desktop distribution remains evidence-gated. Public installer or updater publica
 
 The default posture is no execution and no ambient local access. Supported local runs must pass explicit capability, permission, adapter, artifact, and cleanup gates:
 
-- downloaded resources are inspected before any handoff,
+- downloaded resources are inspected before any handoff, and acquisition stays blocked when public source-package metadata is missing, malformed, metadata-only, or placeholder-labelled,
 - shell execution is blocked by default,
 - secrets and environment variables are not forwarded implicitly,
 - external runtimes require explicit adapters and support-mode boundaries,
