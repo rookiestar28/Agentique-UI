@@ -4,17 +4,7 @@ const DEFAULT_BASE_URL = "https://agentique.io";
 const PUBLIC_RESOURCE_API_PREFIX = "/api/public/v1/resources";
 const DEFAULT_STALE_AFTER_SECONDS = 15 * 60;
 
-const MUTATION_WORDS = Object.freeze([
-  "publish",
-  "edit",
-  "update",
-  "delete",
-  "admin",
-  "moderate",
-  "submit",
-  "approve",
-  "upload"
-]);
+const MUTATION_WORDS = Object.freeze(["publish", "edit", "update", "delete", "admin", "moderate", "submit", "approve", "upload"]);
 
 const PRIVATE_PROJECTION_KEYS = new Set([
   "adminnote",
@@ -47,6 +37,8 @@ const PRIVATE_PROJECTION_KEYS = new Set([
 
 const PUBLIC_PRIVATE_TERM_KEYS = new Set(["privatemcpboundary", "credentialreferencekind", "credentialvaluespresent"]);
 const PROTOTYPE_POLLUTION_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+const WINDOWS_RESERVED_NAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/iu;
+const UNSAFE_FILENAME_PATTERN = /[<>:"/\\|?*\x00-\x1f]/u;
 
 const BADGE_STATES = Object.freeze({
   parsed: badgeTemplate("parsed", "Parsed", "0969da", "Public readback includes parsed parser metadata."),
@@ -59,7 +51,12 @@ const BADGE_STATES = Object.freeze({
   "agent-native-ambiguous": badgeTemplate("agent-native-ambiguous", "Resolver ambiguous", "8250df", "Public readback shows multiple possible agent-native matches."),
   published: badgeTemplate("published", "Published", "2ea44f", "The platform readback currently marks this resource as published."),
   "review-required": badgeTemplate("review-required", "Review required", "bf8700", "The platform readback requires review before normal public use."),
-  "rescan-required": badgeTemplate("rescan-required", "Rescan required", "9a6700", "The platform readback indicates local content should be scanned again before normal public use."),
+  "rescan-required": badgeTemplate(
+    "rescan-required",
+    "Rescan required",
+    "9a6700",
+    "The platform readback indicates local content should be scanned again before normal public use."
+  ),
   blocked: badgeTemplate("blocked", "Blocked", "cf222e", "The platform readback currently blocks normal public use."),
   stale: badgeTemplate("stale", "Status stale", "6e7781", "The last readback is older than the configured freshness window."),
   unavailable: badgeTemplate("unavailable", "Status unavailable", "6e7781", "The readback endpoint could not provide a current status."),
@@ -90,6 +87,19 @@ export const sampleCompanionReadback = Object.freeze({
     filename: "example-visual-guide.agentique.zip",
     sizeBytes: 10485760,
     digest: "e".repeat(64)
+  },
+  sourcePackage: {
+    platformId: "source-package",
+    artifactKind: "source-package",
+    status: "DOWNLOADABLE",
+    method: "POST",
+    downloadEndpoint: "/api/public/v1/resources/example.visual-guide/download",
+    file: {
+      fileName: "example-visual-guide.agentique.zip",
+      contentType: "application/zip",
+      byteSize: 10485760,
+      checksumSha256: "e".repeat(64)
+    }
   },
   platformProjection: {
     publicationState: "published"
@@ -210,10 +220,7 @@ export function createCompanionReadbackClient(options = {}) {
       return requestJson(`${PUBLIC_RESOURCE_API_PREFIX}/${encodeSegment(resourceId)}/context-bundle`, pickContextBundleParams(params));
     },
     getSelectionReadback(resourceId, params = {}) {
-      return requestJson(
-        `${PUBLIC_RESOURCE_API_PREFIX}/${encodeSegment(resourceId)}/selection-readback`,
-        pickSelectionReadbackParams(params)
-      );
+      return requestJson(`${PUBLIC_RESOURCE_API_PREFIX}/${encodeSegment(resourceId)}/selection-readback`, pickSelectionReadbackParams(params));
     }
   });
 }
@@ -249,9 +256,7 @@ export function normalizeCompanionBaseUrl(value) {
   }
 
   const isHttps = parsed.protocol === "https:";
-  const isLoopbackHttp =
-    parsed.protocol === "http:" &&
-    (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "[::1]");
+  const isLoopbackHttp = parsed.protocol === "http:" && (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "[::1]");
 
   if (!isHttps && !isLoopbackHttp) {
     throw new CompanionReadbackError("Readback base URL must use HTTPS outside loopback development.", {
@@ -333,28 +338,28 @@ export function normalizeCompanionDownloadMetadata(value) {
     return emptyDownloadMetadata();
   }
 
-  const body = isRecord(normalized.downloadMetadata) ? normalized.downloadMetadata : normalized;
+  const body = unwrapCompanionDownloadMetadataEnvelope(normalized);
+  const canonicalSourcePackage = projectCanonicalSourcePackage(body.sourcePackage);
   const download = isRecord(body.download) ? body.download : {};
-  const file = firstRecord(download.file, body.file, download.files?.[0], body.files?.[0], body.sourcePackage);
-  const endpointValue = firstString(
-    download.ticketEndpoint,
-    body.ticketEndpoint,
-    download.downloadEndpoint,
-    body.downloadEndpoint,
-    download.endpoint,
-    body.endpoint,
-    download.path,
-    body.path
-  );
-  const rawUrl = firstString(download.url, body.downloadUrl, body.url, file?.url, file?.downloadUrl);
+  const file = canonicalSourcePackage?.file ?? firstRecord(download.file, body.file, download.files?.[0], body.files?.[0]);
+  const endpointValue = canonicalSourcePackage
+    ? canonicalSourcePackage.endpointValue
+    : firstString(download.ticketEndpoint, body.ticketEndpoint, download.downloadEndpoint, body.downloadEndpoint, download.endpoint, body.endpoint, download.path, body.path);
+  const rawUrl = canonicalSourcePackage ? null : firstString(download.url, body.downloadUrl, body.url, file?.url, file?.downloadUrl);
   const projectedUrl = projectPublicDownloadUrl(rawUrl);
   const ticketEndpoint = projectTicketEndpoint(endpointValue);
-  const digestValue = firstString(download.digest, body.digest, file?.digest, download.sha256, body.sha256, file?.sha256);
+  const digestValue = canonicalSourcePackage
+    ? canonicalSourcePackage.digestValue
+    : firstString(download.digest, body.digest, file?.digest, download.sha256, body.sha256, file?.sha256);
   const digest = projectDigest(digestValue);
-  const availability = normalizePublicState(
-    download.availability ?? body.availability ?? file?.availability ?? body.status ?? normalized.availability ?? normalized.status ?? normalized.state
-  );
-  const method = normalizeDownloadMethod(download.method ?? body.method ?? (ticketEndpoint ? "POST" : null));
+  const method = normalizeDownloadMethod(canonicalSourcePackage ? canonicalSourcePackage.methodValue : (download.method ?? body.method ?? (ticketEndpoint ? "POST" : null)));
+  const canonicalUnavailableReason = canonicalSourcePackage ? getCanonicalSourcePackageUnavailableReason(canonicalSourcePackage, { digest, method, ticketEndpoint }) : null;
+  const availability = canonicalSourcePackage
+    ? canonicalUnavailableReason
+      ? "unavailable"
+      : "available"
+    : normalizePublicState(download.availability ?? body.availability ?? file?.availability ?? body.status ?? normalized.availability ?? normalized.status ?? normalized.state);
+  const digestValid = canonicalSourcePackage ? typeof digestValue !== "string" || isSha256Digest(digest) : typeof digestValue !== "string" || digest !== null;
 
   return Object.freeze({
     resourceId: stringOrNull(body.resourceId ?? body.id ?? normalized.resourceId ?? normalized.id),
@@ -364,14 +369,32 @@ export function normalizeCompanionDownloadMetadata(value) {
     ticketEndpoint,
     url: projectedUrl,
     urlRedacted: typeof rawUrl === "string" && projectedUrl === null,
-    filename: stringOrNull(download.filename ?? download.fileName ?? body.filename ?? body.fileName ?? file?.filename ?? file?.fileName),
-    mediaType: stringOrNull(download.mediaType ?? body.mediaType ?? file?.mediaType ?? download.contentType ?? body.contentType ?? file?.contentType),
-    sizeBytes: numberOrNull(download.sizeBytes ?? download.size ?? body.sizeBytes ?? body.size ?? file?.sizeBytes ?? file?.size),
+    filename: canonicalSourcePackage
+      ? canonicalSourcePackage.filename
+      : stringOrNull(download.filename ?? download.fileName ?? body.filename ?? body.fileName ?? file?.filename ?? file?.fileName),
+    mediaType: canonicalSourcePackage
+      ? canonicalSourcePackage.mediaType
+      : stringOrNull(download.mediaType ?? body.mediaType ?? file?.mediaType ?? download.contentType ?? body.contentType ?? file?.contentType),
+    sizeBytes: canonicalSourcePackage
+      ? canonicalSourcePackage.sizeBytes
+      : numberOrNull(download.sizeBytes ?? download.size ?? body.sizeBytes ?? body.size ?? file?.sizeBytes ?? file?.size),
     digest,
     digestPresent: typeof digestValue === "string",
-    digestValid: typeof digestValue !== "string" || digest !== null,
-    observedAt: stringOrNull(download.observedAt ?? body.observedAt ?? file?.observedAt ?? normalized.observedAt ?? normalized.updatedAt),
-    expiresAt: stringOrNull(download.expiresAt ?? body.expiresAt ?? file?.expiresAt ?? normalized.expiresAt)
+    digestValid,
+    unavailableReason: stringOrNull(
+      canonicalSourcePackage
+        ? firstString(
+            canonicalSourcePackage.sourcePackage.unavailableReason,
+            canonicalSourcePackage.file?.unavailableReason,
+            canonicalSourcePackage.sourcePackage.reason,
+            canonicalUnavailableReason
+          )
+        : firstString(download.unavailableReason, body.unavailableReason, file?.unavailableReason, download.reason, body.reason)
+    ),
+    observedAt: stringOrNull(
+      canonicalSourcePackage?.sourcePackage.observedAt ?? download.observedAt ?? body.observedAt ?? file?.observedAt ?? normalized.observedAt ?? normalized.updatedAt
+    ),
+    expiresAt: stringOrNull(canonicalSourcePackage?.sourcePackage.expiresAt ?? download.expiresAt ?? body.expiresAt ?? file?.expiresAt ?? normalized.expiresAt)
   });
 }
 
@@ -626,6 +649,96 @@ function projectResourceListItem(item) {
   });
 }
 
+function unwrapCompanionDownloadMetadataEnvelope(normalized) {
+  if (!isRecord(normalized)) {
+    return normalized;
+  }
+  if (isRecord(normalized.downloadMetadata)) {
+    return normalized.downloadMetadata;
+  }
+  if (isRecord(normalized.data)) {
+    return { ...normalized.data, availability: normalized.data.availability ?? normalized.availability };
+  }
+  return normalized;
+}
+
+function projectCanonicalSourcePackage(value) {
+  if (!hasCanonicalSourcePackageFields(value)) {
+    return null;
+  }
+
+  const sourcePackage = value;
+  const file = isRecord(sourcePackage.file) ? sourcePackage.file : {};
+  const filenameValue = firstString(file.fileName, file.filename, sourcePackage.fileName, sourcePackage.filename);
+  const mediaTypeValue = firstString(file.contentType, file.mediaType, sourcePackage.contentType, sourcePackage.mediaType);
+
+  return {
+    sourcePackage,
+    file,
+    status: normalizeSourcePackageStatus(sourcePackage.status),
+    methodValue: firstString(sourcePackage.method, sourcePackage.downloadMethod),
+    endpointValue: firstString(sourcePackage.downloadEndpoint, sourcePackage.ticketEndpoint, sourcePackage.endpoint, sourcePackage.path),
+    filename: isSafePublicFilename(filenameValue) ? filenameValue : null,
+    filenameValue,
+    mediaType: isSafePublicContentType(mediaTypeValue) ? mediaTypeValue : null,
+    mediaTypeValue,
+    sizeBytes: numberOrNull(file.byteSize ?? file.sizeBytes ?? file.size ?? sourcePackage.byteSize ?? sourcePackage.sizeBytes ?? sourcePackage.size),
+    digestValue: firstString(
+      file.checksumSha256,
+      file.sha256,
+      file.digestSha256,
+      file.digest,
+      sourcePackage.checksumSha256,
+      sourcePackage.sha256,
+      sourcePackage.digestSha256,
+      sourcePackage.digest
+    )
+  };
+}
+
+function hasCanonicalSourcePackageFields(value) {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return ["status", "file", "method", "downloadMethod", "downloadEndpoint", "ticketEndpoint", "artifactKind", "platformId"].some((key) => Object.hasOwn(value, key));
+}
+
+function normalizeSourcePackageStatus(value) {
+  return String(value ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[-\s]+/gu, "_");
+}
+
+function getCanonicalSourcePackageUnavailableReason(sourcePackage, { digest, method, ticketEndpoint }) {
+  // Canonical source-package metadata is authoritative; legacy fields must not make metadata-only rows downloadable.
+  if (sourcePackage.status !== "DOWNLOADABLE") {
+    return "source_package_not_downloadable";
+  }
+  if (!isSafePublicFilename(sourcePackage.filenameValue)) {
+    return "source_file_name_invalid";
+  }
+  if (!isSafePublicContentType(sourcePackage.mediaTypeValue)) {
+    return "source_file_content_type_invalid";
+  }
+  if (!Number.isSafeInteger(sourcePackage.sizeBytes) || sourcePackage.sizeBytes <= 0) {
+    return "source_file_size_invalid";
+  }
+  if (typeof sourcePackage.digestValue !== "string") {
+    return "source_file_checksum_missing";
+  }
+  if (!isSha256Digest(digest)) {
+    return "source_file_checksum_invalid";
+  }
+  if (method !== "POST") {
+    return "download_method_unsupported";
+  }
+  if (!ticketEndpoint) {
+    return "download_endpoint_missing";
+  }
+  return null;
+}
+
 function buildUrl(baseUrl, path, params = {}) {
   const url = new URL(path, baseUrl);
   for (const [key, value] of Object.entries(params ?? {})) {
@@ -668,11 +781,13 @@ function projectTicketEndpoint(value) {
     return null;
   }
   if (text.startsWith("/") && !text.startsWith("//") && !hasParentPathSegment(text)) {
-    return text;
+    return text.split("#")[0].split("?")[0];
   }
   try {
     const url = new URL(text);
     if ((url.protocol === "https:" || isLoopbackUrl(url)) && !hasSensitiveQuery(url)) {
+      url.search = "";
+      url.hash = "";
       return url.toString();
     }
   } catch {
@@ -697,6 +812,24 @@ function projectPublicDownloadUrl(value) {
   return null;
 }
 
+function isSafePublicFilename(value) {
+  return (
+    typeof value === "string" &&
+    value.trim() !== "" &&
+    value === value.trim() &&
+    value !== "." &&
+    value !== ".." &&
+    !value.includes("/") &&
+    !value.includes("\\") &&
+    !UNSAFE_FILENAME_PATTERN.test(value) &&
+    !WINDOWS_RESERVED_NAMES.test(value)
+  );
+}
+
+function isSafePublicContentType(value) {
+  return typeof value === "string" && /^[a-z0-9][a-z0-9!#$&^_.+-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*(?:\s*;\s*[a-z0-9!#$&^_.+-]+=[^;\r\n]+)*$/iu.test(value.trim());
+}
+
 function projectDownloadKind({ availability, url, ticketEndpoint, method }) {
   if (availability === "unavailable" || availability === "blocked") {
     return "unavailable";
@@ -717,7 +850,15 @@ function normalizeDownloadMethod(value) {
 
 function projectDigest(value) {
   const digest = stringOrNull(value)?.toLowerCase();
-  return /^[a-f0-9]{64}$/u.test(digest ?? "") ? digest : null;
+  if (/^[a-f0-9]{64}$/u.test(digest ?? "")) {
+    return digest;
+  }
+  const prefixed = /^sha-?256:([a-f0-9]{64})$/u.exec(digest ?? "");
+  return prefixed ? prefixed[1] : null;
+}
+
+function isSha256Digest(value) {
+  return typeof value === "string" && /^[a-f0-9]{64}$/u.test(value);
 }
 
 function emptyDownloadMetadata() {
@@ -735,6 +876,7 @@ function emptyDownloadMetadata() {
     digest: null,
     digestPresent: false,
     digestValid: false,
+    unavailableReason: null,
     observedAt: null,
     expiresAt: null
   });
@@ -795,7 +937,9 @@ function isRecord(value) {
 }
 
 function hasParentPathSegment(value) {
-  return String(value).split(/[\\/]+/u).includes("..");
+  return String(value)
+    .split(/[\\/]+/u)
+    .includes("..");
 }
 
 function isLoopbackUrl(url) {
@@ -810,4 +954,3 @@ function hasSensitiveQuery(url) {
   }
   return false;
 }
-

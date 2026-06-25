@@ -32,32 +32,38 @@ test("valid companion ticket metadata creates safe acquisition plan and proof", 
 });
 
 test("direct safe HTTPS and loopback metadata remain bounded without install claims", () => {
-  const directPlan = createCompanionDownloadAcquisitionPlan({
-    resourceId: "example.direct",
-    availability: "available",
-    url: "https://cdn.agentique.io/resources/example.agentique.zip",
-    filename: "example.agentique.zip",
-    sizeBytes: 42,
-    digest: "a".repeat(64)
-  }, {
-    ...sampleCompanionAcquisitionRequest,
-    filename: "example.agentique.zip",
-    maxBytes: 100,
-    allowedRedirectOrigins: ["https://cdn.agentique.io"]
-  });
-  const loopbackPlan = createCompanionDownloadAcquisitionPlan({
-    resourceId: "example.loopback",
-    availability: "available",
-    url: "http://127.0.0.1:8787/download/example.agentique.zip",
-    filename: "example.agentique.zip",
-    sizeBytes: 42,
-    digest: "b".repeat(64)
-  }, {
-    ...sampleCompanionAcquisitionRequest,
-    filename: "example.agentique.zip",
-    maxBytes: 100,
-    allowedRedirectOrigins: ["http://127.0.0.1:8787"]
-  });
+  const directPlan = createCompanionDownloadAcquisitionPlan(
+    {
+      resourceId: "example.direct",
+      availability: "available",
+      url: "https://cdn.agentique.io/resources/example.agentique.zip",
+      filename: "example.agentique.zip",
+      sizeBytes: 42,
+      digest: "a".repeat(64)
+    },
+    {
+      ...sampleCompanionAcquisitionRequest,
+      filename: "example.agentique.zip",
+      maxBytes: 100,
+      allowedRedirectOrigins: ["https://cdn.agentique.io"]
+    }
+  );
+  const loopbackPlan = createCompanionDownloadAcquisitionPlan(
+    {
+      resourceId: "example.loopback",
+      availability: "available",
+      url: "http://127.0.0.1:8787/download/example.agentique.zip",
+      filename: "example.agentique.zip",
+      sizeBytes: 42,
+      digest: "b".repeat(64)
+    },
+    {
+      ...sampleCompanionAcquisitionRequest,
+      filename: "example.agentique.zip",
+      maxBytes: 100,
+      allowedRedirectOrigins: ["http://127.0.0.1:8787"]
+    }
+  );
 
   assert.equal(directPlan.ok, true);
   assert.equal(directPlan.transfer.requestMethod, "GET");
@@ -67,29 +73,38 @@ test("direct safe HTTPS and loopback metadata remain bounded without install cla
 });
 
 test("unsafe unavailable or sensitive download metadata fails closed", () => {
-  const sensitivePlan = createCompanionDownloadAcquisitionPlan({
-    resourceId: "example.unsafe",
-    availability: "available",
-    url: "https://cdn.agentique.io/resource.zip?signature=private",
-    filename: "resource.zip",
-    sizeBytes: 42,
-    digest: "c".repeat(64)
-  }, sampleCompanionAcquisitionRequest);
-  const unavailablePlan = createCompanionDownloadAcquisitionPlan({
-    resourceId: "example.unavailable",
-    availability: "blocked",
-    filename: "resource.zip",
-    sizeBytes: 42,
-    digest: "d".repeat(64)
-  }, sampleCompanionAcquisitionRequest);
-  const invalidDigestPlan = createCompanionDownloadAcquisitionPlan({
-    resourceId: "example.digest",
-    availability: "available",
-    url: "https://cdn.agentique.io/resource.zip",
-    filename: "resource.zip",
-    sizeBytes: 42,
-    digest: "not-a-digest"
-  }, sampleCompanionAcquisitionRequest);
+  const sensitivePlan = createCompanionDownloadAcquisitionPlan(
+    {
+      resourceId: "example.unsafe",
+      availability: "available",
+      url: "https://cdn.agentique.io/resource.zip?signature=private",
+      filename: "resource.zip",
+      sizeBytes: 42,
+      digest: "c".repeat(64)
+    },
+    sampleCompanionAcquisitionRequest
+  );
+  const unavailablePlan = createCompanionDownloadAcquisitionPlan(
+    {
+      resourceId: "example.unavailable",
+      availability: "blocked",
+      filename: "resource.zip",
+      sizeBytes: 42,
+      digest: "d".repeat(64)
+    },
+    sampleCompanionAcquisitionRequest
+  );
+  const invalidDigestPlan = createCompanionDownloadAcquisitionPlan(
+    {
+      resourceId: "example.digest",
+      availability: "available",
+      url: "https://cdn.agentique.io/resource.zip",
+      filename: "resource.zip",
+      sizeBytes: 42,
+      digest: "not-a-digest"
+    },
+    sampleCompanionAcquisitionRequest
+  );
 
   assert.equal(sensitivePlan.ok, false);
   assert.ok(sensitivePlan.findings.some((finding) => finding.code === "download.unsafe-url"));
@@ -97,6 +112,51 @@ test("unsafe unavailable or sensitive download metadata fails closed", () => {
   assert.ok(unavailablePlan.findings.some((finding) => finding.code === "download.unavailable"));
   assert.equal(invalidDigestPlan.ok, false);
   assert.ok(invalidDigestPlan.findings.some((finding) => finding.code === "download.invalid-digest"));
+});
+
+test("canonical metadata-only source packages block acquisition despite legacy download fields", () => {
+  const plan = createCompanionDownloadAcquisitionPlan(
+    {
+      ok: true,
+      availability: "available",
+      data: {
+        resourceId: "example.metadata",
+        method: "POST",
+        downloadEndpoint: "/api/public/v1/resources/example.metadata/legacy-download",
+        files: [
+          {
+            filename: "legacy.zip",
+            mediaType: "application/zip",
+            sizeBytes: 4096,
+            digest: "b".repeat(64)
+          }
+        ],
+        sourcePackage: {
+          platformId: "source-package",
+          artifactKind: "source-package",
+          status: "METADATA_ONLY",
+          method: "POST",
+          file: {
+            fileName: "example-metadata.agentique.zip",
+            contentType: "application/zip",
+            byteSize: 4096,
+            checksumSha256: "b".repeat(64)
+          }
+        }
+      }
+    },
+    {
+      ...sampleCompanionAcquisitionRequest,
+      filename: "example-metadata.agentique.zip"
+    }
+  );
+
+  assert.equal(plan.ok, false);
+  assert.equal(plan.metadata.availability, "unavailable");
+  assert.equal(plan.transfer.ticketEndpoint, null);
+  assert.ok(plan.findings.some((finding) => finding.code === "download.unavailable"));
+  assert.ok(plan.findings.some((finding) => finding.code === "download.metadata-only"));
+  assert.doesNotMatch(JSON.stringify(plan), /legacy-download|legacy\.zip/u);
 });
 
 test("destination safety enforces user selection filename no overwrite and root boundary", () => {
@@ -205,26 +265,29 @@ test("acquisition proof redacts local paths internal markers and secret-like val
   const localPath = ["C", ":", "\\", "Users", "\\", "someone", "\\", "Downloads"].join("");
   const internalPath = [".", "planning", "/", "private-note.md"].join("");
   const secretValue = ["sk-", "a".repeat(24)].join("");
-  const plan = createCompanionDownloadAcquisitionPlan({
-    resourceId: "example.redaction",
-    availability: "available",
-    url: "https://cdn.agentique.io/resource.zip",
-    filename: "resource.zip",
-    sizeBytes: 42,
-    digest: "e".repeat(64)
-  }, {
-    ...sampleCompanionAcquisitionRequest,
-    destinationRoot: localPath,
-    filename: "resource.zip",
-    allowedRedirectOrigins: ["https://cdn.agentique.io"],
-    redirectChain: [
-      {
-        from: "https://agentique.io/resource",
-        to: `https://cdn.agentique.io/resource?token=${secretValue}`
-      }
-    ],
-    existingFiles: [internalPath]
-  });
+  const plan = createCompanionDownloadAcquisitionPlan(
+    {
+      resourceId: "example.redaction",
+      availability: "available",
+      url: "https://cdn.agentique.io/resource.zip",
+      filename: "resource.zip",
+      sizeBytes: 42,
+      digest: "e".repeat(64)
+    },
+    {
+      ...sampleCompanionAcquisitionRequest,
+      destinationRoot: localPath,
+      filename: "resource.zip",
+      allowedRedirectOrigins: ["https://cdn.agentique.io"],
+      redirectChain: [
+        {
+          from: "https://agentique.io/resource",
+          to: `https://cdn.agentique.io/resource?token=${secretValue}`
+        }
+      ],
+      existingFiles: [internalPath]
+    }
+  );
 
   const serialized = JSON.stringify(plan);
   assert.equal(plan.ok, false);
@@ -237,20 +300,19 @@ test("acquisition proof redacts local paths internal markers and secret-like val
 
 test("acquisition UI and docs expose safe proof without broad transfer or install claims", () => {
   const app = fs.readFileSync("src/workspaces/routes/LibraryWorkspaceAndImportWorkspaceRoute.tsx", "utf8");
-  const workspace = ["src/workspaces/LibraryImportWorkspaces.tsx", "src/workspaces/LibraryImportWorkspaceTypes.ts", "src/workspaces/LibraryWorkspace.tsx", "src/workspaces/ImportWorkspace.tsx"].map((filePath) => fs.readFileSync(filePath, "utf8")).join("\n");
+  const workspace = [
+    "src/workspaces/LibraryImportWorkspaces.tsx",
+    "src/workspaces/LibraryImportWorkspaceTypes.ts",
+    "src/workspaces/LibraryWorkspace.tsx",
+    "src/workspaces/ImportWorkspace.tsx"
+  ]
+    .map((filePath) => fs.readFileSync(filePath, "utf8"))
+    .join("\n");
   const docs = fs.readFileSync("docs/contracts/companion-alignment.md", "utf8");
 
   assert.match(app, /createCompanionDownloadAcquisitionPlan/u);
   assert.match(app, /createCompanionArtifactAcquisitionProof/u);
-  for (const label of [
-    "Acquisition bridge",
-    "Destination boundary",
-    "No-overwrite default",
-    "Atomic write",
-    "Byte/digest proof",
-    "Cleanup receipt",
-    "Install boundary"
-  ]) {
+  for (const label of ["Acquisition bridge", "Destination boundary", "No-overwrite default", "Atomic write", "Byte/digest proof", "Cleanup receipt", "Install boundary"]) {
     assert.match(workspace, new RegExp(label, "u"));
   }
   assert.match(docs, /Safe Download Acquisition Boundary/u);
