@@ -11,6 +11,12 @@ import {
   normalizeCompanionPublicReadback,
   sampleCompanionReadback
 } from "../src/core/companion-readback-adapter.mjs";
+import {
+  makeDownloadMetadataFixture,
+  publicResourceUsabilityGoldenFixtureVersion,
+  publicResourceUsabilityInvalidFixtures,
+  publicResourceUsabilityValidFixture
+} from "./fixtures/public-resource-usability-golden-fixtures.mjs";
 
 test("companion readback client exposes read-only GET surface without auth headers", async () => {
   const calls = [];
@@ -186,6 +192,36 @@ test("companion download metadata rejects malformed canonical source packages", 
   assert.equal(metadata.digestPresent, true);
   assert.equal(metadata.digestValid, false);
   assert.equal(metadata.unavailableReason, "source_file_name_invalid");
+});
+
+test("companion download metadata matches public resource usability golden fixtures", () => {
+  const fixtureText = JSON.stringify({
+    version: publicResourceUsabilityGoldenFixtureVersion,
+    valid: publicResourceUsabilityValidFixture,
+    invalid: publicResourceUsabilityInvalidFixtures
+  });
+  assert.equal(publicResourceUsabilityGoldenFixtureVersion, "agentique.publicResourceUsabilityGolden.v1");
+  assert.doesNotMatch(fixtureText, /storageKey|signedUrl|token|secret|[A-Za-z]:[\\/]/i);
+
+  const valid = normalizeCompanionDownloadMetadata(makeDownloadMetadataFixture(publicResourceUsabilityValidFixture.sourcePackage));
+  assert.equal(valid.resourceId, publicResourceUsabilityValidFixture.resourceId);
+  assert.equal(valid.availability, "available");
+  assert.equal(valid.downloadKind, publicResourceUsabilityValidFixture.expected.downloadKind);
+  assert.equal(valid.method, publicResourceUsabilityValidFixture.expected.method);
+  assert.equal(valid.ticketEndpoint, "/api/public/v1/resources/agent.research.alpha/download");
+  assert.equal(valid.filename, publicResourceUsabilityValidFixture.expected.filename);
+  assert.equal(valid.mediaType, publicResourceUsabilityValidFixture.expected.mediaType);
+  assert.equal(valid.sizeBytes, publicResourceUsabilityValidFixture.expected.sizeBytes);
+  assert.equal(valid.digest, publicResourceUsabilityValidFixture.expected.digest);
+  assert.equal(valid.unavailableReason, null);
+
+  for (const fixture of publicResourceUsabilityInvalidFixtures) {
+    const normalized = normalizeCompanionDownloadMetadata(makeDownloadMetadataFixture(fixture.sourcePackage));
+    assert.equal(normalized.availability, "unavailable", fixture.id);
+    assert.equal(normalized.downloadKind, "unavailable", fixture.id);
+    assert.equal(normalized.unavailableReason, fixture.expectedReason, fixture.id);
+    assert.doesNotMatch(JSON.stringify(normalized), /legacy-overclaim|legacy-download/iu, fixture.id);
+  }
 });
 
 test("companion readback badge covers normal stale unavailable and rate-limited states", () => {

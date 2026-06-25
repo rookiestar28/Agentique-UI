@@ -718,6 +718,9 @@ function getCanonicalSourcePackageUnavailableReason(sourcePackage, { digest, met
   if (!isSafePublicFilename(sourcePackage.filenameValue)) {
     return "source_file_name_invalid";
   }
+  if (hasUnsupportedSourcePackagePublicText(sourcePackage.filenameValue)) {
+    return "source_package_public_text_unsupported";
+  }
   if (!isSafePublicContentType(sourcePackage.mediaTypeValue)) {
     return "source_file_content_type_invalid";
   }
@@ -828,6 +831,10 @@ function isSafePublicFilename(value) {
 
 function isSafePublicContentType(value) {
   return typeof value === "string" && /^[a-z0-9][a-z0-9!#$&^_.+-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*(?:\s*;\s*[a-z0-9!#$&^_.+-]+=[^;\r\n]+)*$/iu.test(value.trim());
+}
+
+function hasUnsupportedSourcePackagePublicText(value) {
+  return /source[- ]?index|metadata[- ]?only|review[- ]?only|schema[- ]?only|review guide|fake demo|demo resource|placeholder|not a real|example only/iu.test(String(value ?? ""));
 }
 
 function projectDownloadKind({ availability, url, ticketEndpoint, method }) {
