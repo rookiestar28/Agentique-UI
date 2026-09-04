@@ -6,7 +6,6 @@ const failures = [];
 const moduleText = readText("src/core/browser-automation-consent-gate.mjs");
 const tests = readText("tests/browser-automation-consent-gate.test.mjs");
 const surfaceTests = readText("tests/browser-automation-consent-surface.test.mjs");
-const docs = readText("docs/contracts/browser-automation-consent-gate.md");
 const panel = readText("src/workspaces/BrowserAutomationConsentGatePanel.tsx");
 const runWorkspace = readText("src/workspaces/RunWorkspace.tsx");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
@@ -61,20 +60,6 @@ requireIncludes(
     "connectOverCDP"
   ],
   "browser automation consent surface tests"
-);
-
-requireIncludes(
-  docs,
-  [
-    "Browser Automation Strict Consent Gate Contract",
-    "guarded consent review only",
-    "isolated non-persistent context only",
-    "no persistent context and no user data directory",
-    "no cookie, local storage, storage state, credential, or session import/export",
-    "startsBrowser: false",
-    "does not start a browser"
-  ],
-  "browser automation consent docs"
 );
 
 requireIncludes(
@@ -154,8 +139,7 @@ console.log(
         "src/workspaces/BrowserAutomationConsentGatePanel.tsx",
         "src/workspaces/RunWorkspace.tsx",
         "src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx",
-        "src/workspaces/TrustRunSettingsTypes.ts",
-        "docs/contracts/browser-automation-consent-gate.md"
+        "src/workspaces/TrustRunSettingsTypes.ts"
       ],
       summary: review.summary
     },

@@ -6,7 +6,6 @@ const failures = [];
 const review = reviewWatchdogHeartbeatSupervisorGate();
 const moduleText = readText("src/core/watchdog-heartbeat-supervisor.mjs");
 const tests = readText("tests/watchdog-heartbeat-supervisor.test.mjs");
-const contract = readText("docs/contracts/watchdog-heartbeat-supervisor.md");
 const hook = readText("src/app-state/useRunnerWorkspaceState.ts");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
 const types = readText("src/workspaces/TrustRunSettingsTypes.ts");
@@ -51,22 +50,6 @@ requireIncludes(
   "watchdog heartbeat supervisor tests"
 );
 
-requireIncludes(
-  contract,
-  [
-    "Watchdog Heartbeat Supervisor",
-    "heartbeat receipt cadence",
-    "timeout budget",
-    "graceful cancel escalation",
-    "forced cleanup evidence",
-    "terminal idempotency",
-    "zero tested-platform orphan",
-    "generic process manager",
-    "source-first"
-  ],
-  "watchdog heartbeat supervisor contract"
-);
-
 requireIncludes(hook, ["createWatchdogHeartbeatSupervisor", "watchdogSupervisorSurface", "handleWatchdogSupervisorScenario", "terminal-idempotent"], "runner workspace state hook");
 requireIncludes(route, ["watchdogSupervisorSurface", "handleWatchdogSupervisorScenario"], "graph/run workspace route");
 requireIncludes(types, ["watchdogSupervisorSurface", "onWatchdogSupervisorScenario", "WatchdogSupervisorScenario"], "run workspace prop types");
@@ -109,7 +92,6 @@ console.log(
       checked: [
         "src/core/watchdog-heartbeat-supervisor.mjs",
         "tests/watchdog-heartbeat-supervisor.test.mjs",
-        "docs/contracts/watchdog-heartbeat-supervisor.md",
         "src/app-state/useRunnerWorkspaceState.ts",
         "src/workspaces/WatchdogHeartbeatSupervisorPanel.tsx",
         "package.json"

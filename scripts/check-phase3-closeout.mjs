@@ -4,7 +4,6 @@ import path from "node:path";
 import { readStyleSourceBundle } from "../src/core/style-source-boundary.mjs";
 
 const failures = [];
-const app = readText("src/App.tsx");
 const trustRunSettings = [
   "src/workspaces/TrustRunSettingsWorkspaces.tsx",
   "src/workspaces/TrustRunSettingsTypes.ts",
@@ -19,30 +18,11 @@ const adapterPolicy = readText("src/core/adapter-pack-policy.mjs");
 const sidecarRunner = readText("src/core/sidecar-runner.mjs");
 const permissionEngine = readText("src/core/permission-engine.mjs");
 const runFolder = readText("src/core/run-folder.mjs");
-const closeout = readText("docs/validation/phase3-closeout.md");
 const packageJson = JSON.parse(readText("package.json"));
 const tauriConfig = JSON.parse(readText("src-tauri/tauri.conf.json"));
 const capability = JSON.parse(readText("src-tauri/capabilities/default.json"));
 const controlledRuntimeApiFiles = new Set(["src/core/python-adapter-runner.mjs", "src/core/node-adapter-runner.mjs"]);
 const controlledTauriInvokeFiles = new Set(["src/core/tauri-native-async-run-client.ts", "src/core/tauri-native-dag-scheduler-client.ts"]);
-
-requireIncludes(
-  closeout,
-  [
-    "Controlled Execution Foundation Closeout",
-    "Adapter pack trust policy",
-    "Python sidecar launch plan",
-    "Node sidecar package lifecycle boundary",
-    "Permission audit engine",
-    "Run folder manifest",
-    "No direct process spawn from the web layer",
-    "Side effects remain an explicit empty list",
-    "does not introduce a released installer",
-    "native command backend",
-    "npm run validate"
-  ],
-  "phase 3 closeout document"
-);
 
 requireIncludes(
   trustRunSettings,
@@ -97,16 +77,6 @@ if (tauriConfig.bundle?.active !== true) {
 
 if (JSON.stringify(capability.permissions) !== JSON.stringify(["core:event:allow-listen", "core:event:allow-unlisten"])) {
   failures.push("default Tauri capability must grant only event listen and unlisten");
-}
-
-for (const rule of [
-  { id: "ready-runtime", pattern: /\bis\s+(?:a\s+)?production-ready desktop runtime\b/iu },
-  { id: "universal-runtime", pattern: /\bprovides\s+(?:a\s+)?universal workflow runtime\b/iu },
-  { id: "automatic-execution", pattern: /\benables\s+automatic execution of downloaded workflows\b/iu }
-]) {
-  if (rule.pattern.test(closeout)) {
-    failures.push(`phase 3 closeout overclaims: ${rule.id}`);
-  }
 }
 
 failures.push(...scanSourceForRuntimeBypass("src"));

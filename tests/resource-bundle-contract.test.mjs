@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import { createAjv, readJson, validateExample } from "../scripts/validate-contracts.mjs";
 
@@ -43,13 +42,4 @@ test("resource bundle accepts canonical public resource id and version text", ()
   example.resource.id = "agent:alpha.preview";
   example.resource.version = "2026.06+alpha";
   assert.equal(validate(example), true, JSON.stringify(validate.errors));
-});
-
-test("resource bundle docs include no-dead-end and secret boundaries", () => {
-  const text = fs.readFileSync("docs/contracts/resource-bundle.md", "utf8");
-  assert.match(text, /No Dead-End Rule/i);
-  assert.match(text, /must not contain secret values/i);
-  assert.match(text, /does not create a downloader/i);
-  assert.match(text, /Source Metadata Mapping/i);
-  assert.match(text, /does not embed a final byte URL/i);
 });

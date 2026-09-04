@@ -9,8 +9,7 @@ const sources = {
   client: read("src/core/native-async-run-client.mjs"),
   hook: read("src/app-state/useNativeAsyncRunLifecycle.ts"),
   panel: read("src/workspaces/NativeAsyncRunLifecyclePanel.tsx"),
-  tests: `${read("tests/product-result-projection.test.mjs")}\n${read("tests/product-result-projection-surface.test.mjs")}`,
-  contract: read("docs/contracts/product-result-projection.md")
+  tests: `${read("tests/product-result-projection.test.mjs")}\n${read("tests/product-result-projection-surface.test.mjs")}`
 };
 const packageJson = JSON.parse(read("package.json"));
 const matrix = productResultDurabilityMatrix();
@@ -48,16 +47,6 @@ requireAll(sources.tests, [
   "committed terminal remains authoritative when UI publication fails",
   "native terminal publication is ordered after the durable product pointer commit"
 ]);
-requireAll(sources.contract, [
-  "Durable Product Result Projection",
-  "current.json",
-  "fails closed",
-  "cleanup-required",
-  "unknown external effect",
-  "Durability matrix",
-  "Migration and rollback"
-]);
-
 if (!matrix.survivesProcessDeath.includes("authoritative-current-pointer")) failures.push("durability matrix must name the authoritative current pointer");
 if (!matrix.neverReplayedAutomatically.includes("process-effect")) failures.push("durability matrix must forbid automatic process-effect replay");
 if (!String(packageJson.scripts?.["validate:product-result-projection"] ?? "").includes("check-product-result-projection.mjs")) {

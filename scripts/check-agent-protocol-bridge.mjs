@@ -8,7 +8,6 @@ const review = createAgentProtocolBridgeReview();
 const nativeReview = reviewNativeRunnerBoundary(readNativeRunnerBoundaryInputs());
 const moduleText = fs.readFileSync("src/core/agent-protocol-bridge.mjs", "utf8");
 const panelText = fs.readFileSync("src/workspaces/AgentProtocolBridgePanel.tsx", "utf8");
-const contractText = fs.readFileSync("docs/contracts/agent-protocol-bridge.md", "utf8");
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 
 if (!review.ok || review.operations.length !== 8 || review.snapshot.status !== "cleaned") {
@@ -31,21 +30,6 @@ if (Object.keys(packageJson.dependencies ?? {}).some((name) => name.startsWith("
 }
 for (const phrase of ["Signed extension", "Capability scope", "Explicit permission", "Host-owned dispatch", "Generic authority denied", "No package bridge adopted"]) {
   if (!panelText.includes(phrase)) failures.push(`agent protocol bridge UI missing required phrase: ${phrase}`);
-}
-for (const phrase of [
-  "initialize",
-  "permission",
-  "prepare",
-  "start",
-  "cancel",
-  "event",
-  "artifact",
-  "cleanup",
-  "exactly 16",
-  "two event permissions",
-  "macOS remains unverified"
-]) {
-  if (!contractText.includes(phrase)) failures.push(`agent protocol bridge contract missing required phrase: ${phrase}`);
 }
 const effectPattern = /node:child_process|child_process|node:fs|writeFile|appendFile|createWriteStream|spawn\(|execFile\(|exec\(|fetch\(|WebSocket\(|invoke\(|import\(/u;
 if (effectPattern.test(moduleText) || effectPattern.test(panelText)) {

@@ -38,15 +38,6 @@ export const requiredEvidenceProducers = Object.freeze(
   ].map(([id, disposition]) => Object.freeze({ id, disposition }))
 );
 
-export const visualEvidenceManifest = Object.freeze([
-  visual("rebuilt-ui-graph-desktop.png", 113608, "1409fe0ff7017a66e6239cdb3896cd29b11e559ebd20c0d9a0c12a3ac35975cb"),
-  visual("rebuilt-ui-graph-mobile.png", 94219, "a4ae11c44bd14a8800520bd42438f3040951298ba7058f5bbb084220094b71e3"),
-  visual("runner-ui-graph-desktop.png", 251572, "436895ac213e045d9c7eb13788bf4d9ae6c48f8fc366b51af00db8186763ef8c"),
-  visual("runner-ui-run-mobile.png", 201774, "1995a2a63c873f0df47c05ccee7a505bcfca0d5b86b02a7589aa4dc019d6add8"),
-  visual("visual-redesign-desktop.png", 205125, "cf8e7372035e223d2664a87bcc1f4489db15c95f9d4670ec7e4126361715e276"),
-  visual("visual-redesign-mobile.png", 194997, "06c0edd4cb7d611739d43bfe09e1b8b2b98cad3b0e93c1cb42b8fe9347357a59")
-]);
-
 export function syntheticEvidenceCorpus() {
   const fragments = syntheticMarkers();
   return Object.freeze({
@@ -135,10 +126,6 @@ function syntheticMarkers() {
 
 function entry(id, family, value) {
   return Object.freeze({ id, family, value, synthetic: true });
-}
-
-function visual(fileName, bytes, sha256) {
-  return Object.freeze({ path: `docs/validation/artifacts/${fileName}`, bytes, sha256 });
 }
 
 /** @returns {Array<{code: string, encoding?: string}>} */

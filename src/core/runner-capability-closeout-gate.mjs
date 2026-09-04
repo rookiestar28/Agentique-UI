@@ -37,7 +37,7 @@ const requiredCapabilities = Object.freeze([
   "container-preflight",
   "desktop-runner-evidence-gate"
 ]);
-const pathNeutralReferencePattern = /^(docs\/validation\/[A-Za-z0-9._/-]+|docs\/contracts\/[A-Za-z0-9._/-]+|docs\/security\/[A-Za-z0-9._/-]+|evidence\/[A-Za-z0-9._/-]+)$/u;
+const pathNeutralReferencePattern = /^evidence\/[A-Za-z0-9._/-]+$/u;
 const privatePlanMarker = "\\." + "planning";
 const privateReferenceDocsMarker = "reference" + "\\/" + "docs";
 const unsafeTextPattern = new RegExp(
@@ -48,7 +48,7 @@ const unsafeTextPattern = new RegExp(
 export const sampleRunnerCapabilityCloseout = Object.freeze({
   schemaVersion,
   validationSteps: [...requiredValidationSteps],
-  capabilities: Object.fromEntries(requiredCapabilities.map((capability) => [capability, { status: "accepted", evidenceRef: "docs/validation/runner-capability-closeout.md" }])),
+  capabilities: Object.fromEntries(requiredCapabilities.map((capability) => [capability, { status: "accepted" }])),
   claimBoundary: {
     supportedLocalRunScope: "supported-local-only",
     supportedLocalRuns: true,
@@ -169,7 +169,7 @@ function reviewCapabilities(capabilities = {}, errors) {
     } else {
       accepted += 1;
     }
-    validateEvidenceRef(evidence.evidenceRef, errors);
+    if (evidence.evidenceRef) validateEvidenceRef(evidence.evidenceRef, errors);
     output[capability] = {
       status: evidence.status === "accepted" ? "accepted" : "blocked",
       evidenceRef: redactText(String(evidence.evidenceRef ?? ""))

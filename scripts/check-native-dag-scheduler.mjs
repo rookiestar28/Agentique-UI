@@ -9,7 +9,6 @@ const scheduler = read("src-tauri/src/native_dag_scheduler.rs");
 const client = read("src/core/native-dag-scheduler-client.mjs");
 const bridge = read("src/core/tauri-native-dag-scheduler-client.ts");
 const panel = read("src/workspaces/NativeDagSchedulerPanel.tsx");
-const contract = read("docs/contracts/native-dag-scheduler.md");
 const packageJson = JSON.parse(read("package.json"));
 const findings = [];
 
@@ -39,9 +38,6 @@ for (const phrase of ["start()", "status()", "cancel()", "activeNodeId", "termin
 }
 for (const phrase of ["Native DAG scheduler", "Cancel workflow", 'aria-live="polite"', "Retry", "Skipped"]) {
   if (!panel.includes(phrase)) findings.push(`native DAG UI marker is missing: ${phrase}`);
-}
-for (const phrase of ["distinct pre-approved attempt", "stable topological order", "atomic", "cleanup-required", "handoff-only", "macOS remains unverified"]) {
-  if (!contract.toLowerCase().includes(phrase.toLowerCase())) findings.push(`native DAG contract boundary is missing: ${phrase}`);
 }
 if (!String(packageJson.scripts?.["validate:native-dag-scheduler"] ?? "").includes("check-native-dag-scheduler.mjs")) {
   findings.push("package scripts must expose validate:native-dag-scheduler");

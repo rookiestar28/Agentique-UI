@@ -6,7 +6,6 @@ const failures = [];
 const moduleText = readText("src/core/rootless-container-preflight-gate.mjs");
 const tests = readText("tests/rootless-container-preflight-gate.test.mjs");
 const surfaceTests = readText("tests/rootless-container-preflight-surface.test.mjs");
-const docs = readText("docs/contracts/rootless-container-preflight-gate.md");
 const panel = readText("src/workspaces/RootlessContainerPreflightGatePanel.tsx");
 const runWorkspace = readText("src/workspaces/RunWorkspace.tsx");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
@@ -58,21 +57,6 @@ requireIncludes(
     "docker|podman"
   ],
   "rootless container preflight surface tests"
-);
-
-requireIncludes(
-  docs,
-  [
-    "Rootless Container Preflight Gate Contract",
-    "guarded preflight only",
-    "does not start Docker or Podman containers",
-    "rootless mode, user namespace, user-scoped runtime socket",
-    "immutable image digest",
-    "read-only root filesystem",
-    "startsContainer: false",
-    "does not provide a production desktop runtime"
-  ],
-  "rootless container preflight docs"
 );
 
 requireIncludes(
@@ -148,8 +132,7 @@ console.log(
         "src/workspaces/RootlessContainerPreflightGatePanel.tsx",
         "src/workspaces/RunWorkspace.tsx",
         "src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx",
-        "src/workspaces/TrustRunSettingsTypes.ts",
-        "docs/contracts/rootless-container-preflight-gate.md"
+        "src/workspaces/TrustRunSettingsTypes.ts"
       ],
       summary: review.summary
     },

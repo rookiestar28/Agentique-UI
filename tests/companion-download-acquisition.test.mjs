@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import {
   assertNoInstallAcquisitionBoundary,
@@ -296,26 +295,4 @@ test("acquisition proof redacts local paths internal markers and secret-like val
   assert.doesNotMatch(serialized, new RegExp(secretValue, "u"));
   assert.match(serialized, /redacted:path/u);
   assert.match(serialized, /redacted:secret/u);
-});
-
-test("acquisition UI and docs expose safe proof without broad transfer or install claims", () => {
-  const app = fs.readFileSync("src/workspaces/routes/LibraryWorkspaceAndImportWorkspaceRoute.tsx", "utf8");
-  const workspace = [
-    "src/workspaces/LibraryImportWorkspaces.tsx",
-    "src/workspaces/LibraryImportWorkspaceTypes.ts",
-    "src/workspaces/LibraryWorkspace.tsx",
-    "src/workspaces/ImportWorkspace.tsx"
-  ]
-    .map((filePath) => fs.readFileSync(filePath, "utf8"))
-    .join("\n");
-  const docs = fs.readFileSync("docs/contracts/companion-alignment.md", "utf8");
-
-  assert.match(app, /createCompanionDownloadAcquisitionPlan/u);
-  assert.match(app, /createCompanionArtifactAcquisitionProof/u);
-  for (const label of ["Acquisition bridge", "Destination boundary", "No-overwrite default", "Atomic write", "Byte/digest proof", "Cleanup receipt", "Install boundary"]) {
-    assert.match(workspace, new RegExp(label, "u"));
-  }
-  assert.match(docs, /Safe Download Acquisition Boundary/u);
-  assert.match(docs, /must not install/u);
-  assert.match(docs, /not platform approval/u);
 });

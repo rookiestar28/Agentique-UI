@@ -97,7 +97,10 @@ test("node package manager lifecycle inline and allow-all requests fail before l
     "node-adapter.broad-subprocess",
     "node-adapter.allow-all"
   ]) {
-    assert.ok(review.errors.some((error) => error.code === code), code);
+    assert.ok(
+      review.errors.some((error) => error.code === code),
+      code
+    );
   }
   const result = await executeNodeAdapterRun(sampleNodeAdapterInput, { rootDir, now, packagePolicy: unsafePolicy });
   assert.equal(result.ok, false);
@@ -107,12 +110,15 @@ test("node package manager lifecycle inline and allow-all requests fail before l
 
 test("node adapter cancellation is graceful and writes cleanup receipt", async () => {
   resetRoot();
-  const run = startNodeAdapterRun({
-    ...sampleNodeAdapterInput,
-    runId: "run-node-cancel",
-    mode: "sleep",
-    sleepMs: 5000
-  }, { rootDir, now, timeoutMs: 10000 });
+  const run = startNodeAdapterRun(
+    {
+      ...sampleNodeAdapterInput,
+      runId: "run-node-cancel",
+      mode: "sleep",
+      sleepMs: 5000
+    },
+    { rootDir, now, timeoutMs: 10000 }
+  );
   setTimeout(() => run.cancel("test cancellation"), 50);
   const result = await run.promise;
   assert.equal(result.ok, false);
@@ -123,11 +129,14 @@ test("node adapter cancellation is graceful and writes cleanup receipt", async (
 
 test("node adapter logs are redacted before evidence write", async () => {
   resetRoot();
-  const result = await executeNodeAdapterRun({
-    ...sampleNodeAdapterInput,
-    runId: "run-node-secret",
-    mode: "secret"
-  }, { rootDir, now });
+  const result = await executeNodeAdapterRun(
+    {
+      ...sampleNodeAdapterInput,
+      runId: "run-node-secret",
+      mode: "secret"
+    },
+    { rootDir, now }
+  );
   const rawMarker = "bearer " + "abcdefghijklmnop";
   assert.equal(result.ok, true, JSON.stringify(result.errors));
   assert.doesNotMatch(JSON.stringify(result), new RegExp(escapeRegExp(rawMarker), "u"));
@@ -141,21 +150,6 @@ test("node adapter runner review succeeds", async () => {
   assert.equal(review.ok, true, JSON.stringify(review.errors));
   assert.equal(review.checks.environmentClean, true);
   assert.equal(review.checks.unsafePolicyBlockedBeforeLaunch, true);
-});
-
-test("node adapter public contract documents execution boundaries", () => {
-  const text = fs.readFileSync("docs/contracts/node-adapter-runner.md", "utf8");
-  for (const phrase of [
-    "signed and allowlisted",
-    "packaged adapter",
-    "fail before launch",
-    "package manager",
-    "lifecycle scripts",
-    "inline scripts",
-    "cleanup receipt"
-  ]) {
-    assert.match(text, new RegExp(escapeRegExp(phrase), "u"));
-  }
 });
 
 function resetRoot() {

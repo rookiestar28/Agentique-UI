@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import {
   assertReleaseEvidenceSafe,
@@ -41,16 +40,6 @@ test("unsafe evidence fails closed", () => {
 
   assert.equal(unsafe.ok, false);
   assert.equal(unsafe.blockers[0].code, "distribution.unsafe-path");
-});
-
-test("distribution readiness docs avoid released installer claims", () => {
-  const text = fs.readFileSync("docs/validation/distribution-readiness.md", "utf8");
-
-  assert.match(text, /no released installer/u);
-  assert.match(text, /does not yet publish a desktop installer/u);
-  assert.match(text, /bundle metadata active/u);
-  assert.match(text, /npm run validate/u);
-  assert.doesNotMatch(text, /ships a desktop installer\./u);
 });
 
 test("release evidence safety rejects private planning markers", () => {

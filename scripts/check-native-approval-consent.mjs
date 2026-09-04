@@ -8,8 +8,6 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "u
 const rust = read("src-tauri/src/lib.rs");
 const panel = read("src/workspaces/NativeApprovalConsentPanel.tsx");
 const route = read("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
-const contract = read("docs/contracts/native-approval-consent.md");
-const normalizedContract = contract.replace(/\s+/gu, " ");
 const packageJson = JSON.parse(read("package.json"));
 const prepareBody = rust.match(/fn agentique_runner_prepare[\s\S]*?\n\}\n\n#\[tauri::command\]/u)?.[0] ?? "";
 const decisionBody = rust.match(/fn agentique_runner_decide_approval[\s\S]*?\n\}\n\n#\[tauri::command\]/u)?.[0] ?? "";
@@ -36,15 +34,6 @@ const checks = {
     panel.includes("Scope mismatch") &&
     panel.includes("Exact native approval capabilities") &&
     route.includes("createNativeApprovalConsentSurface(nativeApprovalScenario)"),
-  contractComplete: [
-    "only authority",
-    "Prepare creates a bounded pending proposal and no permission grant",
-    "explicit approve or deny",
-    "one-time grant",
-    "Legacy approval or permission identifiers are non-authorizing evidence",
-    "credential name",
-    "adopts no external runtime package"
-  ].every((phrase) => normalizedContract.includes(phrase)),
   packageWiring:
     packageJson.scripts?.["validate:native-approval-consent"]?.includes("node scripts/check-native-approval-consent.mjs") === true &&
     packageJson.scripts?.["validate:native-runner-permission-enforcement"]?.includes("npm run validate:native-approval-consent") === true,

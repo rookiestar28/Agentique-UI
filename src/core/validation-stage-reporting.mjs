@@ -108,7 +108,6 @@ export const validationStages = Object.freeze([
     npmRun("validate:release-linux"),
     npmRun("validate:release-updater"),
     npmRun("validate:release-workflow"),
-    npmRun("validate:release-docs"),
     npmRun("validate:release-packaging-preflight"),
     npmRun("validate:desktop-distribution-integrity"),
     npmRun("validate:release-smoke"),
@@ -130,13 +129,7 @@ export const requiredValidationCommandFamilies = Object.freeze({
   publicBoundary: ["npm run validate:public"],
   i18n: ["npm run validate:i18n-workspace-copy", "npm run validate:i18n-catalog-loading", "npm run validate:i18n-locale-qa"],
   noBentoUi: ["npm run validate:rebuilt-ui", "npm run validate:graph-interaction-hotfix", "npm run validate:workspace-file-budgets"],
-  release: [
-    "npm run validate:release-boundary",
-    "npm run validate:release-metadata",
-    "npm run validate:release-docs",
-    "npm run validate:desktop-distribution-integrity",
-    "npm run validate:release-final"
-  ],
+  release: ["npm run validate:release-boundary", "npm run validate:release-metadata", "npm run validate:desktop-distribution-integrity", "npm run validate:release-final"],
   runner: ["npm run validate:python-adapter-runner", "npm run validate:node-adapter-runner", "npm run validate:runner-capability-closeout"],
   nativeDagScheduler: ["npm run validate:native-dag-scheduler"],
   nativeApprovalInterrupt: ["npm run validate:native-approval-interrupt"],
@@ -293,13 +286,7 @@ export function validateValidationStageReport(report) {
   requireCommandOrder(commandTexts, ["npm run validate:stage-reporting", "npm run lint", "npm run format:check", "npm run typecheck:js"], failures);
   requireCommandOrder(
     commandTexts,
-    [
-      "npm run validate:release-workflow",
-      "npm run validate:release-docs",
-      "npm run validate:release-packaging-preflight",
-      "npm run validate:desktop-distribution-integrity",
-      "npm run validate:release-smoke"
-    ],
+    ["npm run validate:release-workflow", "npm run validate:release-packaging-preflight", "npm run validate:desktop-distribution-integrity", "npm run validate:release-smoke"],
     failures
   );
   requireCommandOrder(commandTexts, ["npm run validate:release-smoke", "npm run validate:rebuilt-workspace-closeout", "npm run validate:release-final"], failures);

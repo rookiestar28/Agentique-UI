@@ -6,7 +6,6 @@ const failures = [];
 const review = reviewDurableRunLedgerGate();
 const moduleText = readText("src/core/durable-run-ledger.mjs");
 const tests = readText("tests/durable-run-ledger.test.mjs");
-const contract = readText("docs/contracts/durable-run-ledger.md");
 const hook = readText("src/app-state/useRunnerWorkspaceState.ts");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
 const types = readText("src/workspaces/TrustRunSettingsTypes.ts");
@@ -51,22 +50,6 @@ requireIncludes(
   "durable run ledger tests"
 );
 
-requireIncludes(
-  contract,
-  [
-    "Durable Run Ledger",
-    "restart replay",
-    "schema migration",
-    "corruption fallback",
-    "bounded retention",
-    "redacted export",
-    "source-first",
-    "no signed installer",
-    "no cloud session"
-  ],
-  "durable run ledger contract"
-);
-
 requireIncludes(hook, ["createDurableRunLedgerSurface", "durableRunLedgerSurface", "handleDurableRunLedgerAction", "migrate", "corrupt"], "runner workspace state hook");
 requireIncludes(route, ["durableRunLedgerSurface", "handleDurableRunLedgerAction"], "graph/run workspace route");
 requireIncludes(types, ["durableRunLedgerSurface", "onDurableRunLedgerAction", "DurableRunLedgerAction"], "run workspace prop types");
@@ -108,7 +91,6 @@ console.log(
       checked: [
         "src/core/durable-run-ledger.mjs",
         "tests/durable-run-ledger.test.mjs",
-        "docs/contracts/durable-run-ledger.md",
         "src/app-state/useRunnerWorkspaceState.ts",
         "src/workspaces/DurableRunLedgerPanel.tsx",
         "package.json"

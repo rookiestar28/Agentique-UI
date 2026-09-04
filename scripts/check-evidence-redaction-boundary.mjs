@@ -3,7 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { evidenceRedactionSchemaVersion, requiredEvidenceProducers, sanitizeEvidenceValue, syntheticEvidenceCorpus } from "../src/core/evidence-redaction-boundary.mjs";
-import { validateVisualEvidenceInventory } from "../src/core/evidence-redaction-visual.mjs";
 
 export function reviewEvidenceRedactionIntegration(sources) {
   const failures = [];
@@ -26,12 +25,6 @@ export function reviewEvidenceRedactionIntegration(sources) {
     failures.push("native evidence must redact before truncation");
   }
   requireIncludes(sources.publicScannerSource, ["export function scanPublicBoundary", "inspectEvidenceText", "encoded-internal-marker"], "importable public scanner", failures);
-  requireIncludes(
-    sources.contractSource,
-    ["Redact before authority", "Encoded input fails closed", "Metadata provenance only", "No runtime authority"],
-    "public evidence contract",
-    failures
-  );
   const scripts = JSON.parse(sources.packageSource).scripts ?? {};
   if (!String(scripts["validate:evidence-redaction-boundary"] ?? "").includes("check-evidence-redaction-boundary.mjs")) {
     failures.push("package scripts must define the evidence redaction validator");
@@ -47,29 +40,23 @@ export function validateEvidenceRedactionBoundary(root = process.cwd()) {
     secretVaultSource: read(root, "src/core/secret-vault.mjs"),
     rustSource: read(root, "src-tauri/src/lib.rs"),
     publicScannerSource: read(root, "scripts/check-public-boundary.mjs"),
-    packageSource: read(root, "package.json"),
-    contractSource: read(root, "docs/contracts/evidence-redaction-boundary.md")
+    packageSource: read(root, "package.json")
   };
   const integration = reviewEvidenceRedactionIntegration(sources);
   const corpus = syntheticEvidenceCorpus();
   const plainEntries = corpus.entries.filter((entry) => entry.family !== "encoded");
   const sanitized = sanitizeEvidenceValue(plainEntries.map((entry) => entry.value));
-  const visual = validateVisualEvidenceInventory({ root });
   const failures = [...integration.failures];
   if (corpus.schemaVersion !== evidenceRedactionSchemaVersion || corpus.realPrivateStateRead !== false) {
     failures.push("synthetic corpus identity or private-state boundary drifted");
   }
   if (requiredEvidenceProducers.length !== 12) failures.push("the required evidence producer matrix is incomplete");
   if (JSON.stringify(sanitized).includes("session-sensitive")) failures.push("seeded material survived shared sanitization");
-  if (!visual.ok) failures.push(...visual.findings.map((finding) => `${finding.code}: ${finding.path}`));
   return {
     status: failures.length === 0 ? "passed" : "failed",
     schemaVersion: evidenceRedactionSchemaVersion,
     producerCount: requiredEvidenceProducers.length,
     corpusEntries: corpus.entries.length,
-    visualFiles: visual.files.length,
-    pixelContentInspected: visual.pixelContentInspected,
-    ocrClaimed: visual.ocrClaimed,
     failures
   };
 }

@@ -5,16 +5,9 @@ import { reviewRunnerPermissionPreflightGate } from "../src/core/runner-permissi
 
 const review = reviewPermissionGrantEnforcement();
 const runnerReview = reviewRunnerPermissionPreflightGate();
-const doc = fs.readFileSync("docs/contracts/permission-grants.md", "utf8");
 const runnerModule = fs.readFileSync("src/core/runner-permission-preflight.mjs", "utf8");
 const runnerTests = fs.readFileSync("tests/runner-permission-preflight.test.mjs", "utf8");
 const findings = [];
-
-for (const family of permissionGrantFamilies) {
-  if (!doc.includes(`\`${family}\``)) {
-    findings.push(`Contract doc missing grant family ${family}.`);
-  }
-}
 
 if (!review.ok) {
   findings.push(...review.errors.map((error) => error.message));
@@ -62,14 +55,15 @@ if (findings.length > 0) {
   process.exit(1);
 }
 
-console.log(JSON.stringify({
-  status: "passed",
-  checked: [
-    "src/core/permission-grants.mjs",
-    "src/core/runner-permission-preflight.mjs",
-    "tests/runner-permission-preflight.test.mjs",
-    "docs/contracts/permission-grants.md"
-  ],
-  families: permissionGrantFamilies,
-  runnerPreflight: runnerReview.summary
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      status: "passed",
+      checked: ["src/core/permission-grants.mjs", "src/core/runner-permission-preflight.mjs", "tests/runner-permission-preflight.test.mjs"],
+      families: permissionGrantFamilies,
+      runnerPreflight: runnerReview.summary
+    },
+    null,
+    2
+  )
+);

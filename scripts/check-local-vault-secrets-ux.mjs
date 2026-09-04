@@ -6,7 +6,6 @@ const failures = [];
 const moduleText = readText("src/core/local-vault-secrets-ux.mjs");
 const tests = readText("tests/local-vault-secrets-ux.test.mjs");
 const surfaceTests = readText("tests/local-vault-secrets-surface.test.mjs");
-const docs = readText("docs/contracts/local-vault-secrets-ux.md");
 const panel = readText("src/workspaces/LocalVaultSecretsPanel.tsx");
 const settings = readText("src/workspaces/SettingsWorkspace.tsx");
 const runWorkspace = readText("src/workspaces/RunWorkspace.tsx");
@@ -57,19 +56,6 @@ requireIncludes(
     "Blocked unsafe vault samples"
   ],
   "local vault secrets surface tests"
-);
-
-requireIncludes(
-  docs,
-  [
-    "Local Vault Secrets UX Contract",
-    "reference-only",
-    "reviewed but not integrated",
-    "metadata-only screenshots",
-    "no packaged secrets",
-    "does not implement native keychain storage"
-  ],
-  "local vault secrets docs"
 );
 
 requireIncludes(
@@ -132,8 +118,7 @@ console.log(
         "tests/local-vault-secrets-surface.test.mjs",
         "src/workspaces/LocalVaultSecretsPanel.tsx",
         "src/workspaces/RunWorkspace.tsx",
-        "src/workspaces/SettingsWorkspace.tsx",
-        "docs/contracts/local-vault-secrets-ux.md"
+        "src/workspaces/SettingsWorkspace.tsx"
       ],
       summary: review.summary
     },

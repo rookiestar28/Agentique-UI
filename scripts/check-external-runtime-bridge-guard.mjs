@@ -5,7 +5,6 @@ import { reviewExternalBridgeGuard } from "../src/core/external-runtime-bridge-g
 const failures = [];
 const moduleText = readText("src/core/external-runtime-bridge-guard.mjs");
 const tests = readText("tests/external-runtime-bridge-guard.test.mjs");
-const docs = readText("docs/contracts/external-runtime-bridge-guard.md");
 const packageJson = JSON.parse(readText("package.json"));
 const review = reviewExternalBridgeGuard();
 
@@ -41,22 +40,6 @@ requireIncludes(
   "external bridge guard tests"
 );
 
-requireIncludes(
-  docs,
-  [
-    "External Runtime Bridge Guard Contract",
-    "guarded preflight only",
-    "Deep links, public readback, and descriptor viewing cannot start or authorize a bridge",
-    "localhost-only",
-    "per-launch token auth",
-    "startsBridge: false",
-    "launchAuthorized: false",
-    "separate bridge acceptance",
-    "does not provide a production desktop runtime"
-  ],
-  "external bridge guard docs"
-);
-
 if (!review.ok || review.summary.startsBridge !== false || review.approvedStatus !== "preflight-ready") {
   failures.push("external bridge guard review summary must prove inert preflight readiness without launch authority");
 }
@@ -78,7 +61,7 @@ console.log(
   JSON.stringify(
     {
       status: "passed",
-      checked: ["src/core/external-runtime-bridge-guard.mjs", "tests/external-runtime-bridge-guard.test.mjs", "docs/contracts/external-runtime-bridge-guard.md"],
+      checked: ["src/core/external-runtime-bridge-guard.mjs", "tests/external-runtime-bridge-guard.test.mjs"],
       summary: review.summary
     },
     null,

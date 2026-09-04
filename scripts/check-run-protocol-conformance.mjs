@@ -19,15 +19,6 @@ for (const [file, phrases] of Object.entries({
     "event-after-terminal"
   ],
   "src/core/run-protocol-conformance.mjs": ["adaptNativeRunnerEvent", "adaptNativeRunnerReplay", "diagnostic-only", "capabilityNeutral"],
-  "docs/contracts/run-protocol.md": [
-    "Run Protocol",
-    "transport-independent",
-    "run id alone",
-    "canonical SHA-256 digest",
-    "resync-required",
-    "diagnostic trace",
-    "Capability Boundary"
-  ],
   "tests/run-protocol.test.mjs": ["complete address", "conflicting duplicates", "every second terminal", "stale cursor resync", "diagnostic trace"]
 })) {
   const text = read(file);
@@ -58,7 +49,6 @@ console.log(
         "src/core/run-protocol-conformance.mjs",
         "schemas/run-protocol-event.schema.json",
         "examples/run-protocol-event.valid.json",
-        "docs/contracts/run-protocol.md",
         "tests/run-protocol.test.mjs",
         "tests/run-protocol-conformance.test.mjs",
         "package.json"

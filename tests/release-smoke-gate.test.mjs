@@ -37,21 +37,14 @@ test("release smoke scripts contain fail-closed platform checks", () => {
 
 test("release smoke evidence rejects local path material", () => {
   assert.throws(
-    () => assertSmokeEvidenceSafe({
-      ...sampleSmokeBlockedEvidence,
-      platforms: {
-        ...sampleSmokeBlockedEvidence.platforms,
-        windows: { logSummary: ["C", ":\\release\\smoke.log"].join("") }
-      }
-    }),
+    () =>
+      assertSmokeEvidenceSafe({
+        ...sampleSmokeBlockedEvidence,
+        platforms: {
+          ...sampleSmokeBlockedEvidence.platforms,
+          windows: { logSummary: ["C", ":\\release\\smoke.log"].join("") }
+        }
+      }),
     (error) => error.code === "smoke.local-path"
   );
-});
-
-test("release smoke docs describe install update uninstall cleanup and redaction", () => {
-  const text = fs.readFileSync("docs/release/smoke-tests.md", "utf8");
-
-  for (const phrase of ["install", "launch", "version", "update", "uninstall", "cleanup", "redacted logs"]) {
-    assert.match(text, new RegExp(phrase, "u"));
-  }
 });

@@ -6,11 +6,6 @@ import { createNativeDagSchedulerClient, normalizeNativeDagWorkflow } from "../s
 const read = (filePath) => (fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : "");
 const rust = read("src-tauri/src/lib.rs");
 const scheduler = read("src-tauri/src/native_dag_scheduler.rs");
-const client = read("src/core/native-dag-scheduler-client.mjs");
-const bridge = read("src/core/tauri-native-dag-scheduler-client.ts");
-const panel = read("src/workspaces/NativeDagSchedulerPanel.tsx");
-const contract = read("docs/contracts/native-dag-scheduler.md");
-
 test("native DAG scheduler exposes bounded native start status and cancel commands", () => {
   for (const command of ["agentique_scheduler_start", "agentique_scheduler_status", "agentique_scheduler_cancel"]) {
     assert.match(rust, new RegExp(command, "u"), command);
@@ -32,21 +27,6 @@ test("native DAG attempts retain one-use runner authority without launch configu
   assert.match(scheduler, /duplicate[^\n]*(?:run|grant)/iu);
   assert.match(scheduler, /cleanup-required/u);
   assert.match(scheduler, /handoff-only/u);
-});
-
-test("scheduler persistence UI and contract preserve fail-closed workflow truth", () => {
-  for (const phrase of ["write_native_dag_snapshot", "recover_interrupted_native_dag", "NativeDagWorkflowReceipt"]) {
-    assert.match(scheduler, new RegExp(phrase, "u"), phrase);
-  }
-  for (const phrase of ["start()", "status()", "cancel()", "activeNodeId", "terminalState"]) {
-    assert.ok(client.includes(phrase) || bridge.includes(phrase), phrase);
-  }
-  for (const phrase of ["Native DAG scheduler", 'aria-live="polite"', "Cancel workflow", "Skipped", "Retry"]) {
-    assert.match(panel, new RegExp(phrase, "u"), phrase);
-  }
-  for (const phrase of ["distinct pre-approved attempt", "stable topological order", "atomic", "cleanup-required", "handoff-only", "macOS remains unverified"]) {
-    assert.match(contract, new RegExp(phrase, "iu"), phrase);
-  }
 });
 
 test("native DAG client invokes only bounded start status and cancel requests", async () => {

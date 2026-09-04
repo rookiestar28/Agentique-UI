@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import fs from "node:fs";
 import test from "node:test";
 import { allowedNativeRunnerCommands, readNativeRunnerBoundaryInputs, reviewNativeRunnerBoundary } from "../src/core/native-runner-boundary.mjs";
 
@@ -106,22 +105,3 @@ test("native runner boundary rejects unapproved frontend invoke usage", () => {
   assert.equal(review.ok, false);
   assert.ok(review.errors.some((error) => error.code === "native.frontend-invoke"));
 });
-
-test("native runner boundary public contract documents no generic shell", () => {
-  const text = fs.readFileSync("docs/contracts/native-runner-boundary.md", "utf8");
-  for (const phrase of [
-    "opaque ids",
-    "native-owned pending run record",
-    "native-controlled adapter execution receipt",
-    "fixed local Python or Node adapter",
-    "run folder evidence",
-    "generic shell",
-    "default capability grants only Tauri event listen and unlisten"
-  ]) {
-    assert.match(text, new RegExp(escapeRegExp(phrase), "u"));
-  }
-});
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-}

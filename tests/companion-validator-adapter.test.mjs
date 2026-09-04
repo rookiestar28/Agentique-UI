@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import {
   assertNoExecutionValidatorProof,
@@ -83,24 +82,4 @@ test("parser variant and agent-native review states fail closed without executio
   assert.equal(proof.noOverclaim.platformApproval, false);
   assert.equal(proof.noOverclaim.safetyCertification, false);
   assert.equal(proof.noOverclaim.platformDownloadAvailability, false);
-});
-
-test("companion validator UI and docs expose import proof without approval claims", () => {
-  const app = fs.readFileSync("src/workspaces/routes/LibraryWorkspaceAndImportWorkspaceRoute.tsx", "utf8");
-  const workspace = ["src/workspaces/LibraryImportWorkspaces.tsx", "src/workspaces/LibraryImportWorkspaceTypes.ts", "src/workspaces/LibraryWorkspace.tsx", "src/workspaces/ImportWorkspace.tsx"].map((filePath) => fs.readFileSync(filePath, "utf8")).join("\n");
-  const docs = fs.readFileSync("docs/contracts/companion-alignment.md", "utf8");
-  assert.match(app, /createCompanionValidatorImportProof/u);
-  for (const label of [
-    "Validator import proof",
-    "Manifest/schema",
-    "Hash/inventory",
-    "Secret/overclaim gate",
-    "Parser/agent-native proof",
-    "No-execution validator"
-  ]) {
-    assert.match(workspace, new RegExp(label, "u"));
-  }
-  assert.match(docs, /Validator Import Proof Boundary/u);
-  assert.match(docs, /must not run package lifecycle scripts/u);
-  assert.match(docs, /not platform approval/u);
 });

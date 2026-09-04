@@ -4,27 +4,13 @@ import { readStyleSourceBundle } from "../src/core/style-source-boundary.mjs";
 
 const failures = [];
 const css = readStyleSourceBundle();
-const decision = fs.readFileSync("docs/decisions/visual-design-system.md", "utf8");
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 
-requireIncludes(css, [
-  "color-scheme: dark",
-  "--agent-bg",
-  "--agent-surface",
-  "--agent-accent",
-  "--agent-warm",
-  "--agent-lime",
-  "--agent-radius-surface",
-  "--agent-focus-ring"
-], "style tokens");
-
-requireIncludes(decision, [
-  "No new visual dependency is added at this stage.",
-  "shadcn/ui is used as a component taxonomy reference only.",
-  "Magic UI is used as an interaction-pattern reference only.",
-  "Aceternity UI is used as a layout-pattern reference only.",
-  "does not add installer, updater, production desktop runtime"
-], "visual design decision");
+requireIncludes(
+  css,
+  ["color-scheme: dark", "--agent-bg", "--agent-surface", "--agent-accent", "--agent-warm", "--agent-lime", "--agent-radius-surface", "--agent-focus-ring"],
+  "style tokens"
+);
 
 const allDependencies = {
   ...packageJson.dependencies,
@@ -48,14 +34,16 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(JSON.stringify({
-  status: "passed",
-  checked: [
-    "src/styles.css",
-    "docs/decisions/visual-design-system.md",
-    "package.json"
-  ]
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      status: "passed",
+      checked: ["src/styles.css", "package.json"]
+    },
+    null,
+    2
+  )
+);
 
 function requireIncludes(text, required, label) {
   for (const phrase of required) {

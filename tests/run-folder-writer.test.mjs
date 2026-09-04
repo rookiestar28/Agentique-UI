@@ -171,17 +171,6 @@ test("run folder writer review succeeds", () => {
   assert.ok(review.summary.reproducibilityDigest.length === 64);
 });
 
-test("run folder writer public contract documents cleanup and bounds", () => {
-  const text = fs.readFileSync("docs/contracts/run-folder-writer.md", "utf8");
-  for (const phrase of ["bounded", "cleanup receipt", "idempotent", "path traversal", "redaction"]) {
-    assert.match(text, new RegExp(escapeRegExp(phrase), "u"));
-  }
-});
-
 function resetRoot() {
   fs.rmSync(rootDir, { recursive: true, force: true });
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

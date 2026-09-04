@@ -28,6 +28,8 @@ Supported today:
 - UI development and app-style local browser-window testing,
 - supported-local-only runner validation, deterministic native DAG start/status/cancel/resume, Permission Center policy diff review, Run Dashboard and Queue Monitor review, Graph/Run control debugging, checkpointed human-approval interrupt review, Logs and Artifact Workbench review, and cleanup evidence review,
 - adapter registry, fixed Python/Node native execution diagnostics, repo-local task lane, external agent-client descriptor, MCP readiness descriptor, WASM/WASI preflight, rootless container preflight, browser automation consent, local vault reference, and diagnostics support-bundle descriptor review,
+- platform-specific validation evidence for one fixed Windows WebAssembly adapter and one optional fixed Linux rootless-container adapter, outside the supported-local product allowlist,
+- capability-scoped agent handoff protocol review without extension loading, a sidecar, or a network bridge,
 - first-class n8n, Dify, and LangGraph import validation plus source-preserving handoff evidence review.
 
 Not supported yet:
@@ -35,10 +37,10 @@ Not supported yet:
 - released installer installation,
 - signed updater use,
 - automatic execution of arbitrary downloaded resources,
-- secondary workflow format import or execution support beyond backlog/reference documentation,
+- secondary workflow format import or execution support beyond internal backlog/reference material,
 - production desktop runtime support,
 - generic shell, browser-data automation, default browser profile access, or existing browser attachment,
-- MCP bridge launch, WASM execution, container start, image pull/build/compose, or external-provider automation,
+- MCP bridge launch, generic or caller-supplied WASM/WASI execution, product-supported container execution, image pull/build/compose, or external-provider automation,
 - support-bundle archive creation, upload, telemetry, support ticket integration, raw log collection, raw artifact collection, or environment snapshot collection,
 - raw local secret storage, OAuth token exchange, or ambient environment import,
 - support for unsigned third-party artifacts as trusted releases.

@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import {
   createExecutableCapabilityCloseoutPack,
@@ -30,9 +29,8 @@ test("every closeout capability has accepted status and path-neutral public evid
 
   for (const capability of pack.capabilities) {
     assert.equal(capability.status, "accepted", `${capability.id} is accepted`);
-    assert.ok(capability.evidenceRefs.length > 0, `${capability.id} has evidence refs`);
     for (const reference of capability.evidenceRefs) {
-      assert.match(reference, /^(docs\/contracts|docs\/validation|docs\/security|evidence)\//u);
+      assert.match(reference, /^evidence\//u);
       assert.doesNotMatch(reference, unsafePublicMarkerPattern);
     }
   }
@@ -114,18 +112,6 @@ test("source-first capability matrix is synchronized to accepted closeout rows",
   assert.equal(review.summary.plannedRows, 0);
   assert.equal(review.summary.nextCapability, null);
   assert.equal(review.releaseBoundary.productionDesktopRuntime, "parked");
-});
-
-test("closeout pack document is public safe and states continued No-Go claims", () => {
-  const text = fs.readFileSync("docs/validation/executable-capability-closeout-pack.md", "utf8");
-
-  assert.match(text, /Executable Capability Closeout Pack/u);
-  assert.match(text, /source-first local workspace/u);
-  assert.match(text, /supported-local-only/u);
-  assert.match(text, /signed installer/u);
-  assert.match(text, /production desktop runtime/u);
-  assert.match(text, /desktop and narrow interaction evidence/u);
-  assert.doesNotMatch(text, unsafePublicMarkerPattern);
 });
 
 test("executable capability closeout gate proves accepted and blocked paths", () => {

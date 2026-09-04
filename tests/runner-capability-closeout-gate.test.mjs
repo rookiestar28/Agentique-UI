@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import { reviewRunnerCapabilityCloseout, reviewRunnerCapabilityCloseoutGate, sampleRunnerCapabilityCloseout } from "../src/core/runner-capability-closeout-gate.mjs";
 
@@ -95,16 +94,6 @@ test("public safety checks must pass", () => {
 
   assert.equal(review.ok, false);
   assert.ok(review.errors.some((error) => error.code === "runner-closeout.public-safety"));
-});
-
-test("closeout document states supported local-only scope and blocked release claims", () => {
-  const text = fs.readFileSync("docs/validation/runner-capability-closeout.md", "utf8");
-
-  assert.match(text, /supported-local-only/u);
-  assert.match(text, /production desktop runtime/u);
-  assert.match(text, /signed updater channel/u);
-  assert.match(text, /automatic execution of arbitrary downloaded resources/u);
-  assert.doesNotMatch(text, /\bR\d{4}\b/u);
 });
 
 test("runner capability closeout gate proves accepted and blocked paths", () => {

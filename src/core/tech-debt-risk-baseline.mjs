@@ -58,7 +58,7 @@ export function collectTechDebtRiskBaseline({ root = process.cwd() } = {}) {
     validationStageReporting: buildValidationStageReportingFacts(repoRoot),
     packageScripts: buildPackageScriptFacts(packageJson),
     tooling: buildToolingFacts(packageJson, tsconfig),
-    releaseGate: buildReleaseGateFacts(repoRoot, finalReadinessSpec, finalReleaseGateSource, packageJson),
+    releaseGate: buildReleaseGateFacts(repoRoot, finalReadinessSpec, finalReleaseGateSource),
     runnerBoundary: buildRunnerBoundaryFacts(repoRoot),
     nativeRunnerSidecarGate: buildNativeRunnerSidecarGateFacts(repoRoot),
     dataBoundary: buildDataBoundaryFacts(repoRoot),
@@ -79,10 +79,6 @@ export function collectTechDebtRiskBaseline({ root = process.cwd() } = {}) {
   const nativeRunnerSidecarGateReady = measurements.nativeRunnerSidecarGate.ok;
   const releaseUpdaterSupplyChainCloseoutReady =
     measurements.releaseGate.requiredGateDrift.length === 0 &&
-    measurements.releaseGate.docsGatePresent &&
-    measurements.releaseGate.releaseDocsSpecPresent &&
-    measurements.releaseGate.hasReleaseDocsScript &&
-    measurements.releaseGate.validateIncludesReleaseDocs &&
     measurements.releaseGate.workflowSupplyChainEvidenceReady &&
     measurements.releaseGate.publicSafeWorkflowRunIdRequired &&
     measurements.releaseGate.publicationClaimsFalse &&
@@ -92,7 +88,6 @@ export function collectTechDebtRiskBaseline({ root = process.cwd() } = {}) {
     schemaVersion: techDebtRiskBaselineSchemaVersion,
     posture: {
       publicSafe: true,
-      publicDocsContractTestsAdded: false,
       dependencyAdoption: "optional-after-local-extraction",
       releaseClaimsExpanded: false,
       nativeExecutionExpanded: false
@@ -140,9 +135,6 @@ export function validateTechDebtRiskBaseline(baseline) {
   requireCorrection(correctionByCode, "mandatory-state-router-image-dependencies", "unsupported", failures);
   requireCorrection(correctionByCode, "data-layer-static-only", "partial", failures);
 
-  if (baseline?.posture?.publicDocsContractTestsAdded !== false) {
-    failures.push(issue("public-docs-contract", "Technical debt baseline must not add public documentation wording contracts."));
-  }
   if (baseline?.posture?.releaseClaimsExpanded !== false) {
     failures.push(issue("release-claim-expanded", "Technical debt baseline must not expand release claims."));
   }
@@ -160,15 +152,6 @@ export function validateTechDebtRiskBaseline(baseline) {
   }
   if ((baseline?.measurements?.releaseGate?.requiredGateDrift ?? []).length !== 0) {
     failures.push(issue("release-gate-drift", "Baseline must detect that release gate spec/code drift has been resolved."));
-  }
-  if (baseline?.measurements?.releaseGate?.docsGatePresent !== true) {
-    failures.push(issue("release-docs-gate", "Baseline must detect the final release docs gate."));
-  }
-  if (baseline?.measurements?.releaseGate?.releaseDocsSpecPresent !== true) {
-    failures.push(issue("release-docs-spec", "Baseline must detect the release docs readiness spec."));
-  }
-  if (baseline?.measurements?.releaseGate?.validateIncludesReleaseDocs !== true) {
-    failures.push(issue("release-docs-validation", "Baseline must detect release docs validation in the staged command chain."));
   }
   if (baseline?.measurements?.releaseGate?.workflowSupplyChainEvidenceReady !== true) {
     failures.push(issue("release-supply-chain-evidence", "Baseline must detect required workflow supply-chain evidence families."));
@@ -378,9 +361,7 @@ function buildPackageScriptFacts(packageJson) {
     hasLiveDataBoundaryScript: Boolean(scripts["validate:live-data-boundary"]),
     validateIncludesLiveDataBoundary: hasValidationCommand("npm run validate:live-data-boundary"),
     hasNativeRunnerSidecarGateScript: Boolean(scripts["validate:native-runner-sidecar-gate"]),
-    validateIncludesNativeRunnerSidecarGate: hasValidationCommand("npm run validate:native-runner-sidecar-gate"),
-    hasReleaseDocsScript: Boolean(scripts["validate:release-docs"]),
-    validateIncludesReleaseDocs: hasValidationCommand("npm run validate:release-docs")
+    validateIncludesNativeRunnerSidecarGate: hasValidationCommand("npm run validate:native-runner-sidecar-gate")
   };
 }
 
@@ -402,22 +383,17 @@ function buildToolingFacts(packageJson, tsconfig) {
   };
 }
 
-function buildReleaseGateFacts(repoRoot, spec, finalReleaseGateSource, packageJson) {
+function buildReleaseGateFacts(repoRoot, spec, finalReleaseGateSource) {
   const requiredGates = Array.isArray(spec.requiredGates) ? spec.requiredGates : [];
   const normalizedGates = [...finalReleaseGateSource.matchAll(/normalizeGate\("([^"]+)"/gu)].map((match) => match[1]);
   const requiredGateDrift = requiredGates.filter((gate) => !normalizedGates.includes(gate));
   const githubReleaseSpec = readJsonIfExists(repoRoot, "release/github-release-workflow.spec.json") ?? {};
-  const releaseDocsSpec = readJsonIfExists(repoRoot, "release/release-docs.spec.json") ?? {};
   const workflowEvidence = Array.isArray(githubReleaseSpec.requiredEvidence) ? githubReleaseSpec.requiredEvidence : [];
   const requiredSupplyChainEvidence = ["checksums", "sbom", "cargo-metadata", "artifact-attestation", "draft-release"];
   return {
     requiredGates,
     normalizedGates,
     requiredGateDrift,
-    docsGatePresent: normalizedGates.includes("docs"),
-    releaseDocsSpecPresent: releaseDocsSpec.schemaVersion === "agentique.releaseDocsGate.v1",
-    hasReleaseDocsScript: Boolean(packageJson?.scripts?.["validate:release-docs"]),
-    validateIncludesReleaseDocs: hasValidationCommand("npm run validate:release-docs"),
     workflowEvidence,
     requiredSupplyChainEvidence,
     workflowSupplyChainEvidenceReady: requiredSupplyChainEvidence.every((evidence) => workflowEvidence.includes(evidence)),

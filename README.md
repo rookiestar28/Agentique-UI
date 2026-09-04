@@ -6,8 +6,23 @@
 
 Agentique UI is the local-first desktop workspace for Agentique resources. It helps users import, verify, inspect, preview, run supported local workflows, and hand off resources from [`agentique.io`](https://www.agentique.io) without turning the website into a hosted execution service.
 
+## Last Update
+
+<details>
+<summary>View recent changes</summary>
+
+- **Permission-owned native runs:** Explicit approval, one-use grants, cancellation, timeout, durable replay, redacted artifacts, and cleanup now run through the desktop boundary.
+- **Local workflow orchestration:** Fixed Python and Node lanes plus deterministic DAG execution and checkpointed human approval are validated on Windows and Linux.
+- **Checkpoint history:** Windows validation covers bounded immutable working-set history and fresh-approval retry, resume, and replay preparation.
+- **Additional sandbox evidence:** One fixed in-process WebAssembly adapter is validated on Windows, and one optional fixed rootless-container adapter is validated on Linux. Neither expands the supported-local product claim.
+- **Agent handoff protocol:** Capability-scoped bridge messages and host dispositions are validated without loading extension code or starting a network bridge.
+- **Distribution integrity:** Real NSIS, MSI, deb, rpm, and AppImage packages were built locally and verified through the offline integrity boundary. They remain unsigned and unpublished, and macOS remains unsupported.
+
+</details>
+
 ## Contents
 
+- [Last Update](#last-update)
 - [Highlights](#highlights)
 - [Workspace Features](#workspace-features)
 - [Localization](#localization)
@@ -17,7 +32,7 @@ Agentique UI is the local-first desktop workspace for Agentique resources. It he
 - [Product Boundary](#product-boundary)
 - [Release Status](#release-status)
 - [Security Boundary](#security-boundary)
-- [Docs](#docs)
+- [Help](#help)
 - [License](#license)
 
 ## Highlights
@@ -30,7 +45,8 @@ Agentique UI is the local-first desktop workspace for Agentique resources. It he
 - The fixed native DAG scheduler supports pre-approved attempts and checkpointed human-approval interrupts on Windows and Linux only.
 - macOS local execution remains unverified and is not currently supported.
 - The earlier workflow scheduler model remains review-only evidence, not a native execution lane.
-- Review-only expansion gates: adapter registry trust policy, repo-local task lane, external agent-client descriptors, MCP bridge readiness descriptors, WASM/WASI sandbox preflight, rootless container preflight, browser automation consent review, local vault references, and descriptor-only diagnostics support bundles.
+- Review-only expansion gates: adapter registry trust policy, repo-local task lane, external agent-client descriptors, MCP bridge readiness descriptors, WASM/WASI sandbox preflight, rootless container preflight, browser automation consent review, local vault references, and descriptor-only diagnostics support bundles. The preflight surfaces do not themselves grant execution.
+- Narrow native sandbox evidence: one fixed no-import WebAssembly adapter is Windows-verified, and one optional fixed rootless-container adapter is Linux-verified. These exact lanes remain outside the supported-local product allowlist and do not provide generic WASM/WASI or container support.
 - Explicit local language choice: Settings can switch app chrome and workspace controls across the initial static catalog without browser-language auto-detection or remote translation services.
 - Execution evidence discipline: source-preserving round-trip handoff, release-grade execution validation pack, and secondary workflow format compatibility backlog stay documented without widening runtime claims.
 - Companion package alignment: read-only readback badges, no-execution validator proof, canonical source-package download acquisition proof, browser-local intake scanning, and review-only uploader previews.
@@ -74,13 +90,7 @@ npm run dev
 
 Validation checks contracts, release gates, tests, build output, and public-boundary rules. Public files must not contain private planning markers, local machine paths, credentials, tokens, signing material, or unsupported release claims.
 
-The rebuilt UI regression evidence is recorded in [docs/validation/rebuilt-ui-regression-evidence.md](docs/validation/rebuilt-ui-regression-evidence.md). It covers the local workspace shell, Graph canvas, responsive layout, and supported-local-only/no-overclaim boundary.
-
-Runner capability evidence is recorded in [docs/validation/runner-capability-closeout.md](docs/validation/runner-capability-closeout.md) and [docs/validation/runner-ui-execution-evidence.md](docs/validation/runner-ui-execution-evidence.md).
-
-Execution validation pack and source-preserving handoff evidence are summarized in [docs/validation/runner-ui-execution-evidence.md](docs/validation/runner-ui-execution-evidence.md). Secondary workflow format status is recorded in [docs/compatibility/secondary-workflow-formats.md](docs/compatibility/secondary-workflow-formats.md).
-
-Companion integration evidence is recorded in [docs/contracts/companion-capability-boundary.md](docs/contracts/companion-capability-boundary.md), [docs/contracts/companion-alignment.md](docs/contracts/companion-alignment.md), and [docs/validation/companion-integration-closeout.md](docs/validation/companion-integration-closeout.md).
+For usage help, see the support and security policies below.
 
 ## Default App Launch
 
@@ -141,10 +151,10 @@ Agentique UI is a local workspace for resources and workflow evidence. [`agentiq
 
 - [`agentique.io`](https://www.agentique.io) owns catalog discovery, upload, scan, review, moderation, publication state, distribution metadata, signatures/checksums, and public readback.
 - Agentique UI owns local workspace behavior: import checks, package verification, library records, static preview, workflow graph inspection, supported permission-gated local runs, and export/handoff.
-- The current source scope includes React/Vite workspace UI, Tauri desktop metadata, browser app-window launcher, first-class n8n, Dify, and LangGraph intake, static preview, workflow graph canvas, Run, Settings, Permission Center policy diff, Run Dashboard and Queue Monitor, Logs and Artifact Workbench, workflow template and run-plan builder review, adapter registry review, Python/Node adapter evidence, handoff surfaces, source-preserving descriptors, release gates, and public-safe support docs.
+- The current source scope includes React/Vite workspace UI, Tauri desktop metadata, browser app-window launcher, first-class n8n, Dify, and LangGraph intake, static preview, workflow graph canvas, Run, Settings, Permission Center policy diff, Run Dashboard and Queue Monitor, Logs and Artifact Workbench, workflow template and run-plan builder review, adapter registry review, Python/Node adapter evidence, handoff surfaces, source-preserving descriptors, release gates, and public-safe support policies.
 - Local runs are limited to `supported-local-only`: the resource must declare the correct support mode, use a fixed native-owned Python or Node adapter on a verified Windows or Linux environment, receive explicit permissions, and produce bounded redacted logs/artifacts plus cleanup evidence.
 - The runner is not a general shell, package installer, browser-data bridge, hosted runtime, universal workflow runtime, or production desktop release. Unsupported resources remain inspectable through preview, validation, export, and handoff paths.
-- MCP, WASM/WASI, rootless container, and browser automation surfaces are readiness or consent review gates only unless a separate runtime evidence gate accepts execution. They do not start bridges, execute WebAssembly, start containers, pull images, launch browsers, connect browser profiles, or automate external providers.
+- MCP bridge and browser automation surfaces remain readiness or consent review only and do not start bridges, launch browsers, connect browser profiles, or automate external providers. The WASM/WASI and rootless-container preflight surfaces also remain non-executing; separate exact native adapter contracts cover only the fixed Windows WebAssembly module and the fixed Linux rootless-container command, without image pull or generic runtime authority.
 - Diagnostics support bundle review is descriptor-only. It does not create archives, upload support tickets, collect raw logs, collect raw artifacts, collect browser data, or collect environment snapshots.
 - n8n, Dify, and LangGraph are the currently validated first-class workflow import formats. Node-RED, Serverless Workflow, Argo Workflows, Flowise, Langflow, GitHub Actions, Airflow, BPMN, Haystack, Kestra, AutoGen, LlamaIndex Workflows, and CrewAI remain backlog/reference candidates only.
 - Companion package semantics are consumed as local evidence only: [`@agentique.io/readback`](https://www.npmjs.com/package/@agentique.io/readback) for read-only projections and canonical source-package download metadata normalization, [`@agentique.io/validator`](https://www.npmjs.com/package/@agentique.io/validator) for static proof, [`@agentique.io/uploader`](https://www.npmjs.com/package/@agentique.io/uploader) for review-only previews, and [`@agentique.io/action`](https://www.npmjs.com/package/@agentique.io/action) as a CI reference.
@@ -154,7 +164,7 @@ Agentique UI is a local workspace for resources and workflow evidence. [`agentiq
 
 ## Release Status
 
-Initial publication is source-first: GitHub source, docs, build instructions, and validation evidence can be public before signed installers exist.
+Initial publication is source-first: GitHub source, build instructions, and validation evidence can be public before signed installers exist.
 
 Desktop distribution remains evidence-gated for Windows and Linux. Public installer or updater publication stays No-Go until real production signing, updater metadata, checksums, provenance, clean install/update/uninstall smoke, and maintainer review are complete. macOS packaging is skipped and remains unverified and unsupported. The final installer/updater release gate therefore still reports `publicationAllowed=false`.
 
@@ -166,40 +176,15 @@ The default posture is no execution and no ambient local access. Supported local
 - shell execution is blocked by default,
 - secrets and environment variables are not forwarded implicitly,
 - external runtimes require explicit adapters and support-mode boundaries,
-- supported local execution is limited to the fixed native-owned Python adapter on verified Windows and Linux environments and requires scoped grants,
+- supported local execution is limited to the fixed native-owned Python and Node adapters plus their deterministic DAG scheduler on verified Windows and Linux environments and requires scoped grants,
 - Permission Center, Run Dashboard, Logs and Artifact Workbench, local vault references, and diagnostics support bundle surfaces must stay redacted and path-neutral,
-- MCP, WASM/WASI, rootless container, and browser automation gates remain review/preflight-only until separate runtime evidence is accepted,
+- MCP bridge and browser automation gates remain review-only; the WASM/WASI and rootless-container preflight gates remain non-executing even though separate, narrowly fixed native adapters have platform-specific validation evidence,
 - n8n, Dify, and LangGraph are the only currently validated first-class workflow import formats,
 - secondary workflow formats remain backlog/reference only until format-specific gates pass,
 - unsupported resources must still show a safe inspect/export/handoff path.
 
-## Docs
+## Help
 
-- [Install and update](docs/release/install.md)
-- [Updater gate](docs/release/updater.md)
-- [Smoke tests](docs/release/smoke-tests.md)
-- [Troubleshooting](docs/release/troubleshooting.md)
-- [Rollback](docs/release/rollback.md)
-- [Final readiness](docs/release/final-readiness.md)
-- [Rebuilt UI regression evidence](docs/validation/rebuilt-ui-regression-evidence.md)
-- [Rebuilt workspace closeout](docs/validation/rebuilt-workspace-closeout.md)
-- [Runner capability closeout](docs/validation/runner-capability-closeout.md)
-- [Runner UI execution evidence](docs/validation/runner-ui-execution-evidence.md)
-- [Function expansion closeout](docs/validation/function-expansion-closeout.md)
-- [Runner capability contract](docs/contracts/runner-capability.md)
-- [Source-first executable capability contract](docs/contracts/source-first-executable-capability.md)
-- [Multi-lane execution readiness](docs/contracts/multi-lane-execution-readiness.md)
-- [MCP bridge readiness descriptor](docs/contracts/mcp-bridge-readiness-descriptor.md)
-- [WASM/WASI sandbox gate](docs/contracts/wasm-wasi-sandbox-gate.md)
-- [Rootless container preflight gate](docs/contracts/rootless-container-preflight-gate.md)
-- [Browser automation consent gate](docs/contracts/browser-automation-consent-gate.md)
-- [Local vault secrets UX](docs/contracts/local-vault-secrets-ux.md)
-- [Diagnostics support bundle](docs/contracts/diagnostics-support-bundle.md)
-- [Secondary workflow format backlog](docs/compatibility/secondary-workflow-formats.md)
-- [Companion capability boundary](docs/contracts/companion-capability-boundary.md)
-- [Companion alignment contract](docs/contracts/companion-alignment.md)
-- [Companion integration closeout](docs/validation/companion-integration-closeout.md)
-- [Desktop runner validation SOP](docs/security/desktop-runner-sop.md)
 - [Security policy](SECURITY.md)
 - [Support policy](SUPPORT.md)
 

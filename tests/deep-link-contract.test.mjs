@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import { createAjv, readJson, validateExample } from "../scripts/validate-contracts.mjs";
 
@@ -49,13 +48,4 @@ test("download ticket rejects non-HTTPS URL", () => {
   const example = readJson(ticketExample);
   example.download.url = "http://www.agentique.io/download";
   assert.equal(validate(example), false);
-});
-
-test("deep-link docs state untrusted intent and no authorization", () => {
-  const text = fs.readFileSync("docs/contracts/deep-link-and-download.md", "utf8");
-  assert.match(text, /never authorization/i);
-  assert.match(text, /versioned `agentique:\/\/import/i);
-  assert.match(text, /legacy `agentique:\/\/resources\/\{resourceId\}`/i);
-  assert.match(text, /Reject expired, replayed, wrong-audience, wrong-scope/i);
-  assert.match(text, /do not register an operating-system URL handler/i);
 });

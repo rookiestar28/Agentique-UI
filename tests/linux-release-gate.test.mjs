@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import {
   assertLinuxEvidenceSafe,
@@ -34,26 +33,17 @@ test("Linux release gate accepts complete path-neutral evidence", () => {
 
 test("Linux release evidence rejects local path material", () => {
   assert.throws(
-    () => assertLinuxEvidenceSafe({
-      ...sampleLinuxBlockedEvidence,
-      artifacts: [
-        {
-          target: "appimage",
-          fileName: ["/", "tmp/agentique-ui.AppImage"].join(""),
-          sha256: "2".repeat(64)
-        }
-      ]
-    }),
+    () =>
+      assertLinuxEvidenceSafe({
+        ...sampleLinuxBlockedEvidence,
+        artifacts: [
+          {
+            target: "appimage",
+            fileName: ["/", "tmp/agentique-ui.AppImage"].join(""),
+            sha256: "2".repeat(64)
+          }
+        ]
+      }),
     (error) => error.code === "linux.local-path"
   );
-});
-
-test("Linux release docs preserve package baseline and AppImage updater policy", () => {
-  const text = fs.readFileSync("docs/release/linux-packages.md", "utf8");
-
-  assert.match(text, /deb, rpm, and AppImage/u);
-  assert.match(text, /WebKitGTK/u);
-  assert.match(text, /GLib/u);
-  assert.match(text, /AppImage is the first Linux updater artifact/u);
-  assert.match(text, /npm run validate:release-linux/u);
 });

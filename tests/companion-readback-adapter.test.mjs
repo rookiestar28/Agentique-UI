@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import {
   assertReadOnlyCompanionClientSurface,
@@ -256,26 +255,6 @@ test("companion readback review projects UI proof state without release overclai
   assert.equal(review.readOnly.authRequired, false);
   assert.equal(review.noOverclaim.liveUploadAvailable, false);
   assert.equal(review.noOverclaim.runtimeReleaseAvailable, false);
-});
-
-test("companion readback UI and docs expose badge and read-only proof rows", () => {
-  const app = fs.readFileSync("src/workspaces/routes/LibraryWorkspaceAndImportWorkspaceRoute.tsx", "utf8");
-  const workspace = [
-    "src/workspaces/LibraryImportWorkspaces.tsx",
-    "src/workspaces/LibraryImportWorkspaceTypes.ts",
-    "src/workspaces/LibraryWorkspace.tsx",
-    "src/workspaces/ImportWorkspace.tsx"
-  ]
-    .map((filePath) => fs.readFileSync(filePath, "utf8"))
-    .join("\n");
-  const docs = fs.readFileSync("docs/contracts/companion-alignment.md", "utf8");
-  assert.match(app, /createCompanionReadbackReview/u);
-  for (const label of ["Companion readback", "Download proof", "Parser variant", "Agent-native private boundary", "Read-only client"]) {
-    assert.match(workspace, new RegExp(label, "u"));
-  }
-  assert.match(docs, /Read-Only Adapter Boundary/u);
-  assert.match(docs, /GET-only/u);
-  assert.match(docs, /do not carry authorization headers/u);
 });
 
 function jsonResponse(payload, options = {}) {

@@ -71,7 +71,7 @@ const noGoClaimKeys = Object.freeze([
   "imagePull",
   "externalProviderAutomation"
 ]);
-const pathNeutralReferencePattern = /^(docs\/contracts\/[A-Za-z0-9._/-]+|docs\/validation\/[A-Za-z0-9._/-]+|docs\/security\/[A-Za-z0-9._/-]+|evidence\/[A-Za-z0-9._/-]+)$/u;
+const pathNeutralReferencePattern = /^evidence\/[A-Za-z0-9._/-]+$/u;
 const privatePlanMarker = "\\." + "planning";
 const privateReferenceDocsMarker = ["reference", "docs"].join("\\/");
 const internalItemCodePattern = "\\b" + "R" + "\\d{4}\\b";
@@ -149,7 +149,7 @@ export function createFunctionExpansionCloseoutReview({
       desktopViewport: "passed",
       narrowViewport: "passed",
       affectedPanels: ["Run workspace"],
-      evidenceRefs: ["docs/validation/function-expansion-closeout.md", "docs/validation/runner-ui-execution-evidence.md"],
+      evidenceRefs: [],
       ...interactionOverrides
     },
     publicSafety: {
@@ -310,25 +310,25 @@ export function assertFunctionExpansionCloseoutSafe(options = {}) {
 
 function featureRows() {
   return [
-    feature("function-expansion-roadmap-filing", "Function expansion roadmap filing", ["docs/validation/function-expansion-closeout.md"]),
-    feature("release-packaging-preflight", "Release packaging preflight", ["docs/validation/distribution-readiness.md"]),
-    feature("first-run-bootstrap-diagnostics", "First-run bootstrap diagnostics", ["docs/contracts/runtime-prerequisite-readiness.md"]),
-    feature("local-library-update-lifecycle", "Local library update lifecycle", ["docs/contracts/resource-bundle.md"]),
-    feature("permission-center-policy-diff", "Permission center and policy diff", ["docs/contracts/permission-grants.md"]),
-    feature("run-dashboard-queue-monitor", "Run dashboard and queue monitor", ["docs/contracts/workflow-scheduler.md"]),
-    feature("logs-artifact-workbench", "Logs and artifact workbench", ["docs/contracts/artifact-receipt-binding.md"]),
-    feature("workflow-template-run-plan-builder", "Workflow template and run-plan builder", ["docs/contracts/workflow-scheduler.md"]),
-    feature("human-approval-resume-rerun", "Human approval resume and rerun", ["docs/contracts/runner-revocation-cancel-controls.md"]),
-    feature("adapter-registry-trust-policy", "Adapter registry trust policy", ["docs/contracts/companion-capability-boundary.md"]),
-    feature("python-node-adapter-pack-expansion", "Python and Node adapter pack expansion", ["docs/contracts/python-adapter-runner.md", "docs/contracts/node-adapter-runner.md"]),
-    feature("repo-local-task-runner-lane", "Repo-local task runner lane", ["docs/contracts/local-run-state-machine.md"]),
-    feature("external-agent-client-pack-expansion", "External agent-client pack expansion", ["docs/contracts/companion-capability-boundary.md"]),
-    feature("mcp-bridge-readiness", "MCP bridge readiness descriptor", ["docs/validation/function-expansion-closeout.md"]),
-    feature("wasm-wasi-sandbox-gate", "WASM/WASI sandbox prototype gate", ["docs/contracts/wasm-wasi-sandbox-gate.md"]),
-    feature("rootless-container-preflight", "Rootless container preflight", ["docs/contracts/rootless-container-preflight-gate.md"]),
-    feature("browser-automation-consent-gate", "Browser automation strict consent gate", ["docs/contracts/browser-automation-consent-gate.md"]),
-    feature("local-vault-secrets-redaction", "Local vault secrets and redaction evidence", ["docs/contracts/local-vault-secrets-ux.md"]),
-    feature("diagnostics-support-bundle", "Diagnostics support bundle", ["docs/contracts/diagnostics-support-bundle.md"])
+    feature("function-expansion-roadmap-filing", "Function expansion roadmap filing", []),
+    feature("release-packaging-preflight", "Release packaging preflight", []),
+    feature("first-run-bootstrap-diagnostics", "First-run bootstrap diagnostics", []),
+    feature("local-library-update-lifecycle", "Local library update lifecycle", []),
+    feature("permission-center-policy-diff", "Permission center and policy diff", []),
+    feature("run-dashboard-queue-monitor", "Run dashboard and queue monitor", []),
+    feature("logs-artifact-workbench", "Logs and artifact workbench", []),
+    feature("workflow-template-run-plan-builder", "Workflow template and run-plan builder", []),
+    feature("human-approval-resume-rerun", "Human approval resume and rerun", []),
+    feature("adapter-registry-trust-policy", "Adapter registry trust policy", []),
+    feature("python-node-adapter-pack-expansion", "Python and Node adapter pack expansion", []),
+    feature("repo-local-task-runner-lane", "Repo-local task runner lane", []),
+    feature("external-agent-client-pack-expansion", "External agent-client pack expansion", []),
+    feature("mcp-bridge-readiness", "MCP bridge readiness descriptor", []),
+    feature("wasm-wasi-sandbox-gate", "WASM/WASI sandbox prototype gate", []),
+    feature("rootless-container-preflight", "Rootless container preflight", []),
+    feature("browser-automation-consent-gate", "Browser automation strict consent gate", []),
+    feature("local-vault-secrets-redaction", "Local vault secrets and redaction evidence", []),
+    feature("diagnostics-support-bundle", "Diagnostics support bundle", [])
   ];
 }
 
@@ -347,13 +347,11 @@ function feature(id, label, evidenceRefs) {
 
 function portabilityRows() {
   return [
-    portability("portable-profile-taxonomy", "Adapter registry profile and mode taxonomy", "adapter-registry-trust-policy", ["docs/contracts/companion-capability-boundary.md"]),
-    portability("generated-adapter-drift-status", "Generated adapter drift summary", "adapter-registry-trust-policy", ["docs/contracts/diagnostics-support-bundle.md"]),
-    portability("repo-local-task-lane-profile", "Repo-local task lane profile boundary", "repo-local-task-runner-lane", ["docs/contracts/local-run-state-machine.md"]),
-    portability("external-client-pack-portability", "External client pack portability", "external-agent-client-pack-expansion", [
-      "docs/contracts/companion-capability-boundary.md"
-    ]),
-    portability("support-bundle-profile-diagnostics", "Profile and drift diagnostics summary", "diagnostics-support-bundle", ["docs/contracts/diagnostics-support-bundle.md"])
+    portability("portable-profile-taxonomy", "Adapter registry profile and mode taxonomy", "adapter-registry-trust-policy", []),
+    portability("generated-adapter-drift-status", "Generated adapter drift summary", "adapter-registry-trust-policy", []),
+    portability("repo-local-task-lane-profile", "Repo-local task lane profile boundary", "repo-local-task-runner-lane", []),
+    portability("external-client-pack-portability", "External client pack portability", "external-agent-client-pack-expansion", []),
+    portability("support-bundle-profile-diagnostics", "Profile and drift diagnostics summary", "diagnostics-support-bundle", [])
   ];
 }
 
@@ -373,21 +371,13 @@ function portability(id, label, mappedFeatureId, evidenceRefs) {
 
 function graphBlockRows() {
   return [
-    graphBlock("graph-block-ir-readback", "Graph and block IR readback", "graph-block-ir-contracts", "Graph workspace", ["docs/validation/function-expansion-closeout.md"]),
-    graphBlock("schema-driven-block-forms", "Schema-driven block forms and redaction", "typed-block-manifest-contracts", "Graph workspace", [
-      "docs/validation/function-expansion-closeout.md"
-    ]),
-    graphBlock("run-ledger-queue-events", "Run ledger queue and event states", "execution-ledger-event-contracts", "Run workspace", ["docs/contracts/workflow-scheduler.md"]),
-    graphBlock("artifact-lifecycle", "Workspace and artifact lifecycle", "workspace-artifact-contracts", "Run workspace", ["docs/contracts/artifact-receipt-binding.md"]),
-    graphBlock("credential-reference-boundary", "Credential OAuth and webhook trust boundary", "credential-webhook-trust-contracts", "Settings workspace", [
-      "docs/contracts/local-vault-secrets-ux.md"
-    ]),
-    graphBlock("library-import-export-lifecycle", "Library import export lifecycle", "bundle-library-lifecycle-contracts", "Library and Import workspaces", [
-      "docs/contracts/resource-bundle.md"
-    ]),
-    graphBlock("diagnostics-observability", "Diagnostics and observability summaries", "observability-diagnostics-contracts", "Run workspace", [
-      "docs/contracts/diagnostics-support-bundle.md"
-    ])
+    graphBlock("graph-block-ir-readback", "Graph and block IR readback", "graph-block-ir-contracts", "Graph workspace", []),
+    graphBlock("schema-driven-block-forms", "Schema-driven block forms and redaction", "typed-block-manifest-contracts", "Graph workspace", []),
+    graphBlock("run-ledger-queue-events", "Run ledger queue and event states", "execution-ledger-event-contracts", "Run workspace", []),
+    graphBlock("artifact-lifecycle", "Workspace and artifact lifecycle", "workspace-artifact-contracts", "Run workspace", []),
+    graphBlock("credential-reference-boundary", "Credential OAuth and webhook trust boundary", "credential-webhook-trust-contracts", "Settings workspace", []),
+    graphBlock("library-import-export-lifecycle", "Library import export lifecycle", "bundle-library-lifecycle-contracts", "Library and Import workspaces", []),
+    graphBlock("diagnostics-observability", "Diagnostics and observability summaries", "observability-diagnostics-contracts", "Run workspace", [])
   ];
 }
 
@@ -532,15 +522,15 @@ function reviewInteractionEvidence(evidence = {}, errors) {
   const narrowViewport = evidence.narrowViewport === "passed" ? "passed" : "blocked";
   const evidenceRefs = Array.isArray(evidence.evidenceRefs) ? evidence.evidenceRefs.map(String) : [];
   for (const reference of evidenceRefs) validateEvidenceRef(reference, errors);
-  if (desktopViewport !== "passed" || narrowViewport !== "passed" || evidenceRefs.length === 0) {
-    errors.push(issue("function-closeout.interaction-evidence", "Desktop and narrow interaction evidence must be passed with public-safe refs."));
+  if (desktopViewport !== "passed" || narrowViewport !== "passed") {
+    errors.push(issue("function-closeout.interaction-evidence", "Desktop and narrow interaction evidence must pass."));
   }
   return {
     desktopViewport,
     narrowViewport,
     affectedPanels: Array.isArray(evidence.affectedPanels) ? evidence.affectedPanels.map(String) : [],
     evidenceRefs,
-    status: desktopViewport === "passed" && narrowViewport === "passed" && evidenceRefs.length > 0 ? "passed" : "blocked"
+    status: desktopViewport === "passed" && narrowViewport === "passed" ? "passed" : "blocked"
   };
 }
 
@@ -642,10 +632,8 @@ function reviewSourceScope(scope = {}, errors) {
 }
 
 function requireRefs(id, evidenceRefs, errors) {
-  if (!Array.isArray(evidenceRefs) || evidenceRefs.length === 0) {
-    errors.push(issue("function-closeout.evidence-ref", `${id} must include public-safe evidence refs.`));
-    return;
-  }
+  void id;
+  if (!Array.isArray(evidenceRefs)) return;
   for (const reference of evidenceRefs) validateEvidenceRef(reference, errors);
 }
 

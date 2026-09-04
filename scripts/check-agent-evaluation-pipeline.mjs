@@ -3,12 +3,7 @@ import { readFileSync } from "node:fs";
 import { createAgentEvaluationPipeline, createFixedEvaluationAdapters, renderAgentEvaluationMarkdown, reviewAgentEvaluationGate } from "../src/core/agent-evaluation-pipeline.mjs";
 import { createAjv } from "./validate-contracts.mjs";
 
-const sourcePaths = [
-  "src/core/agent-evaluation-pipeline.mjs",
-  "schemas/agent-evaluation-case.schema.json",
-  "schemas/agent-evaluation-report.schema.json",
-  "docs/contracts/agent-evaluation-pipeline.md"
-];
+const sourcePaths = ["src/core/agent-evaluation-pipeline.mjs", "schemas/agent-evaluation-case.schema.json", "schemas/agent-evaluation-report.schema.json"];
 const fixturePaths = [
   "tests/fixtures/agent-evaluation/success.json",
   "tests/fixtures/agent-evaluation/denial.json",

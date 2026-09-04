@@ -63,14 +63,3 @@ test("native command capability and request surfaces remain exact", () => {
   assert.deepEqual(capability.permissions, ["core:event:allow-listen", "core:event:allow-unlisten"]);
   assert.doesNotMatch(request, /runtime|socket|image|entrypoint|argument|environment|mount|network|resource_limit|capabilit/u);
 });
-
-test("contract and direct validator state the platform and no-effect boundary", () => {
-  const contract = read("docs/contracts/native-rootless-container.md");
-  const packageJson = JSON.parse(read("package.json"));
-
-  assert.match(contract, /Linux-native/u);
-  assert.match(contract, /Windows[\s\S]*fail closed/u);
-  assert.match(contract, /macOS.*skipped.*unverified/isu);
-  assert.match(contract, /does not install, start, pull, build, import, or log in/iu);
-  assert.match(packageJson.scripts["validate:native-rootless-container"], /^node scripts\/check-native-rootless-container\.mjs/u);
-});

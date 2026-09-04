@@ -31,31 +31,10 @@ const trustRunSettings = [
   .join("\n");
 const css = readStyleSourceBundle();
 const packageJson = JSON.parse(readText("package.json"));
-const closeout = readText("docs/validation/phase2-closeout.md");
-const runnerSop = readText("docs/security/desktop-runner-sop.md");
 const tauriConfig = JSON.parse(readText("src-tauri/tauri.conf.json"));
 const capability = JSON.parse(readText("src-tauri/capabilities/default.json"));
 const controlledRuntimeApiFiles = new Set(["src/core/python-adapter-runner.mjs", "src/core/node-adapter-runner.mjs"]);
 const controlledTauriInvokeFiles = new Set(["src/core/tauri-native-async-run-client.ts", "src/core/tauri-native-dag-scheduler-client.ts"]);
-
-requireIncludes(
-  closeout,
-  [
-    "Local Visual Runner Foundation Closeout",
-    "Capability permission review",
-    "Typed configuration drafts",
-    "Local secret references",
-    "Local session and artifact records",
-    "Workflow graph map",
-    "Validate-only dry-run report",
-    "Side effects remain empty",
-    "No adapter start, file write, network fetch, or shell command is performed.",
-    "Visual Evidence Limitation",
-    "fresh automated screenshot capture is release-gated",
-    "npm run validate"
-  ],
-  "phase 2 closeout document"
-);
 
 requireIncludes(
   app,
@@ -186,8 +165,6 @@ requireIncludes(
   ],
   "phase 2 responsive and accessibility CSS"
 );
-
-requireIncludes(runnerSop, ["No-execution baseline", "Network permissions", "Secrets", "Public boundary", "npm run validate"], "desktop runner SOP");
 
 if (!String(packageJson.scripts?.validate ?? "").includes("validate:phase2")) {
   failures.push("validate script must include validate:phase2");

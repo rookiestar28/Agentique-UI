@@ -11,9 +11,7 @@ export function readNativeRunnerEventReplayInputs(root = process.cwd()) {
     root: repoRoot,
     rustSource: readText(repoRoot, "src-tauri/src/lib.rs"),
     runnerEventStreamSource: readText(repoRoot, "src/core/runner-event-stream.mjs"),
-    packageJson: readJson(repoRoot, "package.json"),
-    nativeContract: readText(repoRoot, "docs/contracts/native-runner-boundary.md"),
-    asyncContract: readText(repoRoot, "docs/contracts/native-async-run-lifecycle.md")
+    packageJson: readJson(repoRoot, "package.json")
   };
 }
 
@@ -21,8 +19,6 @@ export function reviewNativeRunnerEventReplay(input = readNativeRunnerEventRepla
   const rustSource = String(input.rustSource ?? "");
   const runnerEventStreamSource = String(input.runnerEventStreamSource ?? "");
   const packageJson = input.packageJson ?? {};
-  const nativeContract = String(input.nativeContract ?? "");
-  const asyncContract = String(input.asyncContract ?? "");
   const errors = [];
 
   if (unsafePayloadPattern.test(rustSource)) {
@@ -60,8 +56,7 @@ export function reviewNativeRunnerEventReplay(input = readNativeRunnerEventRepla
       rustSource.includes("agentique.nativeRunnerDurableEvent.v1") &&
       rustSource.includes("fn persist_native_event_record(") &&
       rustSource.includes("fn read_durable_native_events(") &&
-      rustSource.includes("fn native_event_ledger_dir(") &&
-      /restart-durable/iu.test(asyncContract),
+      rustSource.includes("fn native_event_ledger_dir("),
     persistedBeforePublication: persistIndex >= 0 && persistIndex < memoryIndex && memoryIndex < emitIndex,
     redactedAndPathNeutral:
       rustSource.includes("MAX_NATIVE_EVENT_COUNT") &&
@@ -97,12 +92,6 @@ export function reviewNativeRunnerEventReplay(input = readNativeRunnerEventRepla
   }
   if (!String(packageJson.scripts?.validate ?? "").includes("npm run validate:native-runner-event-replay")) {
     errors.push(issue("native-event.validate-chain", "npm run validate must include native runner event replay validation."));
-  }
-
-  for (const phrase of ["native event", "replay", "bounded", "redacted", "descriptor-only", "restart-durable"]) {
-    if (!nativeContract.includes(phrase)) {
-      errors.push(issue("native-event.contract", `Native contract must mention ${phrase}.`));
-    }
   }
 
   return {

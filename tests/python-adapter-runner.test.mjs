@@ -3,12 +3,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
-import {
-  executePythonAdapterRun,
-  reviewPythonAdapterExecution,
-  samplePythonAdapterInput,
-  startPythonAdapterRun
-} from "../src/core/python-adapter-runner.mjs";
+import { executePythonAdapterRun, reviewPythonAdapterExecution, samplePythonAdapterInput, startPythonAdapterRun } from "../src/core/python-adapter-runner.mjs";
 import { sampleRunnerCapabilityInput } from "../src/core/runner-capability.mjs";
 
 const rootDir = ".tmp/python-adapter-runner-test";
@@ -81,12 +76,15 @@ test("tampered and revoked python adapters fail before launch", async () => {
 
 test("python adapter timeout writes cleanup receipt", async () => {
   resetRoot();
-  const result = await executePythonAdapterRun({
-    ...samplePythonAdapterInput,
-    runId: "run-python-timeout",
-    mode: "sleep",
-    sleepMs: 5000
-  }, { rootDir, now, timeoutMs: 50 });
+  const result = await executePythonAdapterRun(
+    {
+      ...samplePythonAdapterInput,
+      runId: "run-python-timeout",
+      mode: "sleep",
+      sleepMs: 5000
+    },
+    { rootDir, now, timeoutMs: 50 }
+  );
   assert.equal(result.ok, false);
   assert.equal(result.status, "timed-out");
   assert.equal(result.launched, true);
@@ -96,12 +94,15 @@ test("python adapter timeout writes cleanup receipt", async () => {
 
 test("python adapter cancellation is graceful and writes cleanup receipt", async () => {
   resetRoot();
-  const run = startPythonAdapterRun({
-    ...samplePythonAdapterInput,
-    runId: "run-python-cancel",
-    mode: "sleep",
-    sleepMs: 5000
-  }, { rootDir, now, timeoutMs: 10000 });
+  const run = startPythonAdapterRun(
+    {
+      ...samplePythonAdapterInput,
+      runId: "run-python-cancel",
+      mode: "sleep",
+      sleepMs: 5000
+    },
+    { rootDir, now, timeoutMs: 10000 }
+  );
   setTimeout(() => run.cancel("test cancellation"), 50);
   const result = await run.promise;
   assert.equal(result.ok, false);
@@ -112,11 +113,14 @@ test("python adapter cancellation is graceful and writes cleanup receipt", async
 
 test("python adapter logs are redacted before evidence write", async () => {
   resetRoot();
-  const result = await executePythonAdapterRun({
-    ...samplePythonAdapterInput,
-    runId: "run-python-secret",
-    mode: "secret"
-  }, { rootDir, now });
+  const result = await executePythonAdapterRun(
+    {
+      ...samplePythonAdapterInput,
+      runId: "run-python-secret",
+      mode: "secret"
+    },
+    { rootDir, now }
+  );
   const rawMarker = "bearer " + "abcdefghijklmnop";
   assert.equal(result.ok, true, JSON.stringify(result.errors));
   assert.doesNotMatch(JSON.stringify(result), new RegExp(escapeRegExp(rawMarker), "u"));
@@ -130,20 +134,6 @@ test("python adapter runner review succeeds", async () => {
   assert.equal(review.ok, true, JSON.stringify(review.errors));
   assert.equal(review.checks.environmentClean, true);
   assert.equal(review.checks.timeoutCleanup, true);
-});
-
-test("python adapter public contract documents execution boundaries", () => {
-  const text = fs.readFileSync("docs/contracts/python-adapter-runner.md", "utf8");
-  for (const phrase of [
-    "signed and allowlisted",
-    "fail before launch",
-    "minimal environment",
-    "timeout",
-    "cancellation",
-    "cleanup receipt"
-  ]) {
-    assert.match(text, new RegExp(escapeRegExp(phrase), "u"));
-  }
 });
 
 function resetRoot() {

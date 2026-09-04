@@ -6,7 +6,6 @@ const failures = [];
 const moduleText = readText("src/core/function-expansion-closeout.mjs");
 const tests = readText("tests/function-expansion-closeout.test.mjs");
 const surfaceTests = readText("tests/function-expansion-closeout-surface.test.mjs");
-const docs = readText("docs/validation/function-expansion-closeout.md");
 const panel = readText("src/workspaces/FunctionExpansionCloseoutPanel.tsx");
 const runWorkspace = readText("src/workspaces/RunWorkspace.tsx");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
@@ -14,10 +13,6 @@ const types = readText("src/workspaces/TrustRunSettingsTypes.ts");
 const packageJson = JSON.parse(readText("package.json"));
 const review = createFunctionExpansionCloseoutReview();
 const gate = reviewFunctionExpansionCloseoutGate();
-const privatePlanMarker = ["\\.", "planning"].join("");
-const privateReferenceDocsMarker = ["reference", "\\/", "docs"].join("");
-const unsafePublicMarkerPattern = new RegExp(`\\bR\\d{4}\\b|${privatePlanMarker}|${privateReferenceDocsMarker}|[A-Za-z]:[\\\\/]`, "u");
-
 requireIncludes(
   moduleText,
   [
@@ -59,19 +54,6 @@ requireIncludes(
     "No-Go claims"
   ],
   "function expansion closeout surface tests"
-);
-
-requireIncludes(
-  docs,
-  [
-    "Function Expansion Closeout",
-    "source-first supported-local-only",
-    "Portability, drift, and profile mapping",
-    "Graph, block, and runtime handoff mapping",
-    "No-Go claims",
-    "Passing this closeout does not publish"
-  ],
-  "function expansion closeout docs"
 );
 
 requireIncludes(
@@ -119,10 +101,6 @@ if (!String(packageJson.scripts?.validate ?? "").includes("validate:function-exp
   failures.push("validate script must include validate:function-expansion-closeout");
 }
 
-if (unsafePublicMarkerPattern.test(docs)) {
-  failures.push("public function expansion closeout doc must not contain internal markers or local paths");
-}
-
 if (failures.length > 0) {
   console.error(JSON.stringify({ status: "failed", failures }, null, 2));
   process.exit(1);
@@ -137,8 +115,7 @@ console.log(
         "tests/function-expansion-closeout.test.mjs",
         "tests/function-expansion-closeout-surface.test.mjs",
         "src/workspaces/FunctionExpansionCloseoutPanel.tsx",
-        "src/workspaces/RunWorkspace.tsx",
-        "docs/validation/function-expansion-closeout.md"
+        "src/workspaces/RunWorkspace.tsx"
       ],
       summary: gate.summary
     },

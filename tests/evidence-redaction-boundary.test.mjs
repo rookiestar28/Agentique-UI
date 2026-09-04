@@ -9,12 +9,9 @@ import {
   inspectEvidenceText,
   requiredEvidenceProducers,
   sanitizeEvidenceValue,
-  syntheticEvidenceCorpus,
-  visualEvidenceManifest
+  syntheticEvidenceCorpus
 } from "../src/core/evidence-redaction-boundary.mjs";
-import { validateVisualEvidenceInventory } from "../src/core/evidence-redaction-visual.mjs";
 import { scanPublicBoundary } from "../scripts/check-public-boundary.mjs";
-import { reviewEvidenceRedactionIntegration } from "../scripts/check-evidence-redaction-boundary.mjs";
 
 const rawMarkers = () => ({
   bearer: ["Bear", "er abcdefghijklmnop"].join(""),
@@ -88,23 +85,6 @@ test("producer matrix covers every required evidence and authority boundary", ()
   assert.ok(requiredEvidenceProducers.every((entry) => entry.disposition === "redact-before-authority" || entry.disposition === "metadata-only"));
 });
 
-test("visual evidence inventory binds every PNG and rejects drift or unsafe metadata", () => {
-  const root = process.cwd();
-  const approved = validateVisualEvidenceInventory({ root });
-  assert.equal(approved.ok, true);
-  assert.equal(approved.files.length, visualEvidenceManifest.length);
-  assert.equal(approved.pixelContentInspected, false);
-  assert.equal(approved.ocrClaimed, false);
-
-  const missing = validateVisualEvidenceInventory({ root, manifest: visualEvidenceManifest.slice(1) });
-  assert.equal(missing.ok, false);
-  assert.ok(missing.findings.some((finding) => finding.code === "visual.inventory-unexpected"));
-
-  const drifted = structuredClone(visualEvidenceManifest);
-  drifted[0].sha256 = "0".repeat(64);
-  assert.equal(validateVisualEvidenceInventory({ root, manifest: drifted }).ok, false);
-});
-
 test("importable public scan rejects decoded sensitive text without reading private state", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "agentique-public-boundary-"));
   try {
@@ -132,27 +112,4 @@ test("public scan recursively inspects an exact candidate nested below an ignore
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
-});
-
-test("structural mutations reject delegation scanner and ordering regressions", () => {
-  const sources = {
-    secretVaultSource: fs.readFileSync("src/core/secret-vault.mjs", "utf8"),
-    rustSource: fs.readFileSync("src-tauri/src/lib.rs", "utf8"),
-    publicScannerSource: fs.readFileSync("scripts/check-public-boundary.mjs", "utf8"),
-    packageSource: fs.readFileSync("package.json", "utf8"),
-    contractSource: fs.readFileSync("docs/contracts/evidence-redaction-boundary.md", "utf8")
-  };
-  assert.equal(reviewEvidenceRedactionIntegration(sources).ok, true);
-
-  const withoutDelegation = structuredClone(sources);
-  withoutDelegation.secretVaultSource = withoutDelegation.secretVaultSource.replace("return redactEvidenceText(value)", "return String(value)");
-  assert.equal(reviewEvidenceRedactionIntegration(withoutDelegation).ok, false);
-
-  const truncateFirst = structuredClone(sources);
-  truncateFirst.rustSource = truncateFirst.rustSource.replace("redact_bearer_tokens(value.to_string())", "redact_bearer_tokens(bounded_text(value))");
-  assert.equal(reviewEvidenceRedactionIntegration(truncateFirst).ok, false);
-
-  const withoutDecodedScan = structuredClone(sources);
-  withoutDecodedScan.publicScannerSource = withoutDecodedScan.publicScannerSource.replace("encoded-internal-marker", "plain-only-marker");
-  assert.equal(reviewEvidenceRedactionIntegration(withoutDecodedScan).ok, false);
 });

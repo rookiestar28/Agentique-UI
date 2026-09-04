@@ -1,10 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  reviewDesktopRunnerValidationGate,
-  sampleDesktopRunnerEvidence,
-  validateDesktopRunnerEvidence
-} from "../src/core/desktop-runner-validation-gate.mjs";
+import { reviewDesktopRunnerValidationGate, sampleDesktopRunnerEvidence, validateDesktopRunnerEvidence } from "../src/core/desktop-runner-validation-gate.mjs";
 
 test("complete desktop runner evidence is accepted across all platforms", () => {
   const review = validateDesktopRunnerEvidence(sampleDesktopRunnerEvidence);
@@ -104,10 +100,9 @@ test("adapter signature and preflight evidence are required", () => {
   assert.ok(review.errors.some((error) => error.code === "desktop-runner.adapter-preflight"));
 });
 
-test("unsafe evidence references and missing SOP references fail closed", () => {
+test("unsafe evidence references fail closed", () => {
   const review = validateDesktopRunnerEvidence({
     ...sampleDesktopRunnerEvidence,
-    sopReferences: [],
     platforms: {
       ...sampleDesktopRunnerEvidence.platforms,
       windows: {
@@ -118,7 +113,6 @@ test("unsafe evidence references and missing SOP references fail closed", () => 
   });
 
   assert.equal(review.ok, false);
-  assert.ok(review.errors.some((error) => error.code === "desktop-runner.sop-reference"));
   assert.ok(review.errors.some((error) => error.code === "desktop-runner.evidence-reference"));
 });
 

@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import {
   reviewCompanionIntegrationCloseout,
@@ -32,9 +31,7 @@ test("source pin and package version drift fail closed", () => {
   });
   const packageDrift = reviewCompanionIntegrationCloseout({
     ...sampleCompanionIntegrationCloseout,
-    packages: sampleCompanionIntegrationCloseout.packages.map((pkg) => (
-      pkg.name === "@agentique.io/readback" ? { ...pkg, version: "0.3.0" } : pkg
-    ))
+    packages: sampleCompanionIntegrationCloseout.packages.map((pkg) => (pkg.name === "@agentique.io/readback" ? { ...pkg, version: "0.3.0" } : pkg))
   });
 
   assert.equal(sourceDrift.ok, false);
@@ -115,23 +112,6 @@ test("public safety and worktree evidence must be explicit", () => {
   assert.equal(review.ok, false);
   assert.ok(review.errors.some((error) => error.code === "companion-closeout.public-safety"));
   assert.ok(review.errors.some((error) => error.code === "companion-closeout.worktree-evidence"));
-});
-
-test("public validation document states accepted scope and blocked claims", () => {
-  const text = fs.readFileSync("docs/validation/companion-integration-closeout.md", "utf8");
-
-  assert.match(text, /Companion Integration Closeout/u);
-  assert.match(text, /source revision `2621a33ba9cd83b125ffaabeec7817abc3c52719`/u);
-  assert.match(text, /read-only readback and badge projection/u);
-  assert.match(text, /static validator import proof/u);
-  assert.match(text, /safe download acquisition proof/u);
-  assert.match(text, /review-only uploader preview/u);
-  assert.match(text, /browser-local external intake scanner/u);
-  assert.match(text, /authenticated review submission/u);
-  assert.match(text, /GitHub Action runtime/u);
-  assert.match(text, /hosted runtime/u);
-  assert.match(text, /universal runtime/u);
-  assert.doesNotMatch(text, /\bR\d{4}\b/u);
 });
 
 test("companion integration closeout gate proves accepted and blocked paths", () => {

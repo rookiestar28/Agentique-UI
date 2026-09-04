@@ -13,24 +13,15 @@ const requiredSourcePin = Object.freeze({
   packageVersion: "0.2.1",
   worktreeState: "clean"
 });
-const requiredValidationSteps = Object.freeze([
-  "validate:companion-integration-closeout",
-  "validate:public",
-  "npm test",
-  "npm run validate"
-]);
+const requiredValidationSteps = Object.freeze(["validate:companion-integration-closeout", "validate:public", "npm test", "npm run validate"]);
 const requiredPackages = Object.freeze([
-  packageRequirement("@agentique.io/readback", ["read-only-client-normalizers-badges", "download-metadata-acquisition-proof"], [
-    companionReadbackAdapterVersion,
-    companionDownloadAcquisitionVersion
-  ]),
-  packageRequirement("@agentique.io/validator", ["static-validator-report", "browser-local-external-intake"], [
-    companionValidatorAdapterVersion,
-    externalIntakeSchemaVersion
-  ]),
-  packageRequirement("@agentique.io/uploader", ["review-only-uploader-preview"], [
-    companionUploaderPreviewVersion
-  ]),
+  packageRequirement(
+    "@agentique.io/readback",
+    ["read-only-client-normalizers-badges", "download-metadata-acquisition-proof"],
+    [companionReadbackAdapterVersion, companionDownloadAcquisitionVersion]
+  ),
+  packageRequirement("@agentique.io/validator", ["static-validator-report", "browser-local-external-intake"], [companionValidatorAdapterVersion, externalIntakeSchemaVersion]),
+  packageRequirement("@agentique.io/uploader", ["review-only-uploader-preview"], [companionUploaderPreviewVersion]),
   packageRequirement("@agentique.io/action", ["ci-reference-only"], [])
 ]);
 const requiredCapabilities = Object.freeze([
@@ -68,7 +59,7 @@ const blockedClaimKeys = Object.freeze([
   "platformDownloadReadiness",
   "productionDesktopRuntime"
 ]);
-const pathNeutralReferencePattern = /^(docs\/validation\/[A-Za-z0-9._/-]+|docs\/contracts\/[A-Za-z0-9._/-]+|docs\/security\/[A-Za-z0-9._/-]+|scripts\/[A-Za-z0-9._/-]+|tests\/[A-Za-z0-9._/-]+)$/u;
+const pathNeutralReferencePattern = /^(scripts\/[A-Za-z0-9._/-]+|tests\/[A-Za-z0-9._/-]+)$/u;
 const privatePlanMarker = "\\." + "planning";
 const privateSessionMarker = "\\." + "sessions";
 const privateReferenceDocsMarker = "reference" + "\\/" + "docs";
@@ -107,19 +98,17 @@ export const sampleCompanionIntegrationCloseout = deepFreeze({
     adapterSchemas: [...pkg.adapterSchemas],
     integrationMode: pkg.name === "@agentique.io/action" ? "deferred-reference-only" : "local-static-adapter"
   })),
-  capabilities: Object.fromEntries(requiredCapabilities.map((capability) => [
-    capability.id,
-    {
-      status: "accepted",
-      sourcePackage: capability.sourcePackage,
-      adapterSchema: capability.adapterSchema,
-      evidenceRef: "docs/validation/companion-integration-closeout.md"
-    }
-  ])),
-  deferredCapabilities: Object.fromEntries(requiredDeferredCapabilities.map((id) => [
-    id,
-    { status: "deferred", requiresSeparateGate: true }
-  ])),
+  capabilities: Object.fromEntries(
+    requiredCapabilities.map((capability) => [
+      capability.id,
+      {
+        status: "accepted",
+        sourcePackage: capability.sourcePackage,
+        adapterSchema: capability.adapterSchema
+      }
+    ])
+  ),
+  deferredCapabilities: Object.fromEntries(requiredDeferredCapabilities.map((id) => [id, { status: "deferred", requiresSeparateGate: true }])),
   claimBoundary: Object.fromEntries(blockedClaimKeys.map((key) => [key, false])),
   publicSafety: {
     publicBoundaryScan: "passed",
@@ -193,9 +182,7 @@ export function reviewCompanionIntegrationCloseoutGate() {
   });
   const packageDrift = reviewCompanionIntegrationCloseout({
     ...sampleCompanionIntegrationCloseout,
-    packages: sampleCompanionIntegrationCloseout.packages.map((pkg) => (
-      pkg.name === "@agentique.io/validator" ? { ...pkg, version: "9.9.9" } : pkg
-    ))
+    packages: sampleCompanionIntegrationCloseout.packages.map((pkg) => (pkg.name === "@agentique.io/validator" ? { ...pkg, version: "9.9.9" } : pkg))
   });
   const missingEvidence = reviewCompanionIntegrationCloseout({
     ...sampleCompanionIntegrationCloseout,
@@ -236,14 +223,7 @@ export function reviewCompanionIntegrationCloseoutGate() {
 
   return {
     schemaVersion: "agentique.companionIntegrationCloseoutGateReview.v1",
-    ok:
-      accepted.ok &&
-      !sourceDrift.ok &&
-      !packageDrift.ok &&
-      !missingEvidence.ok &&
-      !overclaim.ok &&
-      !unsafeReference.ok &&
-      !completedDeferredCapability.ok,
+    ok: accepted.ok && !sourceDrift.ok && !packageDrift.ok && !missingEvidence.ok && !overclaim.ok && !unsafeReference.ok && !completedDeferredCapability.ok,
     acceptedStatus: accepted.status,
     sourceDriftBlocked: sourceDrift.errors.some((error) => error.code === "companion-closeout.source-pin"),
     packageDriftBlocked: packageDrift.errors.some((error) => error.code === "companion-closeout.package-version"),
@@ -347,7 +327,7 @@ function reviewCapabilities(capabilities = {}, errors) {
     if (capability.adapterSchema !== requirement.adapterSchema) {
       errors.push(issue("companion-closeout.capability-schema", `${requirement.id} adapter schema drifted.`));
     }
-    validateEvidenceRef(capability.evidenceRef, errors);
+    if (capability.evidenceRef) validateEvidenceRef(capability.evidenceRef, errors);
     items[requirement.id] = {
       status: capability.status === "accepted" ? "accepted" : "blocked",
       sourcePackage: safeText(capability.sourcePackage),

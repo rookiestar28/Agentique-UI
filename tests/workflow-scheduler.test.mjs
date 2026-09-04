@@ -1,14 +1,8 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import fs from "node:fs";
 import test from "node:test";
 import { sampleWorkflowIr } from "../src/core/workflow-ir.mjs";
-import {
-  createWorkflowSchedule,
-  reviewWorkflowScheduler,
-  runWorkflowSchedule,
-  sampleSchedulableWorkflowIr
-} from "../src/core/workflow-scheduler.mjs";
+import { createWorkflowSchedule, reviewWorkflowScheduler, runWorkflowSchedule, sampleSchedulableWorkflowIr } from "../src/core/workflow-scheduler.mjs";
 
 test("workflow scheduler validation gate passes", () => {
   const output = execFileSync(process.execPath, ["scripts/check-workflow-scheduler.mjs"], { encoding: "utf8" });
@@ -28,7 +22,10 @@ test("workflow scheduler runs successful DAG with deterministic artifacts", () =
   const result = runWorkflowSchedule(sampleSchedulableWorkflowIr);
   assert.equal(result.ok, true, JSON.stringify(result.errors));
   assert.equal(result.status, "succeeded");
-  assert.equal(result.nodeResults.every((entry) => entry.status === "succeeded"), true);
+  assert.equal(
+    result.nodeResults.every((entry) => entry.status === "succeeded"),
+    true
+  );
   assert.ok(result.outputs.some((output) => output.path === "outputs/merge-previewArtifact.json"));
   assert.ok(result.artifacts.every((artifact) => artifact.path.startsWith("artifacts/")));
   assert.equal(result.cleanup.ok, true);
@@ -94,24 +91,3 @@ test("workflow scheduler review succeeds", () => {
   assert.equal(review.checks.failurePropagated, true);
   assert.equal(review.checks.cancellationCleanup, true);
 });
-
-test("workflow scheduler public contract documents execution boundaries", () => {
-  const text = fs.readFileSync("docs/contracts/workflow-scheduler.md", "utf8");
-  for (const phrase of [
-    "allowlisted node families",
-    "topological order",
-    "branch",
-    "merge",
-    "retries",
-    "failure propagation",
-    "cancellation",
-    "artifact mapping",
-    "cleanup receipt"
-  ]) {
-    assert.match(text, new RegExp(escapeRegExp(phrase), "u"));
-  }
-});
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-}

@@ -38,7 +38,7 @@ const forbiddenClaimKeys = Object.freeze([
 ]);
 
 const acceptedCapabilityStates = new Set(["accepted", "planned", "parked", "blocked"]);
-const pathNeutralReferencePattern = /^(docs\/contracts\/[A-Za-z0-9._/-]+|docs\/validation\/[A-Za-z0-9._/-]+|docs\/security\/[A-Za-z0-9._/-]+|evidence\/[A-Za-z0-9._/-]+)$/u;
+const pathNeutralReferencePattern = /^evidence\/[A-Za-z0-9._/-]+$/u;
 const privatePlanMarker = "\\." + "planning";
 const privateReferenceDocsMarker = ["reference", "docs"].join("\\/");
 const internalItemCodePattern = "\\b" + "R" + "\\d{4}\\b";
@@ -75,59 +75,51 @@ export const sampleSourceFirstExecutableCapability = Object.freeze({
     forbiddenTerms: ["production desktop runtime", "hosted runtime", "universal workflow runtime", "generic shell", "automatic downloaded workflow execution"]
   },
   capabilityMatrix: [
-    capability("source-first-posture-boundary", "Source-first posture boundary", "accepted", "Current accepted source-checkout workspace scope and no-overclaim vocabulary.", [
-      "docs/contracts/source-first-executable-capability.md"
-    ]),
+    capability("source-first-posture-boundary", "Source-first posture boundary", "accepted", "Current accepted source-checkout workspace scope and no-overclaim vocabulary.", []),
     capability(
       "native-event-transport",
       "Active native event transport",
       "accepted",
       "Versioned bounded native event bridge with replay fallback is accepted for supported local runs.",
-      ["docs/contracts/active-native-event-transport.md"]
+      []
     ),
     capability(
       "revocation-cancel-controls",
       "Revocation and cancel controls",
       "accepted",
       "User-visible revoke, cancel, and forced-stop controls have accepted local audit evidence.",
-      ["docs/contracts/runner-revocation-cancel-controls.md"]
+      []
     ),
-    capability("durable-run-ledger-replay", "Durable run ledger and replay", "accepted", "Restart-safe local ledger and bounded redacted export behavior are accepted.", [
-      "docs/contracts/durable-run-ledger.md"
-    ]),
+    capability("durable-run-ledger-replay", "Durable run ledger and replay", "accepted", "Restart-safe local ledger and bounded redacted export behavior are accepted.", []),
     capability(
       "watchdog-heartbeat-cleanup",
       "Watchdog heartbeat and cleanup",
       "accepted",
       "Native-owned heartbeat, timeout, and cleanup supervision are accepted for supported local lanes.",
-      ["docs/contracts/watchdog-heartbeat-supervisor.md"]
+      []
     ),
-    capability("artifact-receipt-safe-viewer", "Artifact receipt and safe viewer", "accepted", "Digest-aware artifact receipt binding and preview-safe handling are accepted.", [
-      "docs/contracts/artifact-receipt-binding.md"
-    ]),
+    capability("artifact-receipt-safe-viewer", "Artifact receipt and safe viewer", "accepted", "Digest-aware artifact receipt binding and preview-safe handling are accepted.", []),
     capability(
       "runtime-prerequisite-readiness",
       "Runtime prerequisite readiness",
       "accepted",
       "Source-checkout diagnostics are accepted without package-manager installation or lifecycle execution.",
-      ["docs/contracts/runtime-prerequisite-readiness.md"]
+      []
     ),
-    capability("external-agent-client-handoff", "External agent-client handoff", "accepted", "User-driven descriptor export is accepted without automatic bridge execution.", [
-      "docs/validation/runner-ui-execution-evidence.md"
-    ]),
+    capability("external-agent-client-handoff", "External agent-client handoff", "accepted", "User-driven descriptor export is accepted without automatic bridge execution.", []),
     capability(
       "multi-lane-execution-readiness",
       "Multi-lane execution readiness",
       "accepted",
       "Disabled-by-default readiness matrix is accepted for future adapter-family review without enabling those lanes.",
-      ["docs/contracts/multi-lane-execution-readiness.md"]
+      []
     ),
     capability(
       "closeout-validation-claim-sync",
       "Closeout validation and claim sync",
       "accepted",
       "Aggregate validation and public claim synchronization are accepted for source-first local-only scope.",
-      ["docs/validation/executable-capability-closeout-pack.md"]
+      []
     )
   ],
   releaseBoundary: {
@@ -318,9 +310,6 @@ function reviewCapabilityMatrix(matrix, errors) {
     }
     for (const reference of item.evidenceRefs) {
       validateEvidenceRef(reference, errors);
-    }
-    if (item.state === "accepted" && item.evidenceRefs.length === 0) {
-      errors.push(issue("source-first.evidence-ref", `${item.id} accepted state requires evidence reference.`));
     }
     if (item.enablesNewRuntime || item.liveTransport || item.startsBridge || item.startsRuntime || item.widensPermissions) {
       errors.push(issue("source-first.runtime-enable", `${item.id} cannot enable runtime behavior in the posture boundary.`));

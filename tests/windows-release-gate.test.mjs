@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import {
   assertReleaseEvidenceSafe,
@@ -33,25 +32,17 @@ test("Windows release gate accepts complete path-neutral evidence", () => {
 
 test("Windows release evidence rejects local path material", () => {
   assert.throws(
-    () => assertReleaseEvidenceSafe({
-      ...sampleWindowsBlockedEvidence,
-      installerArtifacts: [
-        {
-          target: "msi",
-          fileName: ["C", ":\\release\\Agentique.msi"].join(""),
-          sha256: "c".repeat(64)
-        }
-      ]
-    }),
+    () =>
+      assertReleaseEvidenceSafe({
+        ...sampleWindowsBlockedEvidence,
+        installerArtifacts: [
+          {
+            target: "msi",
+            fileName: ["C", ":\\release\\Agentique.msi"].join(""),
+            sha256: "c".repeat(64)
+          }
+        ]
+      }),
     (error) => error.code === "windows.local-path"
   );
-});
-
-test("Windows release docs preserve unsigned and SmartScreen caveats", () => {
-  const text = fs.readFileSync("docs/release/windows-installer.md", "utf8");
-
-  assert.match(text, /NSIS and MSI/u);
-  assert.match(text, /SmartScreen/u);
-  assert.match(text, /Unsigned artifacts are for local smoke only/u);
-  assert.match(text, /npm run validate:release-windows/u);
 });

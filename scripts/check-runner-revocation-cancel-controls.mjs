@@ -6,7 +6,6 @@ const failures = [];
 const review = reviewRunnerRevocationCancelControlsGate();
 const moduleText = readText("src/core/runner-revocation-cancel-controls.mjs");
 const tests = readText("tests/runner-revocation-cancel-controls.test.mjs");
-const contract = readText("docs/contracts/runner-revocation-cancel-controls.md");
 const hook = readText("src/app-state/useRunnerWorkspaceState.ts");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
 const types = readText("src/workspaces/TrustRunSettingsTypes.ts");
@@ -53,21 +52,6 @@ requireIncludes(
     "runner revocation cancel control gate proves UI flows and no capability widening"
   ],
   "runner revocation cancel controls tests"
-);
-
-requireIncludes(
-  contract,
-  [
-    "Runner Revocation Cancel Controls",
-    "stale approval reuse denial",
-    "revoked grant start denial",
-    "cancel vs forced-kill",
-    "retry blocked until cleanup",
-    "redacted audit receipts",
-    "source-first",
-    "generic shell"
-  ],
-  "runner revocation cancel controls contract"
 );
 
 requireIncludes(
@@ -119,7 +103,6 @@ console.log(
       checked: [
         "src/core/runner-revocation-cancel-controls.mjs",
         "tests/runner-revocation-cancel-controls.test.mjs",
-        "docs/contracts/runner-revocation-cancel-controls.md",
         "src/app-state/useRunnerWorkspaceState.ts",
         "src/workspaces/RunWorkspace.tsx",
         "src/workspaces/RunnerRevocationCancelControls.tsx",

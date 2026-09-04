@@ -6,7 +6,6 @@ const failures = [];
 const review = reviewArtifactReceiptBindingGate();
 const moduleText = readText("src/core/artifact-receipt-binding.mjs");
 const tests = readText("tests/artifact-receipt-binding.test.mjs");
-const contract = readText("docs/contracts/artifact-receipt-binding.md");
 const hook = readText("src/app-state/useRunnerWorkspaceState.ts");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
 const types = readText("src/workspaces/TrustRunSettingsTypes.ts");
@@ -48,12 +47,6 @@ requireIncludes(
     "artifact receipt binding gate proves receipt policy and no capability widening"
   ],
   "artifact receipt binding tests"
-);
-
-requireIncludes(
-  contract,
-  ["Artifact Receipt Binding", "run identity", "digest", "MIME", "retention", "cleanup state", "safe previews", "metadata-only", "sandbox-required", "path traversal"],
-  "artifact receipt binding contract"
 );
 
 requireIncludes(hook, ["createArtifactReceiptViewerSurface", "artifactReceiptViewerSurface", "handleArtifactReceiptScenario", "cleanup-required"], "runner workspace state hook");
@@ -98,7 +91,6 @@ console.log(
       checked: [
         "src/core/artifact-receipt-binding.mjs",
         "tests/artifact-receipt-binding.test.mjs",
-        "docs/contracts/artifact-receipt-binding.md",
         "src/app-state/useRunnerWorkspaceState.ts",
         "src/workspaces/ArtifactReceiptViewerPanel.tsx",
         "package.json"

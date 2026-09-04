@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import {
   assertReviewOnlyUploaderPreview,
@@ -140,29 +139,4 @@ test("preview redacts local paths internal markers and secret-like values", () =
   assert.doesNotMatch(serialized, new RegExp(secretValue, "u"));
   assert.match(serialized, /redacted:path/u);
   assert.match(serialized, /redacted:secret/u);
-});
-
-test("uploader preview UI and docs expose review-only rows without submit claims", () => {
-  const app = fs.readFileSync("src/workspaces/routes/LibraryWorkspaceAndImportWorkspaceRoute.tsx", "utf8");
-  const workspace = ["src/workspaces/LibraryImportWorkspaces.tsx", "src/workspaces/LibraryImportWorkspaceTypes.ts", "src/workspaces/LibraryWorkspace.tsx", "src/workspaces/ImportWorkspace.tsx"].map((filePath) => fs.readFileSync(filePath, "utf8")).join("\n");
-  const docs = fs.readFileSync("docs/contracts/companion-alignment.md", "utf8");
-
-  assert.match(app, /createCompanionUploaderPreview/u);
-  for (const label of [
-    "Uploader boundary",
-    "submissionMode",
-    "liveUploadAvailable",
-    "Upload plan preview",
-    "Import plan preview",
-    "Variant plan preview",
-    "Agent-native plan preview",
-    "Draft preview",
-    "Patch/delta preview",
-    "No submit action"
-  ]) {
-    assert.match(workspace, new RegExp(label, "u"));
-  }
-  assert.match(docs, /Review-Only Uploader Preview Boundary/u);
-  assert.match(docs, /liveUploadAvailable: false/u);
-  assert.match(docs, /must not expose submit/u);
 });

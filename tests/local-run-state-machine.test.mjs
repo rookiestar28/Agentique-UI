@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import fs from "node:fs";
 import test from "node:test";
 import {
   createLocalRunRecord,
@@ -80,11 +79,7 @@ test("local run state-machine supports permission-blocked then ready path", () =
 });
 
 test("local run state-machine handles cancellation and cleanup", () => {
-  const ready = transitionLocalRun(
-    transitionLocalRun(sampleLocalRunRecord, { type: "prepare" }, { now }).record,
-    { type: "ready", workerId: "worker.alpha-001" },
-    { now }
-  ).record;
+  const ready = transitionLocalRun(transitionLocalRun(sampleLocalRunRecord, { type: "prepare" }, { now }).record, { type: "ready", workerId: "worker.alpha-001" }, { now }).record;
   const running = transitionLocalRun(ready, { type: "start", workerId: "worker.alpha-001" }, { now }).record;
   const canceling = transitionLocalRun(running, { type: "cancel" }, { now });
   assert.equal(canceling.record.state, "canceling");
@@ -96,28 +91,23 @@ test("local run state-machine handles cancellation and cleanup", () => {
 });
 
 test("local run state-machine retries timeout deterministically then fails", () => {
-  const base = createLocalRunRecord({
-    resourceId: "resource.timeout",
-    sessionId: "session.timeout",
-    runId: "run.timeout",
-    retry: { maxAttempts: 1 }
-  }, { now });
-  const ready = transitionLocalRun(
-    transitionLocalRun(base, { type: "prepare" }, { now }).record,
-    { type: "ready", workerId: "worker.timeout" },
+  const base = createLocalRunRecord(
+    {
+      resourceId: "resource.timeout",
+      sessionId: "session.timeout",
+      runId: "run.timeout",
+      retry: { maxAttempts: 1 }
+    },
     { now }
-  ).record;
+  );
+  const ready = transitionLocalRun(transitionLocalRun(base, { type: "prepare" }, { now }).record, { type: "ready", workerId: "worker.timeout" }, { now }).record;
   const running = transitionLocalRun(ready, { type: "start", workerId: "worker.timeout" }, { now }).record;
   const retried = transitionLocalRun(running, { type: "timeout", message: "first timeout" }, { now });
   assert.equal(retried.ok, true);
   assert.equal(retried.record.state, "queued");
   assert.equal(retried.record.retry.attemptsUsed, 1);
 
-  const rerunReady = transitionLocalRun(
-    transitionLocalRun(retried.record, { type: "prepare" }, { now }).record,
-    { type: "ready", workerId: "worker.timeout" },
-    { now }
-  ).record;
+  const rerunReady = transitionLocalRun(transitionLocalRun(retried.record, { type: "prepare" }, { now }).record, { type: "ready", workerId: "worker.timeout" }, { now }).record;
   const rerunning = transitionLocalRun(rerunReady, { type: "start", workerId: "worker.timeout" }, { now }).record;
   const failed = transitionLocalRun(rerunning, { type: "timeout", message: "second timeout" }, { now });
   assert.equal(failed.record.state, "failed");
@@ -125,11 +115,7 @@ test("local run state-machine retries timeout deterministically then fails", () 
 });
 
 test("local run state-machine recovers stale incomplete runs safely", () => {
-  const ready = transitionLocalRun(
-    transitionLocalRun(sampleLocalRunRecord, { type: "prepare" }, { now }).record,
-    { type: "ready", workerId: "worker.alpha-001" },
-    { now }
-  ).record;
+  const ready = transitionLocalRun(transitionLocalRun(sampleLocalRunRecord, { type: "prepare" }, { now }).record, { type: "ready", workerId: "worker.alpha-001" }, { now }).record;
   const running = transitionLocalRun(ready, { type: "start", workerId: "worker.alpha-001" }, { now }).record;
   const recovered = recoverLocalRun(running, { now: "2026-06-12T00:01:00.000Z" });
   assert.equal(recovered.ok, true);
@@ -139,25 +125,13 @@ test("local run state-machine recovers stale incomplete runs safely", () => {
 });
 
 test("local run state-machine rejects path-shaped ids", () => {
-  assert.throws(() => createLocalRunRecord({
-    resourceId: "resource.bad",
-    sessionId: "session.bad",
-    runId: ["runs", "bad"].join("/")
-  }), /opaque id/u);
+  assert.throws(
+    () =>
+      createLocalRunRecord({
+        resourceId: "resource.bad",
+        sessionId: "session.bad",
+        runId: ["runs", "bad"].join("/")
+      }),
+    /opaque id/u
+  );
 });
-
-test("local run state-machine public contract documents recovery and cleanup", () => {
-  const text = fs.readFileSync("docs/contracts/local-run-state-machine.md", "utf8");
-  for (const phrase of [
-    "deterministic",
-    "stale incomplete",
-    "cleanup-required",
-    "forbidden transition"
-  ]) {
-    assert.match(text, new RegExp(escapeRegExp(phrase), "u"));
-  }
-});
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-}

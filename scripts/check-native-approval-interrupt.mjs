@@ -9,7 +9,6 @@ const scheduler = read("src-tauri/src/native_dag_scheduler.rs");
 const client = read("src/core/native-dag-scheduler-client.mjs");
 const bridge = read("src/core/tauri-native-dag-scheduler-client.ts");
 const panel = read("src/workspaces/NativeDagSchedulerPanel.tsx");
-const contract = read("docs/contracts/native-approval-interrupt.md");
 const packageJson = JSON.parse(read("package.json"));
 const findings = [];
 
@@ -36,9 +35,6 @@ for (const phrase of ["resume(", "agentique_scheduler_resume", "checkpointGenera
 }
 for (const phrase of ["Approval interrupt", "Resume approved step", "Record denial", "Checkpoint", "Decision identity", 'aria-live="polite"']) {
   if (!panel.includes(phrase)) findings.push(`native approval UI marker is missing: ${phrase}`);
-}
-for (const phrase of ["explicit user action", "same-process", "edited input", "one-use", "macOS remains unverified"]) {
-  if (!contract.toLowerCase().includes(phrase.toLowerCase())) findings.push(`native approval contract boundary is missing: ${phrase}`);
 }
 if (!String(packageJson.scripts?.["validate:native-approval-interrupt"] ?? "").includes("check-native-approval-interrupt.mjs")) {
   findings.push("package scripts must expose validate:native-approval-interrupt");

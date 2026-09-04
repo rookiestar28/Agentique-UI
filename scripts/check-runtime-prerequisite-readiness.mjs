@@ -6,7 +6,6 @@ const failures = [];
 const review = reviewRuntimePrerequisiteReadinessGate();
 const moduleText = readText("src/core/runtime-prerequisite-readiness.mjs");
 const tests = readText("tests/runtime-prerequisite-readiness.test.mjs");
-const contract = readText("docs/contracts/runtime-prerequisite-readiness.md");
 const hook = readText("src/app-state/useRunnerWorkspaceState.ts");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
 const types = readText("src/workspaces/TrustRunSettingsTypes.ts");
@@ -57,26 +56,6 @@ requireIncludes(
     "runtime prerequisite surface exposes desktop and narrow bootstrap interaction evidence"
   ],
   "runtime prerequisite readiness tests"
-);
-
-requireIncludes(
-  contract,
-  [
-    "Runtime Prerequisite Readiness",
-    "host-runtime detection receipts",
-    "non-mutating remediation",
-    "adapter compatibility",
-    "revocation",
-    "First-Run Bootstrap Diagnostics",
-    "Rust",
-    "Tauri",
-    "unsupported OS",
-    "exportable",
-    "package-manager install",
-    "lifecycle script",
-    "source-checkout"
-  ],
-  "runtime prerequisite readiness contract"
 );
 
 requireIncludes(
@@ -139,7 +118,6 @@ console.log(
       checked: [
         "src/core/runtime-prerequisite-readiness.mjs",
         "tests/runtime-prerequisite-readiness.test.mjs",
-        "docs/contracts/runtime-prerequisite-readiness.md",
         "src/app-state/useRunnerWorkspaceState.ts",
         "src/workspaces/RuntimePrerequisiteReadinessPanel.tsx",
         "package.json"

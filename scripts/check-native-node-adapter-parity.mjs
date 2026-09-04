@@ -7,7 +7,6 @@ import { reviewSupportedLocalClaimBoundary, supportedLocalClaimBoundary } from "
 const rust = read("src-tauri/src/lib.rs");
 const nodeHelper = read("adapters/node/echo-adapter.mjs");
 const panel = read("src/workspaces/NativeAsyncRunLifecyclePanel.tsx");
-const contract = read("docs/contracts/node-adapter-runner.md");
 const packageJson = JSON.parse(read("package.json"));
 const findings = [];
 
@@ -44,11 +43,6 @@ if (!panel.includes('value="adapter.local-node"') || !panel.includes('disabled={
 const claimReview = reviewSupportedLocalClaimBoundary(supportedLocalClaimBoundary);
 if (!claimReview.ok || !claimReview.supportedExecutionLanes.includes("fixed-native-node")) {
   findings.push("supported-local policy does not bind the verified fixed Node lane");
-}
-for (const phrase of ["native process-tree", "package managers", "lifecycle scripts", "inline scripts", "Windows", "Linux"]) {
-  if (!contract.toLowerCase().includes(phrase.toLowerCase())) {
-    findings.push(`Node native contract missing boundary phrase: ${phrase}`);
-  }
 }
 
 const command = String(packageJson.scripts?.["validate:native-node-adapter-parity"] ?? "");

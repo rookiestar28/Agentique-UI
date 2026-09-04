@@ -52,14 +52,3 @@ test("command and capability surfaces do not widen", () => {
   assert.equal(commandCount, 16);
   assert.deepEqual(capability.permissions, ["core:event:allow-listen", "core:event:allow-unlisten"]);
 });
-
-test("contract and direct validator preserve bounded claims", () => {
-  const contract = read("docs/contracts/native-wasm-sandbox.md");
-  const packageJson = JSON.parse(read("package.json"));
-
-  assert.match(contract, /Windows-verified/u);
-  assert.match(contract, /macOS remains\s+unverified and unsupported/u);
-  assert.match(contract, /Caller-selected modules are\s+not supported/u);
-  assert.match(contract, /no WASI or host\s+imports/u);
-  assert.match(packageJson.scripts["validate:native-wasm-sandbox"], /^node scripts\/check-native-wasm-sandbox\.mjs/u);
-});

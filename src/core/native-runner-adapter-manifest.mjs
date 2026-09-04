@@ -24,15 +24,13 @@ export function readNativeRunnerAdapterManifestInputs(root = process.cwd()) {
   return {
     root,
     rustSource: fs.readFileSync(path.join(root, "src-tauri", "src", "lib.rs"), "utf8"),
-    packageJson: fs.readFileSync(path.join(root, "package.json"), "utf8"),
-    contractDoc: fs.readFileSync(path.join(root, "docs", "contracts", "native-runner-boundary.md"), "utf8")
+    packageJson: fs.readFileSync(path.join(root, "package.json"), "utf8")
   };
 }
 
 export function reviewNativeRunnerAdapterManifest(input = readNativeRunnerAdapterManifestInputs()) {
   const rustSource = String(input.rustSource ?? "");
   const packageJson = String(input.packageJson ?? "");
-  const contractDoc = String(input.contractDoc ?? "");
   const requestBody = parseRunnerRequestBody(rustSource);
   const errors = [];
 
@@ -91,9 +89,6 @@ export function reviewNativeRunnerAdapterManifest(input = readNativeRunnerAdapte
   }
   if (!packageJson.includes('"validate:native-runner-adapter-manifest"') || !packageJson.includes("scripts/check-native-runner-adapter-manifest.mjs")) {
     errors.push(issue("manifest.validation-wiring", "Package validation must expose validate:native-runner-adapter-manifest."));
-  }
-  if (!contractDoc.includes("native-resolved fixed adapter manifest") || !contractDoc.includes("digest prefix")) {
-    errors.push(issue("manifest.contract", "Native runner contract must document native manifest resolution and redacted digest receipt."));
   }
   return {
     schemaVersion: "agentique.nativeRunnerAdapterManifestGate.v1",

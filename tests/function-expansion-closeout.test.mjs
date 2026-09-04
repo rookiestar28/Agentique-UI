@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import { createFunctionExpansionCloseoutReview, reviewFunctionExpansionCloseoutGate, reviewFunctionExpansionCloseoutDescriptor } from "../src/core/function-expansion-closeout.mjs";
 
@@ -30,7 +29,7 @@ test("feature family rows are accepted and use path-neutral evidence", () => {
     assert.equal(feature.widensAuthority, false);
     assert.equal(feature.releaseClaimAllowed, false);
     for (const reference of feature.evidenceRefs) {
-      assert.match(reference, /^(docs\/contracts|docs\/validation|docs\/security|evidence)\//u);
+      assert.match(reference, /^evidence\//u);
       assert.doesNotMatch(reference, unsafePublicMarkerPattern);
     }
   }
@@ -143,18 +142,6 @@ test("descriptor review rejects unsupported schema", () => {
 
   assert.equal(review.ok, false);
   assert.ok(review.errors.some((error) => error.code === "function-closeout.schema"));
-});
-
-test("function expansion closeout document is public safe and states no-go claims", () => {
-  const text = fs.readFileSync("docs/validation/function-expansion-closeout.md", "utf8");
-
-  assert.match(text, /Function Expansion Closeout/u);
-  assert.match(text, /source-first supported-local-only/u);
-  assert.match(text, /No-Go claims/u);
-  assert.match(text, /signed installer/u);
-  assert.match(text, /production desktop runtime/u);
-  assert.match(text, /Passing this closeout does not publish/u);
-  assert.doesNotMatch(text, unsafePublicMarkerPattern);
 });
 
 test("function expansion closeout gate proves accepted and blocked paths", () => {

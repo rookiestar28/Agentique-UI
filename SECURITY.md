@@ -30,7 +30,9 @@ The currently validated first-class workflow import formats are n8n, Dify, and L
 
 ## Readiness Gate Boundary
 
-MCP bridge readiness, WASM/WASI sandbox review, rootless container review, and browser automation consent are guarded review or preflight gates only. They do not start bridges, execute WebAssembly, start containers, pull images, build images, launch browsers, attach browser profiles, import browser storage, or automate external providers.
+MCP bridge readiness and browser automation consent remain guarded review surfaces only. They do not start bridges, launch browsers, attach browser profiles, import browser storage, or automate external providers. The WASM/WASI and rootless-container preflight reviews also remain non-executing and grant no runtime authority by themselves.
+
+Separate native contracts validate two narrowly fixed adapters outside the supported-local product allowlist: one bundled no-import WebAssembly module on Windows and one pre-provisioned rootless-container command on Linux. They do not accept caller-selected modules, images, commands, paths, arguments, mounts, networks, or environment values; they do not pull or build images; and they do not establish generic WASM/WASI, container, macOS, production, or release support.
 
 Scheduler models do not grant executable authority; only the fixed native DAG scheduler can launch attempts after native approval validation. A checkpointed approval interrupt pauses before spawn, then accepts only an exact native decision and one-use grant; denial, drift, expiry, revocation, replay, or coordinator loss launches nothing. That native scheduler accepts no executable, path, argument, script, environment, shell, or package action; each initial run or retry consumes its own explicit one-use grant. The earlier workflow scheduler model remains review-only. The fixed Node lane launches only its native-owned packaged helper: package managers, lifecycle scripts, inline scripts, broad subprocess, and automatic install remain blocked. Repo-local task lane and external agent-client pack surfaces remain review and descriptor flows.
 

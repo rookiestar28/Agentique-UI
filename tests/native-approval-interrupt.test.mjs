@@ -6,11 +6,6 @@ import { createNativeDagSchedulerClient, normalizeNativeDagWorkflow } from "../s
 const read = (filePath) => (fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : "");
 const rust = read("src-tauri/src/lib.rs");
 const scheduler = read("src-tauri/src/native_dag_scheduler.rs");
-const clientSource = read("src/core/native-dag-scheduler-client.mjs");
-const bridge = read("src/core/tauri-native-dag-scheduler-client.ts");
-const panel = read("src/workspaces/NativeDagSchedulerPanel.tsx");
-const contract = read("docs/contracts/native-approval-interrupt.md");
-
 test("native scheduler owns a strict checkpoint-bound approval resume command", () => {
   assert.match(rust, /agentique_scheduler_resume/u);
   assert.match(scheduler, /struct\s+NativeDagResumeRequest[\s\S]*deny_unknown_fields/u);
@@ -30,24 +25,6 @@ test("native scheduler owns a strict checkpoint-bound approval resume command", 
   for (const forbidden of ["executable", "path", "args", "environment", "script", "package_manager", "payload"]) {
     const body = scheduler.match(/struct\s+NativeDagResumeRequest[\s\S]*?\n\}/u)?.[0] ?? "";
     assert.doesNotMatch(body, new RegExp(`\\b${forbidden}\\b`, "iu"), forbidden);
-  }
-});
-
-test("interrupt pause and resume are durable fail-closed native transitions", () => {
-  for (const phrase of [
-    "approval-interrupt",
-    "paused-approval",
-    "pending-approval",
-    "capture_native_working_set",
-    "checkpoint_generation_digest",
-    "preflight_native_interrupt",
-    "compare_exchange",
-    "cleanup-required"
-  ]) {
-    assert.match(scheduler, new RegExp(phrase, "u"), phrase);
-  }
-  for (const phrase of ["edited", "expired", "revoked", "consumed", "denied", "replay"]) {
-    assert.match(`${scheduler}\n${contract}`, new RegExp(phrase, "iu"), phrase);
   }
 });
 
@@ -93,19 +70,6 @@ test("client admits one pending interrupt and invokes only the exact resume comm
     "sessionId",
     "workflowId"
   ]);
-});
-
-test("interrupt schema and UI preserve explicit human action without minting authority", () => {
-  for (const phrase of ["resume(", "agentique_scheduler_resume", "checkpointGenerationDigest", "decisionId"]) {
-    assert.ok(clientSource.includes(phrase) || bridge.includes(phrase), phrase);
-  }
-  for (const phrase of ["Approval interrupt", 'aria-live="polite"', "Resume approved step", "Record denial", "Checkpoint", "Decision identity"]) {
-    assert.match(panel, new RegExp(phrase, "u"), phrase);
-  }
-  for (const phrase of ["explicit user action", "same-process", "edited input", "one-use", "macOS remains unverified"]) {
-    assert.match(contract, new RegExp(phrase, "iu"), phrase);
-  }
-  assert.doesNotMatch(`${clientSource}\n${bridge}`, /mint(?:Approval|Decision|Grant)|createPermissionGrant/u);
 });
 
 function sampleInterruptWorkflow() {

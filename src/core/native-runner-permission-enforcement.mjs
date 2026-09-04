@@ -12,8 +12,6 @@ export function readNativeRunnerPermissionEnforcementInputs(root = process.cwd()
     root: repoRoot,
     rustSource: readText(repoRoot, "src-tauri/src/lib.rs"),
     packageJson: readJson(repoRoot, "package.json"),
-    nativeContract: readText(repoRoot, "docs/contracts/native-runner-boundary.md"),
-    permissionContract: readText(repoRoot, "docs/contracts/permission-grants.md"),
     permissionGrantSource: readText(repoRoot, "src/core/permission-grants.mjs"),
     runnerPermissionSource: readText(repoRoot, "src/core/runner-permission-preflight.mjs")
   };
@@ -22,8 +20,6 @@ export function readNativeRunnerPermissionEnforcementInputs(root = process.cwd()
 export function reviewNativeRunnerPermissionEnforcement(input = readNativeRunnerPermissionEnforcementInputs()) {
   const rustSource = String(input.rustSource ?? "");
   const packageJson = input.packageJson ?? {};
-  const nativeContract = String(input.nativeContract ?? "");
-  const permissionContract = String(input.permissionContract ?? "");
   const permissionGrantSource = String(input.permissionGrantSource ?? "");
   const runnerPermissionSource = String(input.runnerPermissionSource ?? "");
   const requestBody = parseRunnerRequestBody(rustSource);
@@ -112,22 +108,6 @@ export function reviewNativeRunnerPermissionEnforcement(input = readNativeRunner
   }
   if (!String(packageJson.scripts?.validate ?? "").includes("npm run validate:native-runner-permission-enforcement")) {
     errors.push(issue("native-permission.validate-chain", "npm run validate must include native runner permission enforcement validation."));
-  }
-
-  for (const phrase of [
-    "permissionGrantId",
-    "native-owned permission grant",
-    "explicit approve",
-    "prepare creates only",
-    "non-authorizing evidence",
-    "revoked",
-    "expired",
-    "browser data",
-    "generic shell"
-  ]) {
-    if (!nativeContract.includes(phrase) && !permissionContract.includes(phrase)) {
-      errors.push(issue("native-permission.contract", `Contract docs must mention ${phrase}.`));
-    }
   }
 
   return {

@@ -14,17 +14,7 @@ import { reviewWorkflowScheduler } from "./workflow-scheduler.mjs";
 export const executionValidationPackSchemaVersion = "agentique.executionValidationPack.v1";
 
 const fixedNow = "2026-06-13T00:00:00.000Z";
-const requiredFlowIds = Object.freeze([
-  "success",
-  "blocked",
-  "permission-required",
-  "canceled",
-  "timed-out",
-  "cleanup",
-  "rerun",
-  "handoff",
-  "human-approval"
-]);
+const requiredFlowIds = Object.freeze(["success", "blocked", "permission-required", "canceled", "timed-out", "cleanup", "rerun", "handoff", "human-approval"]);
 const requiredGateIds = Object.freeze([
   "workflow-scheduler",
   "graph-run-plan",
@@ -40,13 +30,9 @@ const requiredGateIds = Object.freeze([
   "graph-run-execution-ui"
 ]);
 const unsafePathPattern = /(?<![A-Za-z])(?:[A-Za-z]:[\\/]|\\\\)|(?:^|[\\/])\.\.(?:[\\/]|$)|\.\.[\\/]|\/(?:home|Users|mnt)\//iu;
-const privateMarkerPattern = new RegExp([
-  ["\\.", "planning"].join(""),
-  ["reference", "docs"].join("\\/"),
-  ["AUI", "EXEC"].join("-"),
-  ["road", "map"].join("")
-].join("|"), "iu");
-const commandLikePattern = /\b(?:execSync|spawnSync|execFileSync|spawn\s*\(|exec\s*\(|curl\s+[-\w]*\s*https?:|wget\s+[-\w]*\s*https?:|powershell|pwsh|cmd\.exe|bash\s+-c|npm\s+(?:install|run)|npx\s+[\w@./-]+|node\s+[\w./-]+\.(?:js|mjs|cjs)|python\s+[\w./-]+\.py|pip\s+install|docker\s+run|podman\s+run)\b/iu;
+const privateMarkerPattern = new RegExp([["\\.", "planning"].join(""), ["reference", "docs"].join("\\/"), ["AUI", "EXEC"].join("-"), ["road", "map"].join("")].join("|"), "iu");
+const commandLikePattern =
+  /\b(?:execSync|spawnSync|execFileSync|spawn\s*\(|exec\s*\(|curl\s+[-\w]*\s*https?:|wget\s+[-\w]*\s*https?:|powershell|pwsh|cmd\.exe|bash\s+-c|npm\s+(?:install|run)|npx\s+[\w@./-]+|node\s+[\w./-]+\.(?:js|mjs|cjs)|python\s+[\w./-]+\.py|pip\s+install|docker\s+run|podman\s+run)\b/iu;
 const executableClaimKeys = new Set([
   "startsBridge",
   "startsRuntime",
@@ -112,19 +98,23 @@ export function reviewExecutionValidationPackGate() {
   const requiredFlowsCovered = requiredFlowIds.every((id) => flowIds.has(id));
   const requiredGatesCovered = requiredGateIds.every((id) => gateIds.has(id));
   const gatesPass = pack.gateEvidence.every((entry) => entry.ok);
-  const visualEvidenceReady = pack.visualEvidence.every((entry) => entry.path.startsWith("docs/validation/artifacts/") && entry.minimumBytes >= 1000 && entry.publicSafe === true);
-  const interactionEvidenceReady = pack.interactionEvidence.some((entry) => entry.id === "graph-run-controls" && entry.controls.includes("start") && entry.controls.includes("cancel")) &&
+  const visualEvidenceReady = pack.visualEvidence.every((entry) => entry.path.startsWith("artifacts/validation/") && entry.minimumBytes >= 1000 && entry.publicSafe === true);
+  const interactionEvidenceReady =
+    pack.interactionEvidence.some((entry) => entry.id === "graph-run-controls" && entry.controls.includes("start") && entry.controls.includes("cancel")) &&
     pack.interactionEvidence.some((entry) => entry.id === "run-evidence-browser" && entry.controls.includes("logs") && entry.controls.includes("artifacts"));
   const forbiddenClaimsDisabled = Object.values(pack.forbiddenClaims).every((value) => value === false);
-  const boundaryClosed = pack.boundary.noBridgeStart === true &&
+  const boundaryClosed =
+    pack.boundary.noBridgeStart === true &&
     pack.boundary.noRuntimeStart === true &&
     pack.boundary.noNetwork === true &&
     pack.boundary.noFilesystemWrite === true &&
     pack.boundary.grantsRuntimeCompatibility === false;
-  const validationHooked = validationScripts.has("validate:execution-validation-pack") &&
+  const validationHooked =
+    validationScripts.has("validate:execution-validation-pack") &&
     validationScripts.has("validate:graph-run-execution-ui") &&
     validationScripts.has("validate:external-runtime-bridge-guard");
-  const ok = pack.schemaVersion === executionValidationPackSchemaVersion &&
+  const ok =
+    pack.schemaVersion === executionValidationPackSchemaVersion &&
     pack.status === "ready-for-release-review" &&
     requiredFlowsCovered &&
     requiredGatesCovered &&
@@ -194,20 +184,24 @@ function createGateEvidence() {
     gate("source-roundtrip-handoff", sourceRoundTrip, ["handoff", "blocked"]),
     gate("curated-adapter-execution-lane", curatedAdapterLane, ["success", "blocked", "timed-out", "canceled", "cleanup"]),
     gate("external-runtime-bridge-guard", externalBridge, ["handoff", "permission-required"], { startsBridge: false }),
-    gate("graph-run-execution-ui", {
-      schemaVersion: "agentique.graphRunExecutionUiEvidence.v1",
-      ok: true,
-      checks: {
-        desktopGraphArtifact: "runner-ui-graph-desktop.png",
-        mobileRunArtifact: "runner-ui-run-mobile.png",
-        interactionEvidence: true
+    gate(
+      "graph-run-execution-ui",
+      {
+        schemaVersion: "agentique.graphRunExecutionUiEvidence.v1",
+        ok: true,
+        checks: {
+          desktopGraphArtifact: "runner-ui-graph-desktop.png",
+          mobileRunArtifact: "runner-ui-run-mobile.png",
+          interactionEvidence: true
+        },
+        summary: {
+          controls: ["start", "cancel", "status", "logs", "artifacts"],
+          permissionPreflight: true,
+          noExternalRuntimeStart: true
+        }
       },
-      summary: {
-        controls: ["start", "cancel", "status", "logs", "artifacts"],
-        permissionPreflight: true,
-        noExternalRuntimeStart: true
-      }
-    }, ["success", "blocked", "permission-required", "canceled", "cleanup"])
+      ["success", "blocked", "permission-required", "canceled", "cleanup"]
+    )
   ];
 }
 
@@ -277,7 +271,7 @@ function createVisualEvidence() {
     {
       id: "graph-desktop-execution",
       workspace: "Graph",
-      path: "docs/validation/artifacts/runner-ui-graph-desktop.png",
+      path: "artifacts/validation/runner-ui-graph-desktop.png",
       viewport: { width: 1440, height: 900 },
       minimumBytes: 1000,
       publicSafe: true,
@@ -287,7 +281,7 @@ function createVisualEvidence() {
     {
       id: "run-mobile-evidence",
       workspace: "Run",
-      path: "docs/validation/artifacts/runner-ui-run-mobile.png",
+      path: "artifacts/validation/runner-ui-run-mobile.png",
       viewport: { width: 390, height: 844 },
       minimumBytes: 1000,
       publicSafe: true,
@@ -419,7 +413,11 @@ function rejectExecutableClaims(value, path = "value") {
 }
 
 function safeText(value) {
-  return redactText(String(value ?? "").replace(/\s+/gu, " ").trim())
+  return redactText(
+    String(value ?? "")
+      .replace(/\s+/gu, " ")
+      .trim()
+  )
     .replace(unsafePathPattern, "redacted:sensitive-path")
     .slice(0, 240);
 }

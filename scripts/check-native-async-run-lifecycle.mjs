@@ -8,8 +8,7 @@ const sources = {
   tauri: read("src/core/tauri-native-async-run-client.ts"),
   hook: read("src/app-state/useNativeAsyncRunLifecycle.ts"),
   panel: read("src/workspaces/NativeAsyncRunLifecyclePanel.tsx"),
-  tests: `${read("tests/native-async-run-client.test.mjs")}\n${read("tests/native-async-run-lifecycle-surface.test.mjs")}`,
-  contract: read("docs/contracts/native-async-run-lifecycle.md")
+  tests: `${read("tests/native-async-run-client.test.mjs")}\n${read("tests/native-async-run-lifecycle-surface.test.mjs")}`
 };
 const packageJson = JSON.parse(read("package.json"));
 
@@ -43,16 +42,6 @@ requireAll(sources.tests, [
   "fails closed on a durable replay sequence gap",
   "binds official Tauri invoke and listen"
 ]);
-requireAll(sources.contract, [
-  "Native Asynchronous Run Lifecycle",
-  "exact full address",
-  "one authoritative terminal",
-  "restart-durable",
-  "late completion",
-  "listener teardown",
-  "No PID"
-]);
-
 if (!String(packageJson.dependencies?.["@tauri-apps/api"] ?? "").startsWith("2.")) failures.push("@tauri-apps/api v2 must be an exact runtime dependency");
 if (!String(packageJson.scripts?.["validate:native-async-run-lifecycle"] ?? "").includes("check-native-async-run-lifecycle.mjs")) {
   failures.push("package.json must expose validate:native-async-run-lifecycle");

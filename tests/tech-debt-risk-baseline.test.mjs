@@ -43,10 +43,10 @@ test("technical debt risk baseline records measured current risks", () => {
   assert.ok(baseline.measurements.i18nCatalogLoading.centralIndex.bytes <= 12000);
   assert.equal(baseline.measurements.typeLintFormatBaseline.ok, true);
   assert.equal(baseline.measurements.typeLintFormatBaseline.node.matchesTooling, true);
-  assert.equal(baseline.measurements.typeLintFormatBaseline.configs.controlledCheckJsFiles, 101);
+  assert.equal(baseline.measurements.typeLintFormatBaseline.configs.controlledCheckJsFiles, 99);
   assert.equal(baseline.measurements.validationStageReporting.ok, true);
   assert.equal(baseline.measurements.validationStageReporting.summary.stages, 7);
-  assert.equal(baseline.measurements.validationStageReporting.summary.commands, 104);
+  assert.equal(baseline.measurements.validationStageReporting.summary.commands, 103);
   assert.equal(baseline.measurements.liveDataBoundary.ok, true);
   assert.equal(baseline.measurements.liveDataBoundary.summary.providers, 5);
   assert.equal(baseline.measurements.liveDataBoundary.productionCredentialsRequired, false);
@@ -74,8 +74,6 @@ test("technical debt risk baseline records measured current risks", () => {
   assert.equal(baseline.measurements.packageScripts.validateIncludesLiveDataBoundary, true);
   assert.equal(baseline.measurements.packageScripts.hasNativeRunnerSidecarGateScript, true);
   assert.equal(baseline.measurements.packageScripts.validateIncludesNativeRunnerSidecarGate, true);
-  assert.equal(baseline.measurements.packageScripts.hasReleaseDocsScript, true);
-  assert.equal(baseline.measurements.packageScripts.validateIncludesReleaseDocs, true);
   assert.equal(baseline.measurements.tooling.checkJs, false);
   assert.equal(baseline.measurements.tooling.typescriptEslintConfigured, true);
   assert.equal(baseline.measurements.tooling.nodeTypesConfigured, true);
@@ -94,8 +92,6 @@ test("technical debt risk baseline records measured current risks", () => {
   assert.equal(baseline.followUpOrder.includes("native-runner-sidecar-gate"), false);
   assert.equal(baseline.followUpOrder.includes("release-updater-supply-chain-closeout"), false);
   assert.deepEqual(baseline.measurements.releaseGate.requiredGateDrift, []);
-  assert.equal(baseline.measurements.releaseGate.docsGatePresent, true);
-  assert.equal(baseline.measurements.releaseGate.releaseDocsSpecPresent, true);
   assert.equal(baseline.measurements.releaseGate.workflowSupplyChainEvidenceReady, true);
   assert.equal(baseline.measurements.releaseGate.publicSafeWorkflowRunIdRequired, true);
   assert.equal(baseline.measurements.releaseGate.publicationClaimsFalse, true);
@@ -135,6 +131,4 @@ test("baseline is wired into the validation chain", () => {
   assert.equal(baseline.measurements.packageScripts.validateIncludesLiveDataBoundary, true);
   assert.equal(baseline.measurements.packageScripts.hasNativeRunnerSidecarGateScript, true);
   assert.equal(baseline.measurements.packageScripts.validateIncludesNativeRunnerSidecarGate, true);
-  assert.equal(baseline.measurements.packageScripts.hasReleaseDocsScript, true);
-  assert.equal(baseline.measurements.packageScripts.validateIncludesReleaseDocs, true);
 });

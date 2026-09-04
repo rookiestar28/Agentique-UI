@@ -48,7 +48,6 @@ test("type lint format baseline contract is complete", () => {
   assert.ok(controlledCheckJsFiles.includes("scripts/check-native-runner-cleanup-recovery.mjs"));
   assert.ok(controlledCheckJsFiles.includes("scripts/check-native-checkpoint-time-travel.mjs"));
   assert.ok(controlledCheckJsFiles.includes("scripts/check-desktop-distribution-integrity.mjs"));
-  assert.ok(controlledCheckJsFiles.includes("src/core/release-docs-gate.mjs"));
   assert.ok(controlledCheckJsFiles.includes("src/core/runner-revocation-cancel-controls.mjs"));
   assert.ok(controlledCheckJsFiles.includes("src/core/source-first-executable-capability.mjs"));
   assert.ok(controlledCheckJsFiles.includes("scripts/check-active-native-event-transport.mjs"));
@@ -80,7 +79,6 @@ test("type lint format baseline contract is complete", () => {
   assert.ok(controlledCheckJsFiles.includes("scripts/check-native-dag-scheduler.mjs"));
   assert.ok(controlledCheckJsFiles.includes("scripts/check-native-approval-interrupt.mjs"));
   assert.ok(controlledCheckJsFiles.includes("scripts/check-runner-revocation-cancel-controls.mjs"));
-  assert.ok(controlledCheckJsFiles.includes("scripts/validate-release-docs.mjs"));
   assert.ok(controlledCheckJsFiles.includes("scripts/check-source-first-executable-capability.mjs"));
 
   for (const [name, version] of Object.entries(requiredToolVersions)) {

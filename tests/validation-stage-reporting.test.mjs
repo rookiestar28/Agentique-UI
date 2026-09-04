@@ -77,7 +77,6 @@ test("validation stage order keeps tooling and build gates in deterministic sequ
   assertCommandOrder(commandTexts, ["npm run typecheck", "npm run build", "npm run validate:build-payload-budget", "npm test", "npm run validate:public"]);
   assertCommandOrder(commandTexts, [
     "npm run validate:release-workflow",
-    "npm run validate:release-docs",
     "npm run validate:release-packaging-preflight",
     "npm run validate:desktop-distribution-integrity",
     "npm run validate:release-smoke"

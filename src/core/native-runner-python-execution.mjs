@@ -16,9 +16,7 @@ export function readNativeRunnerPythonExecutionInputs(root = process.cwd()) {
     cargoToml: readText(repoRoot, "src-tauri/Cargo.toml"),
     tauriConfig: readJson(repoRoot, "src-tauri/tauri.conf.json"),
     defaultCapability: readJson(repoRoot, "src-tauri/capabilities/default.json"),
-    packageJson: readJson(repoRoot, "package.json"),
-    nativeContract: readText(repoRoot, "docs/contracts/native-runner-boundary.md"),
-    pythonContract: readText(repoRoot, "docs/contracts/python-adapter-runner.md")
+    packageJson: readJson(repoRoot, "package.json")
   };
 }
 
@@ -28,8 +26,6 @@ export function reviewNativeRunnerPythonExecution(input = readNativeRunnerPython
   const packageJson = input.packageJson ?? {};
   const tauriConfig = input.tauriConfig ?? {};
   const defaultCapability = input.defaultCapability ?? {};
-  const nativeContract = String(input.nativeContract ?? "");
-  const pythonContract = String(input.pythonContract ?? "");
   const requestBody = parseRunnerRequestBody(rustSource);
   const commandNewArgs = [...rustSource.matchAll(/Command::new\s*\(([^)]*)\)/gu)].map((entry) => entry[1].trim());
   const externalBin = Array.isArray(tauriConfig?.bundle?.externalBin) ? tauriConfig.bundle.externalBin : [];
@@ -112,12 +108,6 @@ export function reviewNativeRunnerPythonExecution(input = readNativeRunnerPython
   if (!String(packageJson.scripts?.validate ?? "").includes("npm run validate:native-runner-python-execution")) {
     errors.push(issue("native-python.validate-chain", "npm run validate must include native runner Python execution validation."));
   }
-  for (const phrase of ["native-controlled Python", "JSON stdin", "minimal environment", "run folder", "redacted"]) {
-    if (!nativeContract.includes(phrase) && !pythonContract.includes(phrase)) {
-      errors.push(issue("native-python.contract", `Contract docs must mention ${phrase}.`));
-    }
-  }
-
   return {
     schemaVersion: "agentique.nativeRunnerPythonExecution.v1",
     ok: errors.length === 0,

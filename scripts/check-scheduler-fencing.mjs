@@ -7,8 +7,6 @@ const checked = [
   "tests/scheduler-fencing.test.mjs",
   "tests/scheduler-fencing-surface.test.mjs",
   "schemas/scheduler-fencing-state.schema.json",
-  "docs/contracts/scheduler-fencing.md",
-  "docs/validation/scheduler-fencing-rollback.md",
   "src/workspaces/SchedulerFencingPanel.tsx",
   "src/workspaces/RunWorkspace.tsx",
   "package.json"

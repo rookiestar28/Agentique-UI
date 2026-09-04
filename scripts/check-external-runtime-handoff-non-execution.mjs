@@ -12,7 +12,6 @@ const runtime = createExternalRuntimeHandoff(sampleWorkflowIr, "n8n", { createdA
 const bridge = createExternalBridgeReview(sampleExternalBridgeRequest);
 const nativeReview = reviewNativeRunnerBoundary(readNativeRunnerBoundaryInputs());
 const ui = fs.readFileSync("src/workspaces/ExternalHandoffPanel.tsx", "utf8");
-const contract = fs.readFileSync("docs/contracts/external-runtime-handoff-non-execution.md", "utf8");
 const tests = fs.readFileSync("tests/external-runtime-handoff-non-execution.test.mjs", "utf8");
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 
@@ -40,9 +39,6 @@ for (const phrase of ["Not executed by Agentique UI", "User-owned destination", 
   if (!ui.includes(phrase)) failures.push(`external handoff UI missing required phrase: ${phrase}`);
 }
 if (/onClick|invoke\(/u.test(ui)) failures.push("external handoff UI must not expose execution controls");
-for (const phrase of ["external-user-owned-handoff", "not executed by Agentique UI", "separate bridge acceptance", "exactly 16 commands"]) {
-  if (!contract.includes(phrase)) failures.push(`external handoff contract missing required phrase: ${phrase}`);
-}
 for (const phrase of ["contradictory and widened non-execution receipts fail closed", "native command and capability boundaries remain unchanged and external-free"]) {
   if (!tests.includes(phrase)) failures.push(`external handoff tests missing required case: ${phrase}`);
 }

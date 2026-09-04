@@ -6,8 +6,7 @@ const requiredFiles = [
   "scripts/run-native-runner-e2e.mjs",
   "e2e/native-runner.spec.mjs",
   "src-tauri/tauri.e2e.conf.json",
-  "src/core/sha256-sync.mjs",
-  "docs/contracts/true-runner-ui-e2e.md"
+  "src/core/sha256-sync.mjs"
 ];
 const missing = requiredFiles.filter((file) => !fs.existsSync(file));
 if (missing.length > 0) throw new Error(`Missing true native runner E2E files: ${missing.join(", ")}`);

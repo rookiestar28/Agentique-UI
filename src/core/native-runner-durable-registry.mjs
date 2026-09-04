@@ -5,14 +5,12 @@ export function readNativeRunRegistryInputs(root = process.cwd()) {
   const repoRoot = path.resolve(root);
   return {
     rustSource: fs.readFileSync(path.join(repoRoot, "src-tauri/src/lib.rs"), "utf8"),
-    contractSource: fs.readFileSync(path.join(repoRoot, "docs/contracts/native-run-registry.md"), "utf8"),
     packageJson: JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"))
   };
 }
 
 export function reviewNativeRunRegistry(input = readNativeRunRegistryInputs()) {
   const rust = String(input.rustSource ?? "");
-  const contract = String(input.contractSource ?? "");
   const scripts = input.packageJson?.scripts ?? {};
   const recordBody = parseStructBody(rust, "NativeDurableRunRegistryRecord");
   const prepareBody = parseFunctionBody(rust, "agentique_runner_prepare");
@@ -67,13 +65,6 @@ export function reviewNativeRunRegistry(input = readNativeRunRegistryInputs()) {
       rust.includes("durable_native_run_registry_recovers_pending_active_and_terminal_states") &&
       rust.includes("restart-reauthorization-required") &&
       rust.includes("restart-supervisor-unavailable"),
-    publicContract:
-      contract.includes("Native durable run registry") &&
-      contract.includes("append-only") &&
-      contract.includes("does not authorize") &&
-      contract.includes("never replays") &&
-      contract.includes("committed product projection") &&
-      contract.includes("cleanup-required"),
     packageGate:
       String(scripts["validate:durable-run-ledger"] ?? "").includes("check-native-runner-durable-registry.mjs") &&
       String(scripts["validate:durable-run-ledger"] ?? "").includes("native-runner-durable-registry.test.mjs")

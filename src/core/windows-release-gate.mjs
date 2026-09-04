@@ -45,11 +45,7 @@ export const sampleWindowsReadyEvidence = Object.freeze({
   }
 });
 
-export function readWindowsReleaseInputs({
-  specPath = "release/windows-installer.spec.json",
-  tauriPath = "src-tauri/tauri.conf.json",
-  packagePath = "package.json"
-} = {}) {
+export function readWindowsReleaseInputs({ specPath = "release/windows-installer.spec.json", tauriPath = "src-tauri/tauri.conf.json", packagePath = "package.json" } = {}) {
   return {
     spec: JSON.parse(fs.readFileSync(specPath, "utf8")),
     tauriConfig: JSON.parse(fs.readFileSync(tauriPath, "utf8")),
@@ -94,7 +90,7 @@ export function validateWindowsReleaseGate({ spec, tauriConfig, packageJson, evi
     gateFindings.push(issue("windows.artifact-policy", "Windows installer artifacts must not be committed."));
   }
   if (!String(spec?.smartScreen?.caveat ?? "").includes("SmartScreen")) {
-    gateFindings.push(issue("windows.smartscreen", "Windows release docs must preserve SmartScreen caveat."));
+    gateFindings.push(issue("windows.smartscreen", "Windows release policy must preserve the SmartScreen caveat."));
   }
 
   const artifacts = Array.isArray(evidence?.installerArtifacts) ? evidence.installerArtifacts : [];

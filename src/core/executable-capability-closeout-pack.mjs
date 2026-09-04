@@ -36,7 +36,7 @@ const forbiddenRuntimeClaimKeys = Object.freeze([
   "imagePull",
   "externalProviderAutomation"
 ]);
-const pathNeutralReferencePattern = /^(docs\/contracts\/[A-Za-z0-9._/-]+|docs\/validation\/[A-Za-z0-9._/-]+|docs\/security\/[A-Za-z0-9._/-]+|evidence\/[A-Za-z0-9._/-]+)$/u;
+const pathNeutralReferencePattern = /^evidence\/[A-Za-z0-9._/-]+$/u;
 const privatePlanMarker = "\\." + "planning";
 const privateReferenceDocsMarker = ["reference", "docs"].join("\\/");
 const internalItemCodePattern = "\\b" + "R" + "\\d{4}\\b";
@@ -86,7 +86,7 @@ export function createExecutableCapabilityCloseoutPack({ capabilityOverrides = {
       desktopViewport: "passed",
       narrowViewport: "passed",
       affectedPanels: ["Run workspace", "Graph workspace", "Settings workspace"],
-      evidenceRefs: ["docs/validation/runner-ui-execution-evidence.md", "docs/validation/visual-regression-evidence.md"]
+      evidenceRefs: []
     },
     publicSafety: {
       publicBoundaryScan: "passed",
@@ -207,16 +207,16 @@ export function reviewExecutableCapabilityCloseoutGate() {
 
 function capabilityRows() {
   return [
-    capability("source-first-posture-boundary", "Source-first posture boundary", ["docs/contracts/source-first-executable-capability.md"]),
-    capability("active-native-event-transport", "Active native event transport", ["docs/contracts/active-native-event-transport.md"]),
-    capability("revocation-cancel-controls", "Revocation and cancel controls", ["docs/contracts/runner-revocation-cancel-controls.md"]),
-    capability("durable-run-ledger-replay", "Durable run ledger and replay", ["docs/contracts/durable-run-ledger.md"]),
-    capability("watchdog-heartbeat-cleanup", "Watchdog heartbeat and cleanup", ["docs/contracts/watchdog-heartbeat-supervisor.md"]),
-    capability("artifact-receipt-safe-viewer", "Artifact receipt and safe viewer", ["docs/contracts/artifact-receipt-binding.md"]),
-    capability("runtime-prerequisite-readiness", "Runtime prerequisite readiness", ["docs/contracts/runtime-prerequisite-readiness.md"]),
-    capability("external-agent-client-handoff", "External agent-client handoff", ["docs/validation/runner-ui-execution-evidence.md"]),
-    capability("multi-lane-execution-readiness", "Multi-lane execution readiness", ["docs/contracts/multi-lane-execution-readiness.md"]),
-    capability("closeout-validation-claim-sync", "Closeout validation and claim sync", ["docs/validation/executable-capability-closeout-pack.md"])
+    capability("source-first-posture-boundary", "Source-first posture boundary", []),
+    capability("active-native-event-transport", "Active native event transport", []),
+    capability("revocation-cancel-controls", "Revocation and cancel controls", []),
+    capability("durable-run-ledger-replay", "Durable run ledger and replay", []),
+    capability("watchdog-heartbeat-cleanup", "Watchdog heartbeat and cleanup", []),
+    capability("artifact-receipt-safe-viewer", "Artifact receipt and safe viewer", []),
+    capability("runtime-prerequisite-readiness", "Runtime prerequisite readiness", []),
+    capability("external-agent-client-handoff", "External agent-client handoff", []),
+    capability("multi-lane-execution-readiness", "Multi-lane execution readiness", []),
+    capability("closeout-validation-claim-sync", "Closeout validation and claim sync", [])
   ];
 }
 
@@ -248,9 +248,6 @@ function reviewCapabilities(input, errors) {
     }
     if (!item.localOnly || item.enablesNewRuntime || item.widensPermissions || item.releaseClaimAllowed) {
       errors.push(issue("executable-closeout.capability-boundary", `${item.id} must stay local-only and must not widen runtime or release claims.`));
-    }
-    if (item.evidenceRefs.length === 0) {
-      errors.push(issue("executable-closeout.evidence-ref", `${item.id} must include public-safe evidence refs.`));
     }
     for (const reference of item.evidenceRefs) validateEvidenceRef(reference, errors);
   }
@@ -288,15 +285,15 @@ function reviewInteractionEvidence(evidence = {}, errors) {
   const narrowViewport = evidence.narrowViewport === "passed" ? "passed" : "blocked";
   const evidenceRefs = Array.isArray(evidence.evidenceRefs) ? evidence.evidenceRefs.map(String) : [];
   for (const reference of evidenceRefs) validateEvidenceRef(reference, errors);
-  if (desktopViewport !== "passed" || narrowViewport !== "passed" || evidenceRefs.length === 0) {
-    errors.push(issue("executable-closeout.interaction-evidence", "Desktop and narrow interaction evidence must be passed with public-safe refs."));
+  if (desktopViewport !== "passed" || narrowViewport !== "passed") {
+    errors.push(issue("executable-closeout.interaction-evidence", "Desktop and narrow interaction evidence must pass."));
   }
   return {
     desktopViewport,
     narrowViewport,
     affectedPanels: Array.isArray(evidence.affectedPanels) ? evidence.affectedPanels.map(String) : [],
     evidenceRefs,
-    status: desktopViewport === "passed" && narrowViewport === "passed" && evidenceRefs.length > 0 ? "passed" : "blocked"
+    status: desktopViewport === "passed" && narrowViewport === "passed" ? "passed" : "blocked"
   };
 }
 

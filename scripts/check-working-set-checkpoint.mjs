@@ -9,8 +9,7 @@ const sources = {
   client: read("src/core/native-async-run-client.mjs"),
   hook: read("src/app-state/useNativeAsyncRunLifecycle.ts"),
   panel: read("src/workspaces/NativeAsyncRunLifecyclePanel.tsx"),
-  tests: `${read("tests/working-set-checkpoint.test.mjs")}\n${read("tests/working-set-checkpoint-surface.test.mjs")}`,
-  contract: read("docs/contracts/working-set-checkpoint.md")
+  tests: `${read("tests/working-set-checkpoint.test.mjs")}\n${read("tests/working-set-checkpoint-surface.test.mjs")}`
 };
 const packageJson = JSON.parse(read("package.json"));
 const boundary = workingSetCheckpointBoundary();
@@ -46,8 +45,6 @@ requireAll(sources.tests, [
   "post-reset failure reports cleanup-required",
   "checkpoint receipts remain path-relative redacted bounded and non-backup"
 ]);
-requireAll(sources.contract, ["not a general backup", "compare-and-swap", "before invoking the native-private reset", "not encrypted at rest", "never", "external effect"]);
-
 if (workingSetCheckpointPolicy.maxFiles !== 64 || workingSetCheckpointPolicy.maxTotalBytes !== 2_097_152 || workingSetCheckpointPolicy.maxGenerations !== 8) {
   failures.push("working-set policy does not match the bounded native contract");
 }

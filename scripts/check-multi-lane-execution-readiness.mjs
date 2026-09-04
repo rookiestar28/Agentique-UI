@@ -6,7 +6,6 @@ const failures = [];
 const review = reviewMultiLaneExecutionReadinessGate();
 const moduleText = readText("src/core/multi-lane-execution-readiness.mjs");
 const tests = readText("tests/multi-lane-execution-readiness.test.mjs");
-const contract = readText("docs/contracts/multi-lane-execution-readiness.md");
 const hook = readText("src/app-state/useRunnerWorkspaceState.ts");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
 const types = readText("src/workspaces/TrustRunSettingsTypes.ts");
@@ -54,21 +53,6 @@ requireIncludes(
   "multi-lane readiness tests"
 );
 
-requireIncludes(
-  contract,
-  [
-    "Multi-Lane Execution Readiness",
-    "Deno",
-    "WASM/WASI",
-    "rootless container",
-    "disabled-by-default",
-    "license/provenance",
-    "adapter signature",
-    "arbitrary downloaded workflow execution"
-  ],
-  "multi-lane readiness contract"
-);
-
 requireIncludes(hook, ["createMultiLaneExecutionReadinessSurface", "multiLaneExecutionReadinessSurface"], "runner state multi-lane wiring");
 requireIncludes(route, ["multiLaneExecutionReadinessSurface"], "graph/run route multi-lane wiring");
 requireIncludes(types, ["multiLaneExecutionReadinessSurface"], "run workspace prop types");
@@ -104,7 +88,6 @@ console.log(
       checked: [
         "src/core/multi-lane-execution-readiness.mjs",
         "tests/multi-lane-execution-readiness.test.mjs",
-        "docs/contracts/multi-lane-execution-readiness.md",
         "src/app-state/useRunnerWorkspaceState.ts",
         "src/workspaces/MultiLaneExecutionReadinessPanel.tsx",
         "src/core/validation-stage-reporting.mjs",

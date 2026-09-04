@@ -20,8 +20,6 @@ export function readNativeRunnerArtifactReadbackInputs(root = defaultNativeRunne
     root: repoRoot,
     rustSource: readText(repoRoot, "src-tauri/src/lib.rs"),
     packageJson: readJson(repoRoot, "package.json"),
-    nativeContract: readText(repoRoot, "docs/contracts/native-runner-boundary.md"),
-    runFolderContract: readText(repoRoot, "docs/contracts/run-folder-writer.md"),
     runHistorySource: readText(repoRoot, "src/core/run-history-evidence.mjs"),
     runWorkspaceSource: readText(repoRoot, "src/workspaces/RunWorkspace.tsx")
   };
@@ -96,8 +94,6 @@ fn agentique_runner_artifacts() {
         validate: "npm run validate:native-runner-artifact-readback"
       }
     },
-    nativeContract: "artifact evidence viewer metadata cleanup receipt reproducibility digest native-backed atomic SHA-256 fail closed",
-    runFolderContract: "",
     runHistorySource: "nativeBacked: true descriptorOnly: false viewerMetadata",
     runWorkspaceSource: "native backed runHistoryEvidence.boundary.nativeBacked"
   };
@@ -106,8 +102,6 @@ fn agentique_runner_artifacts() {
 export function reviewNativeRunnerArtifactReadback(input = readNativeRunnerArtifactReadbackInputs()) {
   const rustSource = String(input.rustSource ?? "");
   const packageJson = input.packageJson ?? {};
-  const nativeContract = String(input.nativeContract ?? "");
-  const runFolderContract = String(input.runFolderContract ?? "");
   const runHistorySource = String(input.runHistorySource ?? "");
   const runWorkspaceSource = String(input.runWorkspaceSource ?? "");
   const artifactsBody = parseFunctionBody(rustSource, "agentique_runner_artifacts");
@@ -179,12 +173,6 @@ export function reviewNativeRunnerArtifactReadback(input = readNativeRunnerArtif
   }
   if (!String(packageJson.scripts?.validate ?? "").includes("npm run validate:native-runner-artifact-readback")) {
     errors.push(issue("native-artifact.validate-chain", "npm run validate must include native runner artifact readback validation."));
-  }
-
-  for (const phrase of ["artifact evidence", "viewer metadata", "cleanup receipt", "reproducibility digest", "native-backed", "atomic", "SHA-256", "fail closed"]) {
-    if (!nativeContract.includes(phrase) && !runFolderContract.includes(phrase)) {
-      errors.push(issue("native-artifact.contract", `Contract docs must mention ${phrase}.`));
-    }
   }
 
   return {

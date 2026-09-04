@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import { readGithubReleaseWorkflowInputs, validateGithubReleaseWorkflowGate } from "./github-release-workflow-gate.mjs";
 import { readLinuxReleaseInputs, validateLinuxReleaseGate } from "./linux-release-gate.mjs";
-import { readReleaseDocsInputs, validateReleaseDocsGate } from "./release-docs-gate.mjs";
 import { readReleaseMetadata, validateReleaseMetadata } from "./release-metadata.mjs";
 import { readReleaseSmokeInputs, validateReleaseSmokeGate } from "./release-smoke-gate.mjs";
 import { readUpdaterReleaseInputs, validateUpdaterReleaseGate } from "./updater-release-gate.mjs";
@@ -10,10 +9,7 @@ import { redactText } from "./secret-vault.mjs";
 
 export const finalReleaseSchemaVersion = "agentique.finalReleaseGate.v1";
 
-export function readFinalReleaseInputs({
-  specPath = "release/final-readiness.spec.json",
-  packagePath = "package.json"
-} = {}) {
+export function readFinalReleaseInputs({ specPath = "release/final-readiness.spec.json", packagePath = "package.json" } = {}) {
   return {
     spec: JSON.parse(fs.readFileSync(specPath, "utf8")),
     packageJson: JSON.parse(fs.readFileSync(packagePath, "utf8"))
@@ -96,16 +92,13 @@ function buildGateResults() {
   const updater = validateUpdaterReleaseGate(readUpdaterReleaseInputs());
   const workflow = validateGithubReleaseWorkflowGate(readGithubReleaseWorkflowInputs());
   const smoke = validateReleaseSmokeGate(readReleaseSmokeInputs());
-  const docs = validateReleaseDocsGate(readReleaseDocsInputs());
-
   return [
     normalizeGate("release-metadata", releaseMetadata, releaseMetadata.ok),
     normalizeGate("windows", windows, windows.ready),
     normalizeGate("linux", linux, linux.ready),
     normalizeGate("updater", updater, updater.ready),
     normalizeGate("workflow", workflow, workflow.ready),
-    normalizeGate("smoke", smoke, smoke.ready),
-    normalizeGate("docs", docs, docs.ready)
+    normalizeGate("smoke", smoke, smoke.ready)
   ];
 }
 

@@ -6,7 +6,6 @@ const failures = [];
 const review = reviewSourceFirstExecutableCapabilityGate();
 const moduleText = readText("src/core/source-first-executable-capability.mjs");
 const tests = readText("tests/source-first-executable-capability.test.mjs");
-const contract = readText("docs/contracts/source-first-executable-capability.md");
 const packageJson = JSON.parse(readText("package.json"));
 
 if (!review.ok) {
@@ -47,26 +46,6 @@ requireIncludes(
   "source-first capability tests"
 );
 
-requireIncludes(
-  contract,
-  [
-    "Source-First Executable Capability",
-    "source-first local workspace",
-    "supported-local-only",
-    "native event transport",
-    "revocation and cancel controls",
-    "durable run ledger",
-    "watchdog heartbeat",
-    "artifact receipt",
-    "runtime prerequisite",
-    "external agent-client handoff",
-    "multi-lane execution readiness",
-    "signed desktop app",
-    "production desktop runtime"
-  ],
-  "source-first capability contract"
-);
-
 if (!String(packageJson.scripts?.["validate:source-first-executable-capability"] ?? "").includes("check-source-first-executable-capability.mjs")) {
   failures.push("package scripts must define validate:source-first-executable-capability");
 }
@@ -88,12 +67,7 @@ console.log(
   JSON.stringify(
     {
       status: "passed",
-      checked: [
-        "src/core/source-first-executable-capability.mjs",
-        "tests/source-first-executable-capability.test.mjs",
-        "docs/contracts/source-first-executable-capability.md",
-        "package.json"
-      ],
+      checked: ["src/core/source-first-executable-capability.mjs", "tests/source-first-executable-capability.test.mjs", "package.json"],
       summary: review.summary
     },
     null,

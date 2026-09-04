@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 import { createAjv, readJson, validateExample } from "../scripts/validate-contracts.mjs";
 
@@ -33,11 +32,4 @@ test("companion readback requires HTTPS endpoints", () => {
   const example = readJson(examplePath);
   example.download.ticketEndpoint = "http://www.agentique.io/ticket";
   assert.equal(validate(example), false);
-});
-
-test("companion alignment docs exclude private fields and avoid production overclaim", () => {
-  const text = fs.readFileSync("docs/contracts/companion-alignment.md", "utf8");
-  assert.match(text, /Excluded Private Fields/i);
-  assert.match(text, /credentials, tokens, cookies, private keys/i);
-  assert.match(text, /does not claim that production endpoints already provide every field/i);
 });

@@ -2,14 +2,7 @@ import { redactText } from "./secret-vault.mjs";
 
 const schemaVersion = "agentique.desktopRunnerEvidence.v1";
 const requiredPlatforms = Object.freeze(["windows", "macos", "linux"]);
-const requiredWorkflowActions = Object.freeze([
-  "approve-permissions",
-  "start-run",
-  "cancel-run",
-  "view-status",
-  "view-logs",
-  "view-artifacts"
-]);
+const requiredWorkflowActions = Object.freeze(["approve-permissions", "start-run", "cancel-run", "view-status", "view-logs", "view-artifacts"]);
 const requiredAdapterEvidence = Object.freeze({
   python: "verified",
   node: "verified",
@@ -26,7 +19,6 @@ const unsafeEvidenceReferencePattern = new RegExp(
 
 export const sampleDesktopRunnerEvidence = Object.freeze({
   schemaVersion,
-  sopReferences: ["docs/security/desktop-runner-sop.md"],
   supportedPlatforms: ["windows", "macos", "linux"],
   platforms: {
     windows: platformEvidence("windows"),
@@ -61,7 +53,6 @@ export function validateDesktopRunnerEvidence(evidence = sampleDesktopRunnerEvid
     errors.push(issue("desktop-runner.schema", "Desktop runner evidence schema is unsupported."));
   }
 
-  const sop = reviewSopReferences(evidence.sopReferences, errors);
   const platforms = reviewPlatforms(evidence, errors);
   const adapters = reviewAdapters(evidence.adapterEvidence, errors);
   const releaseClaims = reviewReleaseClaims(evidence.releaseClaims, errors);
@@ -71,7 +62,6 @@ export function validateDesktopRunnerEvidence(evidence = sampleDesktopRunnerEvid
     schemaVersion: "agentique.desktopRunnerEvidenceReview.v1",
     ok,
     status: ok ? "accepted" : "blocked",
-    sop,
     platforms,
     adapters,
     releaseClaims,
@@ -156,17 +146,6 @@ function platformEvidence(platform) {
   };
 }
 
-function reviewSopReferences(references, errors) {
-  const refs = Array.isArray(references) ? references.map(String) : [];
-  if (!refs.includes("docs/security/desktop-runner-sop.md")) {
-    errors.push(issue("desktop-runner.sop-reference", "Runner acceptance evidence must reference the desktop runner SOP."));
-  }
-  for (const ref of refs) {
-    validateEvidenceReference(ref, errors);
-  }
-  return refs;
-}
-
 function reviewPlatforms(evidence, errors) {
   const supported = Array.isArray(evidence.supportedPlatforms) ? evidence.supportedPlatforms.map(String) : [];
   const output = {};
@@ -246,7 +225,12 @@ function reviewAdapters(adapterEvidence = {}, errors) {
   for (const [adapter, expectedStatus] of Object.entries(requiredAdapterEvidence)) {
     const evidence = adapterEvidence[adapter] ?? {};
     if (evidence.status !== expectedStatus) {
-      errors.push(issue(adapter === "python" || adapter === "node" ? "desktop-runner.adapter-signature" : "desktop-runner.adapter-preflight", `${adapter} adapter evidence must be ${expectedStatus}.`));
+      errors.push(
+        issue(
+          adapter === "python" || adapter === "node" ? "desktop-runner.adapter-signature" : "desktop-runner.adapter-preflight",
+          `${adapter} adapter evidence must be ${expectedStatus}.`
+        )
+      );
     }
     if ((adapter === "python" || adapter === "node") && (evidence.signer !== "agentique-adapter-release" || !/^[a-f0-9]{64}$/u.test(String(evidence.digest ?? "")))) {
       errors.push(issue("desktop-runner.adapter-signature", `${adapter} adapter signature evidence is incomplete.`));
@@ -283,7 +267,7 @@ function reviewReleaseClaims(claims = {}, errors) {
 
 function validateEvidenceReference(reference, errors) {
   const text = String(reference ?? "");
-  if (!/^(docs\/security\/desktop-runner-sop\.md|evidence\/[A-Za-z0-9._/-]+|docs\/validation\/[A-Za-z0-9._/-]+)$/u.test(text) || text.includes("..") || unsafeEvidenceReferencePattern.test(text)) {
+  if (!/^evidence\/[A-Za-z0-9._/-]+$/u.test(text) || text.includes("..") || unsafeEvidenceReferencePattern.test(text)) {
     errors.push(issue("desktop-runner.evidence-reference", "Evidence references must be path-neutral, public-safe, and secret-free."));
   }
 }
@@ -310,7 +294,6 @@ function blockedReview(errors) {
     schemaVersion: "agentique.desktopRunnerEvidenceReview.v1",
     ok: false,
     status: "blocked",
-    sop: [],
     platforms: {},
     adapters: {},
     releaseClaims: {},

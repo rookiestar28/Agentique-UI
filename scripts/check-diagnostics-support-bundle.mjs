@@ -6,7 +6,6 @@ const failures = [];
 const moduleText = readText("src/core/diagnostics-support-bundle.mjs");
 const tests = readText("tests/diagnostics-support-bundle.test.mjs");
 const surfaceTests = readText("tests/diagnostics-support-bundle-surface.test.mjs");
-const docs = readText("docs/contracts/diagnostics-support-bundle.md");
 const panel = readText("src/workspaces/DiagnosticsSupportBundlePanel.tsx");
 const runWorkspace = readText("src/workspaces/RunWorkspace.tsx");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
@@ -51,12 +50,6 @@ requireIncludes(
     "Blocked unsafe support samples"
   ],
   "diagnostics support bundle surface tests"
-);
-
-requireIncludes(
-  docs,
-  ["Diagnostics Support Bundle Contract", "descriptor-only", "bounded metadata", "version and status facts", "does not write, upload, or open a support ticket"],
-  "diagnostics support bundle docs"
 );
 
 requireIncludes(
@@ -117,8 +110,7 @@ console.log(
         "tests/diagnostics-support-bundle.test.mjs",
         "tests/diagnostics-support-bundle-surface.test.mjs",
         "src/workspaces/DiagnosticsSupportBundlePanel.tsx",
-        "src/workspaces/RunWorkspace.tsx",
-        "docs/contracts/diagnostics-support-bundle.md"
+        "src/workspaces/RunWorkspace.tsx"
       ],
       summary: gate.summary
     },

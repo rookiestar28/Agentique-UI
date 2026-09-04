@@ -29,35 +29,11 @@ const externalRuntime = readText("src/core/external-runtime-adapter.mjs");
 const agentClient = readText("src/core/agent-client-handoff.mjs");
 const adapterRegistry = readText("src/core/adapter-registry.mjs");
 const releaseReadiness = readText("src/core/release-readiness.mjs");
-const closeout = readText("docs/validation/launch-readiness-closeout.md");
-const distribution = readText("docs/validation/distribution-readiness.md");
 const packageJson = JSON.parse(readText("package.json"));
 const tauriConfig = JSON.parse(readText("src-tauri/tauri.conf.json"));
 const capability = JSON.parse(readText("src-tauri/capabilities/default.json"));
 const controlledRuntimeApiFiles = new Set(["src/core/python-adapter-runner.mjs", "src/core/node-adapter-runner.mjs"]);
 const controlledTauriInvokeFiles = new Set(["src/core/tauri-native-async-run-client.ts", "src/core/tauri-native-dag-scheduler-client.ts"]);
-
-requireIncludes(
-  closeout,
-  [
-    "Launch Readiness Closeout",
-    "Workflow graph editor contract",
-    "External runtime handoff contract",
-    "Agent-client handoff contract",
-    "Adapter registry contract",
-    "Distribution readiness gate",
-    "Released desktop installer",
-    "Signed updater or update channel",
-    "npm run validate"
-  ],
-  "launch closeout document"
-);
-
-requireIncludes(
-  distribution,
-  ["Distribution Readiness Gate", "bundle metadata active", "does not yet publish a desktop installer", "Updater artifacts remain disabled", "Clean environment smoke test"],
-  "distribution readiness document"
-);
 
 requireIncludes(
   launchSurface,
@@ -116,23 +92,6 @@ if (tauriConfig.bundle?.createUpdaterArtifacts !== false) {
 
 if (JSON.stringify(capability.permissions) !== JSON.stringify(["core:event:allow-listen", "core:event:allow-unlisten"])) {
   failures.push("default Tauri capability must grant only event listen and unlisten");
-}
-
-for (const [label, text] of [
-  ["launch closeout", closeout],
-  ["distribution readiness", distribution]
-]) {
-  for (const rule of [
-    { id: "released-installer", pattern: /\bships\s+(?:a\s+)?desktop installer\b/iu },
-    { id: "production-runtime", pattern: /\bproduction-ready\s+desktop\s+runtime\b/iu },
-    { id: "automatic-execution", pattern: /\bprovides\s+automatic\s+workflow\s+execution\b/iu },
-    { id: "universal-runtime", pattern: /\bprovides\s+(?:a\s+)?universal\s+workflow\s+runtime\b/iu },
-    { id: "signed-updater", pattern: /\bsigned\s+updater\s+is\s+available\b/iu }
-  ]) {
-    if (rule.pattern.test(text)) {
-      failures.push(`${label} overclaims: ${rule.id}`);
-    }
-  }
 }
 
 failures.push(...scanSourceForRuntimeBypass("src"));

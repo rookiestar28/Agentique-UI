@@ -27,12 +27,3 @@ test("release tags use semantic version format with v prefix", () => {
   assert.equal(validateReleaseTag("0.1.0").ok, false);
   assert.equal(validateReleaseTag("release-v0.1.0").ok, false);
 });
-
-test("publication policy document records license and review boundary", () => {
-  const text = fs.readFileSync("docs/governance/release-publication-policy.md", "utf8");
-
-  assert.match(text, /public source repository/u);
-  assert.match(text, /npm package is intentionally marked private/u);
-  assert.match(text, /Apache-2.0 source license/u);
-  assert.match(text, /stable public release requires maintainer review/u);
-});

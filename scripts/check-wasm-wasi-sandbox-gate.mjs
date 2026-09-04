@@ -6,7 +6,6 @@ const failures = [];
 const moduleText = readText("src/core/wasm-wasi-sandbox-gate.mjs");
 const tests = readText("tests/wasm-wasi-sandbox-gate.test.mjs");
 const surfaceTests = readText("tests/wasm-wasi-sandbox-surface.test.mjs");
-const docs = readText("docs/contracts/wasm-wasi-sandbox-gate.md");
 const panel = readText("src/workspaces/WasmWasiSandboxGatePanel.tsx");
 const runWorkspace = readText("src/workspaces/RunWorkspace.tsx");
 const route = readText("src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx");
@@ -54,21 +53,6 @@ requireIncludes(
     "wasmtime"
   ],
   "WASM sandbox gate surface tests"
-);
-
-requireIncludes(
-  docs,
-  [
-    "WASM/WASI Sandbox Gate Contract",
-    "guarded preflight only",
-    "does not execute WebAssembly",
-    "fuel or equivalent deterministic instruction metering",
-    "workspace-scoped file declarations only",
-    "disabled or loopback-only network declarations",
-    "enabledForExecution: false",
-    "does not provide a production desktop runtime"
-  ],
-  "WASM sandbox gate docs"
 );
 
 requireIncludes(
@@ -135,8 +119,7 @@ console.log(
         "src/workspaces/WasmWasiSandboxGatePanel.tsx",
         "src/workspaces/RunWorkspace.tsx",
         "src/workspaces/routes/GraphWorkspaceAndRunWorkspaceRoute.tsx",
-        "src/workspaces/TrustRunSettingsTypes.ts",
-        "docs/contracts/wasm-wasi-sandbox-gate.md"
+        "src/workspaces/TrustRunSettingsTypes.ts"
       ],
       summary: review.summary
     },

@@ -61,11 +61,3 @@ test("client and UI expose bounded history without raw content or automatic repl
   for (const phrase of ["checkpointHistory", "prepareTimeTravel", "fresh approval", "branch-ready"]) assert.match(combined, new RegExp(phrase, "iu"));
   assert.doesNotMatch(combined, /checkpointContent|checkpointPathInput|restorePath|automaticReplay/u);
 });
-
-test("public contract states source immutability and non-execution boundary", () => {
-  const contract = read("docs/contracts/native-checkpoint-time-travel.md");
-  for (const phrase of ["source generation remains immutable", "branch-ready", "fresh explicit approval", "not encrypted at rest"]) {
-    assert.match(contract, new RegExp(phrase, "iu"));
-  }
-  assert.match(contract, /never\s+replays an external effect/iu);
-});
