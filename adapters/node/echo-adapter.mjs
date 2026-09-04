@@ -1,17 +1,9 @@
 #!/usr/bin/env node
 
-const ambientKeys = [
-  "PATH",
-  "Path",
-  "HOME",
-  "USERPROFILE",
-  "APPDATA",
-  "TEMP",
-  "TMP",
-  "NODE_OPTIONS",
-  "NPM_TOKEN",
-  "npm_config_userconfig"
-];
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+const ambientKeys = ["PATH", "Path", "HOME", "USERPROFILE", "APPDATA", "TEMP", "TMP", "NODE_OPTIONS", "NPM_TOKEN", "npm_config_userconfig"];
 
 let input = "";
 process.stdin.setEncoding("utf8");
@@ -27,9 +19,34 @@ process.stdin.on("end", async () => {
     await new Promise((resolve) => setTimeout(resolve, Math.max(sleepMs, 0)));
   }
 
+  if (mode === "descendant-sleep" || mode === "descendant-exit") {
+    // IMPORTANT: this fixed native-test mode proves process-tree containment. It never accepts
+    // executable or argument input and must remain unreachable from renderer commands.
+    spawn(process.execPath, [fileURLToPath(new URL("./descendant-helper.mjs", import.meta.url))], {
+      detached: false,
+      stdio: "ignore",
+      env: process.platform === "win32" ? { SystemRoot: process.env.SystemRoot ?? "", WINDIR: process.env.WINDIR ?? "" } : {}
+    }).unref();
+  }
+
+  if (mode === "descendant-sleep") {
+    await new Promise((resolve) => setTimeout(resolve, Math.max(sleepMs, 0)));
+  }
+
   if (mode === "secret") {
     const marker = "bearer " + "abcdefghijklmnop";
     process.stderr.write(`diagnostic marker ${marker}\n`);
+  }
+
+  if (mode === "invalid-json") {
+    process.stdout.write("not-json\n");
+    return;
+  }
+
+  if (mode === "exit-failure") {
+    process.stderr.write("intentional adapter failure\n");
+    process.exitCode = 7;
+    return;
   }
 
   const payload = {

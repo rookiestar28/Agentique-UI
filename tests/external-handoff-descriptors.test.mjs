@@ -22,7 +22,10 @@ test("blocked and high-risk nodes produce actionable external handoff descriptor
   assert.equal(handoff.status, "handoff-review-required");
   assert.equal(provider.targetCategory, "provider-or-external-effect");
   assert.equal(provider.descriptor.localExecutionAllowed, false);
+  assert.equal(provider.descriptor.nativeSchedulerAdmission, false);
   assert.equal(provider.descriptor.startsRuntime, false);
+  assert.equal(provider.completion.completedByApp, false);
+  assert.equal(provider.completion.externalExecutionStatus, "not-executed");
   assert.ok(provider.reasons.some((reason) => /unsupported|high-risk/u.test(reason.code)));
 });
 
@@ -36,14 +39,13 @@ test("handoff-only nodes remain descriptor export rows without bridge launch", (
   assert.equal(descriptor.descriptor.descriptorOnly, true);
   assert.equal(descriptor.descriptor.startsBridge, false);
   assert.equal(handoff.bridgeBoundary.requiresSeparateBridgeGate, true);
+  assert.equal(handoff.bridgeBoundary.launchAuthorized, false);
 });
 
 test("credentialed provider or permission-required nodes can be routed to handoff review", () => {
   const credentialed = {
     ...sampleSchedulableWorkflowIr,
-    nodes: sampleSchedulableWorkflowIr.nodes.map((node) => (
-      node.id === "normalize" ? { ...node, credentials: ["vault:providerCredential"] } : node
-    ))
+    nodes: sampleSchedulableWorkflowIr.nodes.map((node) => (node.id === "normalize" ? { ...node, credentials: ["vault:providerCredential"] } : node))
   };
   const runPlan = createGraphRunPlan(credentialed);
   const handoff = createExternalHandoffDescriptors({ runPlan });
@@ -120,16 +122,8 @@ test("unknown clients and unsafe payloads remain blocked by default", () => {
 });
 
 test("descriptor safety rejects commands paths browser data and raw secrets", () => {
-  for (const unsafe of [
-    { output: ["C", ":\\tmp\\handoff.json"].join("") },
-    { output: "npm run bridge" },
-    { output: "bearer abcdefghijklmnop" },
-    { output: "cookie=session" }
-  ]) {
-    assert.throws(
-      () => assertExternalHandoffDescriptorsSafe(unsafe),
-      /unsafe material|inline sensitive material/u
-    );
+  for (const unsafe of [{ output: ["C", ":\\tmp\\handoff.json"].join("") }, { output: "npm run bridge" }, { output: "bearer abcdefghijklmnop" }, { output: "cookie=session" }]) {
+    assert.throws(() => assertExternalHandoffDescriptorsSafe(unsafe), /unsafe material|inline sensitive material/u);
   }
 });
 

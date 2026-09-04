@@ -5,9 +5,8 @@ export const releasePackagingPreflightSchemaVersion = "agentique.releasePackagin
 
 export const requiredReleasePackagingEntries = Object.freeze([
   "windows-installer",
-  "macos-package",
   "linux-package",
-  "signing-and-notarization",
+  "signing-and-update-integrity",
   "updater-metadata",
   "checksums",
   "sbom-and-provenance",
@@ -82,6 +81,9 @@ export function validateReleasePackagingPreflight(inputs = readReleasePackagingP
   }
   if (!String(inputs.packageJson?.scripts?.["validate:release-packaging-preflight"] ?? "").includes("check-release-packaging-preflight.mjs")) {
     findings.push(finding("release-packaging.package-script", "package.json must expose release packaging preflight validation."));
+  }
+  if (JSON.stringify(inputs.spec?.skippedPlatforms) !== JSON.stringify(["macos"])) {
+    findings.push(finding("release-packaging.skipped-platforms", "Packaging policy must explicitly record macOS as skipped."));
   }
 
   const requiredEntries = Array.isArray(inputs.spec?.requiredEntries) ? inputs.spec.requiredEntries : [];

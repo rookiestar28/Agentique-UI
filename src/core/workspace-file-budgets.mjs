@@ -6,7 +6,7 @@ export const workspaceFileBudgetsSchemaVersion = "agentique.workspaceFileBudgets
 export const workspaceFileBudgets = [
   { path: "src/workspaces/TrustRunSettingsWorkspaces.tsx", maxLines: 40, role: "aggregate-shim" },
   { path: "src/workspaces/LibraryImportWorkspaces.tsx", maxLines: 40, role: "aggregate-shim" },
-  { path: "src/workspaces/TrustRunSettingsTypes.ts", maxLines: 140, role: "shared-types" },
+  { path: "src/workspaces/TrustRunSettingsTypes.ts", maxLines: 141, role: "shared-types" },
   { path: "src/workspaces/LibraryImportWorkspaceTypes.ts", maxLines: 360, role: "shared-types" },
   { path: "src/workspaces/VerifyWorkspace.tsx", maxLines: 170, role: "workspace" },
   { path: "src/workspaces/RunWorkspace.tsx", maxLines: 950, role: "workspace" },

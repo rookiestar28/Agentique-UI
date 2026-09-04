@@ -11,6 +11,31 @@ test("native runner artifact readback validation gate passes", () => {
   assert.equal(review.readback.descriptorOnly, false);
   assert.equal(review.readback.artifactsCommandReadsFolder, true);
   assert.equal(review.readback.historyNativeBacked, true);
+  assert.equal(review.readback.atomicPublish, true);
+  assert.equal(review.readback.integrityValidated, true);
+  assert.equal(review.readback.unsafeEvidenceFailsClosed, true);
+});
+
+test("native runner artifact readback rejects non-atomic publication", () => {
+  const input = readNativeRunnerArtifactReadbackInputs();
+  const weakened = reviewNativeRunnerArtifactReadback({
+    ...input,
+    rustSource: input.rustSource.replace("fs::rename(&staging_dir, &final_dir)", "fs::create_dir_all(&final_dir)")
+  });
+
+  assert.equal(weakened.ok, false);
+  assert.ok(weakened.errors.some((error) => error.code === "native-artifact.atomic-publish"));
+});
+
+test("native runner artifact readback rejects missing integrity validation", () => {
+  const input = readNativeRunnerArtifactReadbackInputs();
+  const weakened = reviewNativeRunnerArtifactReadback({
+    ...input,
+    rustSource: input.rustSource.replace("validate_native_run_folder_at(&run_dir, &request.run_id)?;", "let _unverified_run_folder = &run_dir;")
+  });
+
+  assert.equal(weakened.ok, false);
+  assert.ok(weakened.errors.some((error) => error.code === "native-artifact.integrity-validated"));
 });
 
 test("native runner artifact readback rejects boundary-only artifacts command", () => {

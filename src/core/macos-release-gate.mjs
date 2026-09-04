@@ -4,7 +4,6 @@ import { assertNoInlineSecrets, redactText } from "./secret-vault.mjs";
 export const macosReleaseSchemaVersion = "agentique.macosReleaseGate.v1";
 export const requiredMacosTargets = Object.freeze(["app", "dmg"]);
 const localPathPattern = /(?:^|[\s"'(])(?:[A-Za-z]:[\\/]|\\\\|\/[A-Za-z0-9_.-])|(?:^|[\\/])\.\.(?:[\\/]|$)|\.\.[\\/]/u;
-const sha256Pattern = /^[a-f0-9]{64}$/u;
 
 export const sampleMacosBlockedEvidence = Object.freeze({
   schemaVersion: "agentique.macosReleaseEvidence.v1",
@@ -63,7 +62,7 @@ export function readMacosReleaseInputs({
 
 export function validateMacosReleaseGate({ spec, tauriConfig, packageJson, evidence = sampleMacosBlockedEvidence } = readMacosReleaseInputs()) {
   const gateFindings = [];
-  const blockers = [];
+  const blockers = [issue("macos.owner-skipped", "macOS packaging and environment validation are explicitly skipped and unverified.")];
 
   try {
     assertMacosEvidenceSafe(evidence);
@@ -77,12 +76,12 @@ export function validateMacosReleaseGate({ spec, tauriConfig, packageJson, evide
   if (spec?.platform !== "macos") {
     gateFindings.push(issue("macos.platform", "macOS release spec must target macos."));
   }
+  if (spec?.scopeStatus !== "skipped-unverified") {
+    gateFindings.push(issue("macos.scope-status", "macOS release scope must remain explicitly skipped and unverified."));
+  }
   for (const target of requiredMacosTargets) {
     if (!Array.isArray(spec?.bundleTargets) || !spec.bundleTargets.includes(target)) {
       gateFindings.push(issue("macos.spec-target-missing", `macOS release spec missing ${target} target.`));
-    }
-    if (!Array.isArray(tauriConfig?.bundle?.targets) || !tauriConfig.bundle.targets.includes(target)) {
-      gateFindings.push(issue("macos.tauri-target-missing", `Tauri bundle targets missing ${target}.`));
     }
   }
   if (spec?.buildCommand !== "npm run tauri:build:macos") {
@@ -101,63 +100,24 @@ export function validateMacosReleaseGate({ spec, tauriConfig, packageJson, evide
     gateFindings.push(issue("macos.artifact-policy", "macOS artifacts must not be committed."));
   }
 
-  const artifacts = Array.isArray(evidence?.artifacts) ? evidence.artifacts : [];
-  for (const target of requiredMacosTargets) {
-    const artifact = artifacts.find((candidate) => candidate?.target === target);
-    if (!artifact) {
-      blockers.push(issue("macos.artifact-missing", `${target} artifact evidence is missing.`));
-      continue;
-    }
-    if (!safeArtifactName(artifact.fileName)) {
-      blockers.push(issue("macos.artifact-name", `${target} artifact name is not path-neutral or has an unsupported extension.`));
-    }
-    if (!sha256Pattern.test(String(artifact.sha256 ?? ""))) {
-      blockers.push(issue("macos.checksum", `${target} artifact must include a sha256 digest.`));
-    }
-  }
-
-  if (evidence?.signing?.status !== "verified") {
-    blockers.push(issue("macos.signature-missing", "macOS Developer ID signature evidence is missing."));
-  }
-  if (evidence?.signing?.identityKind !== "Developer ID Application") {
-    blockers.push(issue("macos.identity-missing", "macOS Developer ID Application identity evidence is missing."));
-  }
-  if (evidence?.notarization?.status !== "accepted") {
-    blockers.push(issue("macos.notarization-missing", "macOS notarization acceptance evidence is missing."));
-  }
-  if (evidence?.notarization?.stapled !== true) {
-    blockers.push(issue("macos.stapling-missing", "macOS stapled ticket evidence is missing."));
-  }
-
-  for (const check of spec?.smoke?.requiredChecks ?? []) {
-    if (evidence?.smoke?.[check] !== true) {
-      blockers.push(issue("macos.smoke-missing", `macOS ${check} smoke evidence is missing.`));
-    }
-  }
-  if (evidence?.smoke?.cleanup !== true) {
-    blockers.push(issue("macos.cleanup-missing", "macOS smoke cleanup evidence is missing."));
-  }
-  if (evidence?.smoke?.redactedLogs !== true) {
-    blockers.push(issue("macos.redaction-missing", "macOS smoke logs must be redacted before evidence is recorded."));
-  }
-
   const ok = gateFindings.length === 0;
-  const ready = ok && blockers.length === 0;
+  const ready = false;
   return {
     ok,
     ready,
-    publicationAllowed: ready,
+    publicationAllowed: false,
     platform: "macos",
     bundleTargets: requiredMacosTargets,
-    status: ready ? "ready" : "blocked",
+    status: "skipped",
     gateFindings,
     blockers,
     summary: {
       configuredTargets: requiredMacosTargets.filter((target) => tauriConfig?.bundle?.targets?.includes(target)).length,
-      artifactEvidence: artifacts.length,
-      signing: evidence?.signing?.status === "verified" ? "verified" : "blocked",
-      notarization: evidence?.notarization?.status === "accepted" ? "accepted" : "blocked",
-      smoke: evidence?.smoke?.status === "passed" ? "passed" : "blocked"
+      artifactEvidence: 0,
+      signing: "skipped",
+      notarization: "skipped",
+      smoke: "skipped",
+      macosVerified: false
     }
   };
 }
@@ -172,11 +132,6 @@ export function assertMacosEvidenceSafe(evidence) {
     throw issue("macos.private-reference", "macOS release evidence must not include private planning references.");
   }
   return true;
-}
-
-function safeArtifactName(fileName) {
-  const text = String(fileName ?? "");
-  return /^[A-Za-z0-9._ -]+\.(app|dmg)$/u.test(text) && !localPathPattern.test(text);
 }
 
 function issue(code, message) {

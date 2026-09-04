@@ -11,9 +11,24 @@ const runnerStateHook = readText("src/app-state/useRunnerWorkspaceState.ts");
 const shell = readText("src/ui/WorkspaceShell.tsx");
 const navigation = readText("src/ui/navigation.ts");
 const graphWorkspace = ["src/workspaces/GraphWorkspace.tsx", "src/workspaces/GraphWorkspaceModel.ts"].map(readText).join("\n");
-const resourceImport = ["src/workspaces/LibraryImportWorkspaces.tsx", "src/workspaces/LibraryImportWorkspaceTypes.ts", "src/workspaces/LibraryWorkspace.tsx", "src/workspaces/ImportWorkspace.tsx"].map(readText).join("\n");
+const resourceImport = [
+  "src/workspaces/LibraryImportWorkspaces.tsx",
+  "src/workspaces/LibraryImportWorkspaceTypes.ts",
+  "src/workspaces/LibraryWorkspace.tsx",
+  "src/workspaces/ImportWorkspace.tsx"
+]
+  .map(readText)
+  .join("\n");
 const previewHandoff = readText("src/workspaces/PreviewHandoffWorkspaces.tsx");
-const trustRunSettings = ["src/workspaces/TrustRunSettingsWorkspaces.tsx", "src/workspaces/TrustRunSettingsTypes.ts", "src/workspaces/VerifyWorkspace.tsx", "src/workspaces/RunWorkspace.tsx", "src/workspaces/SettingsWorkspace.tsx"].map(readText).join("\n");
+const trustRunSettings = [
+  "src/workspaces/TrustRunSettingsWorkspaces.tsx",
+  "src/workspaces/TrustRunSettingsTypes.ts",
+  "src/workspaces/VerifyWorkspace.tsx",
+  "src/workspaces/RunWorkspace.tsx",
+  "src/workspaces/SettingsWorkspace.tsx"
+]
+  .map(readText)
+  .join("\n");
 const css = readStyleSourceBundle();
 const packageJson = JSON.parse(readText("package.json"));
 const closeout = readText("docs/validation/phase2-closeout.md");
@@ -21,160 +36,158 @@ const runnerSop = readText("docs/security/desktop-runner-sop.md");
 const tauriConfig = JSON.parse(readText("src-tauri/tauri.conf.json"));
 const capability = JSON.parse(readText("src-tauri/capabilities/default.json"));
 const controlledRuntimeApiFiles = new Set(["src/core/python-adapter-runner.mjs", "src/core/node-adapter-runner.mjs"]);
+const controlledTauriInvokeFiles = new Set(["src/core/tauri-native-async-run-client.ts", "src/core/tauri-native-dag-scheduler-client.ts"]);
 
-requireIncludes(closeout, [
-  "Local Visual Runner Foundation Closeout",
-  "Capability permission review",
-  "Typed configuration drafts",
-  "Local secret references",
-  "Local session and artifact records",
-  "Workflow graph map",
-  "Validate-only dry-run report",
-  "Side effects remain empty",
-  "No adapter start, file write, network fetch, or shell command is performed.",
-  "Visual Evidence Limitation",
-  "fresh automated screenshot capture is release-gated",
-  "npm run validate"
-], "phase 2 closeout document");
+requireIncludes(
+  closeout,
+  [
+    "Local Visual Runner Foundation Closeout",
+    "Capability permission review",
+    "Typed configuration drafts",
+    "Local secret references",
+    "Local session and artifact records",
+    "Workflow graph map",
+    "Validate-only dry-run report",
+    "Side effects remain empty",
+    "No adapter start, file write, network fetch, or shell command is performed.",
+    "Visual Evidence Limitation",
+    "fresh automated screenshot capture is release-gated",
+    "npm run validate"
+  ],
+  "phase 2 closeout document"
+);
 
-requireIncludes(app, [
-  "GraphWorkspace",
-  "useNavigationRoute",
-  "selectNav: handleNavSelect",
-  "useImportWorkspaceState",
-  "useRunnerWorkspaceState",
-  "PreviewWorkspace",
-  "HandoffWorkspace"
-], "phase 2 app surface");
+requireIncludes(
+  app,
+  ["GraphWorkspace", "useNavigationRoute", "selectNav: handleNavSelect", "useImportWorkspaceState", "useRunnerWorkspaceState", "PreviewWorkspace", "HandoffWorkspace"],
+  "phase 2 app surface"
+);
 
-requireIncludes(navigationRouteHook, [
-  "hashchange",
-  "readNavigationHash",
-  "writeNavigationHash"
-], "navigation route hook");
+requireIncludes(navigationRouteHook, ["hashchange", "readNavigationHash", "writeNavigationHash"], "navigation route hook");
 
-requireIncludes(importStateHook, [
-  "sampleImportIntent",
-  "scanExternalIntakeFiles"
-], "import workspace state hook");
+requireIncludes(importStateHook, ["sampleImportIntent", "scanExternalIntakeFiles"], "import workspace state hook");
 
-requireIncludes(runnerStateHook, [
-  "approveRunnerPermissionGrants",
-  "runAcceptedWorkflowSession",
-  "createRunHistoryEvidence"
-], "runner workspace state hook");
+requireIncludes(runnerStateHook, ["approveRunnerPermissionGrants", "runAcceptedWorkflowSession", "createRunHistoryEvidence"], "runner workspace state hook");
 
-requireIncludes(trustRunSettings, [
-  "Capability review",
-  "settings.config.caption",
-  "settings.vault.heading",
-  "Dry-run report",
-  "data-page=\"verify\"",
-  "data-page=\"run\"",
-  "data-page=\"settings\"",
-  "aria-label=\"Dry-run validation summary\"",
-  "aria-label=\"Schema Capability Compatibility Dependency Missing-secret Unsupported-node Artifact-contract\"",
-  "Side effects remain empty",
-  "Failures are redacted before display"
-], "trust run settings workspace surface");
+requireIncludes(
+  trustRunSettings,
+  [
+    "Capability review",
+    "settings.config.caption",
+    "settings.vault.heading",
+    "Dry-run report",
+    'data-page="verify"',
+    'data-page="run"',
+    'data-page="settings"',
+    'aria-label="Dry-run validation summary"',
+    'aria-label="Schema Capability Compatibility Dependency Missing-secret Unsupported-node Artifact-contract"',
+    "Side effects remain empty",
+    "Failures are redacted before display"
+  ],
+  "trust run settings workspace surface"
+);
 
-requireIncludes(resourceImport, [
-  "data-page=\"library\"",
-  "data-page=\"import\"",
-  "workspace.library.proofSummary",
-  "Local run draft",
-  "Local session summary",
-  "Import proof states",
-  "resource-browser",
-  "resource-detail",
-  "intent-editor",
-  "proof-ledger",
-  "queued for proof review before any download"
-], "resource import workspace surface");
+requireIncludes(
+  resourceImport,
+  [
+    'data-page="library"',
+    'data-page="import"',
+    "workspace.library.proofSummary",
+    "Local run draft",
+    "Local session summary",
+    "Import proof states",
+    "resource-browser",
+    "resource-detail",
+    "intent-editor",
+    "proof-ledger",
+    "queued for proof review before any download"
+  ],
+  "resource import workspace surface"
+);
 
-requireIncludes(previewHandoff, [
-  "data-page=\"preview\"",
-  "data-page=\"handoff\"",
-  "workspace.preview.note",
-  "workspace.preview.staticFileTree",
-  "workspace.handoff.descriptorReview",
-  "Agent client handoff summary",
-  "External runtime compatibility report",
-  "No external runtime execution",
-  "No shell commands are generated by this surface"
-], "preview handoff workspace surface");
+requireIncludes(
+  previewHandoff,
+  [
+    'data-page="preview"',
+    'data-page="handoff"',
+    "workspace.preview.note",
+    "workspace.preview.staticFileTree",
+    "workspace.handoff.descriptorReview",
+    "Agent client handoff summary",
+    "External runtime compatibility report",
+    "No external runtime execution",
+    "No shell commands are generated by this surface"
+  ],
+  "preview handoff workspace surface"
+);
 
-requireIncludes(graphWorkspace, [
-  "data-page=\"graph\"",
-  "workspace.graph.caption",
-  "workspace.graph.canvasControls",
-  "workspace.graph.canvasLabel",
-  "Node inspector",
-  "Validation risk and credential overlays",
-  "Workflow editor state summary",
-  "Raw external workflow mutation blocked",
-  "workspace.graph.subtitle",
-  "workspace.graph.capabilityMatrix",
-  "guarded local execution can be reviewed"
-], "graph workspace surface");
+requireIncludes(
+  graphWorkspace,
+  [
+    'data-page="graph"',
+    "workspace.graph.caption",
+    "workspace.graph.canvasControls",
+    "workspace.graph.canvasLabel",
+    "Node inspector",
+    "Validation risk and credential overlays",
+    "Workflow editor state summary",
+    "Raw external workflow mutation blocked",
+    "workspace.graph.subtitle",
+    "workspace.graph.capabilityMatrix",
+    "guarded local execution can be reviewed"
+  ],
+  "graph workspace surface"
+);
 
 if (/no workflow execution/iu.test(graphWorkspace)) {
   failures.push("graph workspace surface must not retain the old no-workflow-execution claim");
 }
 
-requireIncludes(shell, [
-  "import brandLogo from \"../assets/logo-mark.svg\"",
-  "className=\"brand-logo\"",
-  "aria-controls=\"active-workspace-page\"",
-  "aria-pressed={isActive}",
-  "const handleNavigationSelect = (key: NavigationKey",
-  "onNavSelect(key)",
-  "handleNavigationSelect(item.key, closeOnSelect)",
-  "id=\"active-workspace-page\"",
-  "command.ariaLabel",
-  "command.resetIntent",
-  "command.validateIntent"
-], "workspace shell surface");
+requireIncludes(
+  shell,
+  [
+    'import brandLogo from "../assets/logo-mark.svg"',
+    'className="brand-logo"',
+    'aria-controls="active-workspace-page"',
+    "aria-pressed={isActive}",
+    "const handleNavigationSelect = (key: NavigationKey",
+    "onNavSelect(key)",
+    "handleNavigationSelect(item.key, closeOnSelect)",
+    'id="active-workspace-page"',
+    "command.ariaLabel",
+    "command.resetIntent",
+    "command.validateIntent"
+  ],
+  "workspace shell surface"
+);
 
-requireIncludes(navigation, [
-  "pageMetadata",
-  "Library",
-  "Import",
-  "Verify",
-  "Preview",
-  "Graph",
-  "Run",
-  "Handoff",
-  "Settings"
-], "workspace navigation model");
+requireIncludes(navigation, ["pageMetadata", "Library", "Import", "Verify", "Preview", "Graph", "Run", "Handoff", "Settings"], "workspace navigation model");
 
-requireIncludes(css, [
-  "focus-visible",
-  "prefers-reduced-motion: reduce",
-  ".brand-logo",
-  ".workspace-page",
-  ".workspace-stack",
-  ".workspace-section",
-  ".capability-list",
-  ".capability-row",
-  ".config-fields",
-  ".vault-list",
-  ".session-timeline",
-  ".workflow-canvas",
-  ".graph-node-button",
-  ".node-inspector",
-  ".run-state",
-  ".dry-run-checks",
-  ".dry-run-failures"
-], "phase 2 responsive and accessibility CSS");
+requireIncludes(
+  css,
+  [
+    "focus-visible",
+    "prefers-reduced-motion: reduce",
+    ".brand-logo",
+    ".workspace-page",
+    ".workspace-stack",
+    ".workspace-section",
+    ".capability-list",
+    ".capability-row",
+    ".config-fields",
+    ".vault-list",
+    ".session-timeline",
+    ".workflow-canvas",
+    ".graph-node-button",
+    ".node-inspector",
+    ".run-state",
+    ".dry-run-checks",
+    ".dry-run-failures"
+  ],
+  "phase 2 responsive and accessibility CSS"
+);
 
-requireIncludes(runnerSop, [
-  "No-execution baseline",
-  "Network permissions",
-  "Secrets",
-  "Public boundary",
-  "npm run validate"
-], "desktop runner SOP");
+requireIncludes(runnerSop, ["No-execution baseline", "Network permissions", "Secrets", "Public boundary", "npm run validate"], "desktop runner SOP");
 
 if (!String(packageJson.scripts?.validate ?? "").includes("validate:phase2")) {
   failures.push("validate script must include validate:phase2");
@@ -184,8 +197,8 @@ if (tauriConfig.bundle?.active !== true) {
   failures.push("Tauri bundle metadata must remain active for release packaging validation");
 }
 
-if (!Array.isArray(capability.permissions) || capability.permissions.length !== 0) {
-  failures.push("default Tauri capability must not grant permissions");
+if (JSON.stringify(capability.permissions) !== JSON.stringify(["core:event:allow-listen", "core:event:allow-unlisten"])) {
+  failures.push("default Tauri capability must grant only event listen and unlisten");
 }
 
 if (app.includes("dangerouslySetInnerHTML")) {
@@ -220,19 +233,16 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(JSON.stringify({
-  status: "passed",
-  checked: [
-    "phase2-closeout.md",
-    "App.tsx",
-    "GraphWorkspace.tsx",
-    "styles.css",
-    "desktop-runner-sop.md",
-    "tauri.conf.json",
-    "capabilities/default.json",
-    "package.json"
-  ]
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      status: "passed",
+      checked: ["phase2-closeout.md", "App.tsx", "GraphWorkspace.tsx", "styles.css", "desktop-runner-sop.md", "tauri.conf.json", "capabilities/default.json", "package.json"]
+    },
+    null,
+    2
+  )
+);
 
 function readText(filePath) {
   return fs.readFileSync(filePath, "utf8");
@@ -261,6 +271,13 @@ function scanSourceForRuntimeApi(dir) {
     ]) {
       if (rule.pattern.test(text)) {
         if (rule.id === "child-process" && controlledRuntimeApiFiles.has(rel)) continue;
+        if (
+          rule.id === "tauri-invoke" &&
+          controlledTauriInvokeFiles.has(rel) &&
+          text.includes("allowedNativeCommands") &&
+          text.includes("if (!allowedNativeCommands.has(command))")
+        )
+          continue;
         findings.push(`${rel} uses forbidden runtime API: ${rule.id}`);
       }
     }

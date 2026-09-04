@@ -2,13 +2,18 @@
 
 This contract defines the controlled Node-family adapter execution path for Agentique UI.
 
+Runtime verification covers the fixed native path on Windows and Linux. macOS remains unverified
+and unsupported. Package managers remain outside this boundary.
+
 ## Scope
 
 - Executes one repo-local packaged adapter script.
 - Requires the adapter to be signed and allowlisted by the runner capability review.
 - Requires Node package policy review before process launch.
 - Requires permission preflight before process launch.
-- Supports only locally runnable resources and the fixed Node adapter runtime.
+- The native lane accepts only locally runnable resources and the exact fixed Node adapter/profile
+  identity. The older JavaScript runner remains deterministic model evidence and does not add a
+  second execution authority.
 - Writes run folder evidence through the run folder writer.
 
 ## Non-goals
@@ -36,7 +41,9 @@ The adapter receives JSON on stdin and returns JSON on stdout. The runner captur
 
 ## Lifecycle
 
-Cancellation paths terminate the child process, mark the run as canceled, and write a cleanup receipt. Cleanup must be idempotent and scoped to the run folder.
+Cancellation, timeout, revocation, failure, and natural parent-exit paths use the native process-tree
+supervisor, settle a truthful terminal state, and write cleanup evidence. Cleanup is idempotent and
+scoped to the exact run, and the cleanup receipt records the resulting observation.
 
 ## Security requirements
 

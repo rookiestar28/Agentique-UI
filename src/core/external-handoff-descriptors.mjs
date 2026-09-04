@@ -3,13 +3,41 @@ import { assertNoInlineSecrets, redactText } from "./secret-vault.mjs";
 import { sampleWorkflowIr } from "./workflow-ir.mjs";
 
 export const externalHandoffDescriptorsSchemaVersion = "agentique.externalHandoffDescriptors.v1";
+export const externalHandoffExecutionClass = "external-user-owned-handoff";
 
 const fixedNow = "2026-06-13T00:00:00.000Z";
 const handoffClassifications = new Set(["blocked", "handoff-only", "permission-required"]);
-const unsafeEvidencePattern = /(?<![A-Za-z])[A-Za-z]:[\\/]|\\\\|(?:^|[\\/])\.\.(?:[\\/]|$)|\.\.[\\/]|vault:[a-z][a-zA-Z0-9._-]{2,80}|bearer\s+[A-Za-z0-9._-]{12,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|cookie=|\b(?:spawn|exec)(?:\s|$)|\b(?:curl|powershell|bash|sh|cmd|npm\s+run|node\s+|python\s+|npx\s+|docker\s+|podman\s+)/iu;
+const outputKeys = ["bridgeBoundary", "descriptors", "destinationReview", "executionClass", "generatedAt", "rollback", "schemaVersion", "status", "summary", "workflowId"];
+const executionKeys = [
+  "bridgeClaim",
+  "descriptorOnly",
+  "executionClass",
+  "localExecutionAllowed",
+  "makesNetworkRequest",
+  "nativeSchedulerAdmission",
+  "reviewOnly",
+  "startsBridge",
+  "startsRuntime",
+  "supportMode",
+  "writesFiles"
+];
+const completionKeys = ["cleanupReady", "cleanupReceiptRequired", "clientCloseoutReady", "completedByApp", "externalExecutionStatus"];
+const bridgeBoundaryKeys = [
+  "ambientEnvironment",
+  "browserDataAccess",
+  "descriptorOnly",
+  "launchAuthorized",
+  "makesNetworkRequest",
+  "requiresSeparateBridgeGate",
+  "startsBridge",
+  "startsRuntime",
+  "writesFiles"
+];
+const unsafeEvidencePattern =
+  /(?<![A-Za-z])[A-Za-z]:[\\/]|\\\\|(?:^|[\\/])\.\.(?:[\\/]|$)|\.\.[\\/]|vault:[a-z][a-zA-Z0-9._-]{2,80}|bearer\s+[A-Za-z0-9._-]{12,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|cookie=|\b(?:spawn|exec)(?:\s|$)|\b(?:curl|powershell|bash|sh|cmd|npm\s+run|node\s+|python\s+|npx\s+|docker\s+|podman\s+)/iu;
 
 /**
- * @param {{ runPlan?: any, localRun?: any, eventStream?: any, now?: string }} [input]
+ * @param {{ runPlan?: any, localRun?: any, eventStream?: any, destinationScenario?: string, now?: string }} [input]
  */
 export function createExternalHandoffDescriptors({
   runPlan = createGraphRunPlan(sampleWorkflowIr, { permissionsApproved: true }),
@@ -25,6 +53,7 @@ export function createExternalHandoffDescriptors({
     .map((node, index) => descriptorFor(node, index, normalizedRunPlan, localRun, eventStream, destinationReview, now));
   const output = {
     schemaVersion: externalHandoffDescriptorsSchemaVersion,
+    executionClass: externalHandoffExecutionClass,
     generatedAt: now,
     workflowId: normalizedRunPlan.workflowId,
     status: descriptors.length > 0 ? "handoff-review-required" : "no-handoff-required",
@@ -33,6 +62,7 @@ export function createExternalHandoffDescriptors({
     summary: summarize(descriptors, normalizedRunPlan),
     bridgeBoundary: {
       descriptorOnly: true,
+      launchAuthorized: false,
       startsBridge: false,
       startsRuntime: false,
       makesNetworkRequest: false,
@@ -48,7 +78,53 @@ export function createExternalHandoffDescriptors({
     }
   };
   assertExternalHandoffDescriptorsSafe(output);
+  assertExternalHandoffNonExecution(output);
   return freeze(output);
+}
+
+export function assertExternalHandoffNonExecution(value) {
+  assertExactKeys(value, outputKeys, "external-handoff.output-shape");
+  if (value.executionClass !== externalHandoffExecutionClass) {
+    throw issue("external-handoff.execution-class", "External handoff output must use the user-owned non-execution class.");
+  }
+  assertExactKeys(value.bridgeBoundary, bridgeBoundaryKeys, "external-handoff.bridge-shape");
+  const boundary = value.bridgeBoundary;
+  if (
+    boundary.descriptorOnly !== true ||
+    boundary.launchAuthorized !== false ||
+    boundary.startsBridge !== false ||
+    boundary.startsRuntime !== false ||
+    boundary.makesNetworkRequest !== false ||
+    boundary.writesFiles !== false ||
+    boundary.browserDataAccess !== false ||
+    boundary.ambientEnvironment !== false ||
+    boundary.requiresSeparateBridgeGate !== true
+  ) {
+    throw issue("external-handoff.bridge-authority", "External handoff bridge boundary must remain inert and separately gated.");
+  }
+  if (!Array.isArray(value.descriptors)) {
+    throw issue("external-handoff.descriptors", "External handoff descriptors must be an array.");
+  }
+  for (const row of value.descriptors) {
+    assertExactKeys(row?.descriptor, executionKeys, "external-handoff.execution-shape");
+    assertExactKeys(row?.completion, completionKeys, "external-handoff.completion-shape");
+    if (
+      row.descriptor.executionClass !== externalHandoffExecutionClass ||
+      row.descriptor.descriptorOnly !== true ||
+      row.descriptor.reviewOnly !== true ||
+      row.descriptor.localExecutionAllowed !== false ||
+      row.descriptor.nativeSchedulerAdmission !== false ||
+      row.descriptor.startsBridge !== false ||
+      row.descriptor.startsRuntime !== false ||
+      row.descriptor.makesNetworkRequest !== false ||
+      row.descriptor.writesFiles !== false ||
+      row.completion.completedByApp !== false ||
+      row.completion.externalExecutionStatus !== "not-executed"
+    ) {
+      throw issue("external-handoff.contradictory-state", "External handoff receipt contains contradictory execution or completion state.");
+    }
+  }
+  return true;
 }
 
 export function reviewExternalHandoffDescriptorGate() {
@@ -57,9 +133,7 @@ export function reviewExternalHandoffDescriptorGate() {
   const permissionRequired = createExternalHandoffDescriptors({
     runPlan: createGraphRunPlan({
       ...sampleWorkflowIr,
-      nodes: sampleWorkflowIr.nodes.map((node) => (
-        node.id === "verify" ? { ...node, credentials: ["vault:providerCredential"] } : node
-      ))
+      nodes: sampleWorkflowIr.nodes.map((node) => (node.id === "verify" ? { ...node, credentials: ["vault:providerCredential"] } : node))
     })
   });
   const constrainedDestination = createExternalHandoffDescriptors({
@@ -76,12 +150,16 @@ export function reviewExternalHandoffDescriptorGate() {
   });
   const handoffOnly = blocked.descriptors.find((descriptor) => descriptor.classification === "handoff-only");
   const provider = blocked.descriptors.find((descriptor) => descriptor.nodeId === "provider-sync");
-  const ok = blocked.schemaVersion === externalHandoffDescriptorsSchemaVersion &&
+  const ok =
+    blocked.schemaVersion === externalHandoffDescriptorsSchemaVersion &&
+    blocked.executionClass === externalHandoffExecutionClass &&
     blocked.status === "handoff-review-required" &&
     blocked.summary.descriptors >= 2 &&
     provider?.targetCategory === "provider-or-external-effect" &&
     provider?.descriptor.startsBridge === false &&
     provider?.descriptor.startsRuntime === false &&
+    provider?.descriptor.nativeSchedulerAdmission === false &&
+    provider?.completion.externalExecutionStatus === "not-executed" &&
     handoffOnly?.targetCategory === "descriptor-export" &&
     permissionRequired.descriptors.some((descriptor) => descriptor.classification === "permission-required") &&
     blocked.bridgeBoundary.browserDataAccess === false &&
@@ -153,9 +231,11 @@ function descriptorFor(node, index, runPlan, localRun, eventStream, destinationR
     sourceFamily: node.sourceFamily ? safeText(node.sourceFamily) : sourceFamilyFor(node),
     requiredBoundary: boundaryFor(node),
     descriptor: {
+      executionClass: externalHandoffExecutionClass,
       descriptorOnly: true,
       reviewOnly: true,
       localExecutionAllowed: false,
+      nativeSchedulerAdmission: false,
       startsBridge: false,
       startsRuntime: false,
       makesNetworkRequest: false,
@@ -172,7 +252,8 @@ function descriptorFor(node, index, runPlan, localRun, eventStream, destinationR
       clientCloseoutReady: destinationReview.clientCloseout.ready,
       cleanupReady: destinationReview.cleanup.ready,
       cleanupReceiptRequired: destinationReview.cleanup.receiptRequired,
-      completedByApp: false
+      completedByApp: false,
+      externalExecutionStatus: "not-executed"
     },
     cleanup: {
       reversible: true,
@@ -334,11 +415,7 @@ function partialEvidenceFor(node, localRun, eventStream) {
 
 function userActionsFor(node) {
   if (node.classification === "permission-required") {
-    return [
-      "Review scoped permission requirement.",
-      "Choose explicit permission review or external runtime handoff.",
-      "Keep values referenced through a secure vault."
-    ];
+    return ["Review scoped permission requirement.", "Choose explicit permission review or external runtime handoff.", "Keep values referenced through a secure vault."];
   }
   return [
     "Review local blocker reason.",
@@ -371,19 +448,37 @@ function normalizeReason(reason) {
 }
 
 function safeToken(value) {
-  return String(value ?? "value").toLowerCase().replace(/[^a-z0-9._:-]/gu, "-").replace(/-+/gu, "-").slice(0, 80) || "value";
+  return (
+    String(value ?? "value")
+      .toLowerCase()
+      .replace(/[^a-z0-9._:-]/gu, "-")
+      .replace(/-+/gu, "-")
+      .slice(0, 80) || "value"
+  );
 }
 
 function safeText(value) {
-  return redactText(String(value ?? "").replace(/\s+/gu, " ").trim())
+  return redactText(
+    String(value ?? "")
+      .replace(/\s+/gu, " ")
+      .trim()
+  )
     .replace(unsafeEvidencePattern, "redacted:sensitive-evidence")
     .slice(0, 220);
 }
 
 function issue(code, message) {
-  const error = new Error(safeText(message));
-  error.code = code;
-  return error;
+  return Object.assign(new Error(safeText(message)), { code });
+}
+
+function assertExactKeys(value, allowedKeys, code) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw issue(code, "External handoff receipt section must be an object.");
+  }
+  const actual = Object.keys(value).sort();
+  if (JSON.stringify(actual) !== JSON.stringify([...allowedKeys].sort())) {
+    throw issue(code, "External handoff receipt contains missing or unknown fields.");
+  }
 }
 
 function freeze(value) {

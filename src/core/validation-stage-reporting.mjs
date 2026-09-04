@@ -16,6 +16,8 @@ export const validationStages = Object.freeze([
     npmRun("validate:native-runner-python-execution"),
     npmRun("validate:native-runner-event-replay"),
     npmRun("validate:active-native-event-transport"),
+    npmRun("validate:run-protocol"),
+    npmRun("validate:heddle-package-feasibility"),
     npmRun("validate:runner-revocation-cancel-controls"),
     npmRun("validate:durable-run-ledger"),
     npmRun("validate:watchdog-heartbeat-supervisor"),
@@ -39,6 +41,8 @@ export const validationStages = Object.freeze([
     npmRun("validate:node-adapter-runner"),
     npmRun("validate:curated-adapter-lane"),
     npmRun("validate:workflow-scheduler"),
+    npmRun("validate:native-dag-scheduler"),
+    npmRun("validate:native-approval-interrupt"),
     npmRun("validate:runner-event-stream"),
     npmRun("validate:human-approval-interrupt"),
     npmRun("validate:human-approval-resume-rerun-ux"),
@@ -47,6 +51,8 @@ export const validationStages = Object.freeze([
   ]),
   stage("platform-graph-boundaries", "Platform And Graph Boundaries", [
     npmRun("validate:external-handoff-descriptors"),
+    npmRun("validate:external-runtime-handoff-non-execution"),
+    npmRun("validate:agent-protocol-bridge"),
     npmRun("validate:external-agent-client-pack-expansion"),
     npmRun("validate:mcp-bridge-readiness-descriptor"),
     npmRun("validate:multi-lane-execution-readiness"),
@@ -104,6 +110,7 @@ export const validationStages = Object.freeze([
     npmRun("validate:release-workflow"),
     npmRun("validate:release-docs"),
     npmRun("validate:release-packaging-preflight"),
+    npmRun("validate:desktop-distribution-integrity"),
     npmRun("validate:release-smoke"),
     npmRun("validate:rebuilt-workspace-closeout"),
     npmRun("validate:release-final")
@@ -123,8 +130,18 @@ export const requiredValidationCommandFamilies = Object.freeze({
   publicBoundary: ["npm run validate:public"],
   i18n: ["npm run validate:i18n-workspace-copy", "npm run validate:i18n-catalog-loading", "npm run validate:i18n-locale-qa"],
   noBentoUi: ["npm run validate:rebuilt-ui", "npm run validate:graph-interaction-hotfix", "npm run validate:workspace-file-budgets"],
-  release: ["npm run validate:release-boundary", "npm run validate:release-metadata", "npm run validate:release-docs", "npm run validate:release-final"],
+  release: [
+    "npm run validate:release-boundary",
+    "npm run validate:release-metadata",
+    "npm run validate:release-docs",
+    "npm run validate:desktop-distribution-integrity",
+    "npm run validate:release-final"
+  ],
   runner: ["npm run validate:python-adapter-runner", "npm run validate:node-adapter-runner", "npm run validate:runner-capability-closeout"],
+  nativeDagScheduler: ["npm run validate:native-dag-scheduler"],
+  nativeApprovalInterrupt: ["npm run validate:native-approval-interrupt"],
+  externalRuntimeHandoffNonExecution: ["npm run validate:external-runtime-handoff-non-execution"],
+  agentProtocolBridge: ["npm run validate:agent-protocol-bridge"],
   executableCapabilityCloseout: ["npm run validate:executable-capability-closeout-pack"],
   buildPayload: ["npm run build", "npm run validate:build-payload-budget", "npm test"],
   typeLintFormat: ["npm run lint", "npm run format:check", "npm run typecheck:js", "npm run validate:type-lint-format"],
@@ -143,6 +160,8 @@ export const requiredValidationCommandFamilies = Object.freeze({
   nativeRunnerPythonExecution: ["npm run validate:native-runner-python-execution"],
   nativeRunnerEventReplay: ["npm run validate:native-runner-event-replay"],
   activeNativeEventTransport: ["npm run validate:active-native-event-transport"],
+  runProtocol: ["npm run validate:run-protocol"],
+  heddlePackageFeasibility: ["npm run validate:heddle-package-feasibility"],
   runnerRevocationCancelControls: ["npm run validate:runner-revocation-cancel-controls"],
   durableRunLedger: ["npm run validate:durable-run-ledger"],
   watchdogHeartbeatSupervisor: ["npm run validate:watchdog-heartbeat-supervisor"],
@@ -274,7 +293,13 @@ export function validateValidationStageReport(report) {
   requireCommandOrder(commandTexts, ["npm run validate:stage-reporting", "npm run lint", "npm run format:check", "npm run typecheck:js"], failures);
   requireCommandOrder(
     commandTexts,
-    ["npm run validate:release-workflow", "npm run validate:release-docs", "npm run validate:release-packaging-preflight", "npm run validate:release-smoke"],
+    [
+      "npm run validate:release-workflow",
+      "npm run validate:release-docs",
+      "npm run validate:release-packaging-preflight",
+      "npm run validate:desktop-distribution-integrity",
+      "npm run validate:release-smoke"
+    ],
     failures
   );
   requireCommandOrder(commandTexts, ["npm run validate:release-smoke", "npm run validate:rebuilt-workspace-closeout", "npm run validate:release-final"], failures);

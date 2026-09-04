@@ -12,6 +12,10 @@ test("native adapter manifest validation gate passes", () => {
   assert.equal(result.manifest.supportMode, "locally-runnable");
   assert.equal(result.manifest.digestPrefix, "cccccccccccc");
   assert.equal(result.manifest.executableRef, "native-bundled-local-python-adapter");
+  assert.equal(result.manifest.permissionProfileId, "permission.local-python.minimal");
+  assert.deepEqual(result.manifest.permissionCeiling, ["files:workspace-runs", "subprocess:fixed-adapter-only", "artifact-retention:7d"]);
+  assert.equal(result.manifest.timeoutSeconds, 30);
+  assert.equal(result.manifest.cleanupPolicy, "native-process-tree-required");
 });
 
 test("native adapter manifest is resolved by native code and redacted in receipts", () => {
@@ -22,6 +26,9 @@ test("native adapter manifest is resolved by native code and redacted in receipt
   assert.equal(review.manifest.pathNeutralExecutableRef, true);
   assert.equal(review.manifest.prepareStoresManifest, true);
   assert.equal(review.manifest.startRevalidatesManifest, true);
+  assert.equal(review.manifest.permissionCeilingBound, true);
+  assert.equal(review.manifest.timeoutBound, true);
+  assert.equal(review.manifest.cleanupBound, true);
 });
 
 test("native adapter manifest rejects untrusted variants", () => {
@@ -34,6 +41,9 @@ test("native adapter manifest rejects untrusted variants", () => {
   assert.equal(review.failClosed.wrongRuntime, true);
   assert.equal(review.failClosed.wrongSupportMode, true);
   assert.equal(review.failClosed.unsafeExecutableRef, true);
+  assert.equal(review.failClosed.broadPermissionCeiling, true);
+  assert.equal(review.failClosed.timeoutMismatch, true);
+  assert.equal(review.failClosed.cleanupMismatch, true);
 });
 
 test("runner request struct rejects manifest override and executable fields", () => {

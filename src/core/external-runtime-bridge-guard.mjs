@@ -9,13 +9,16 @@ const unsafePathPattern = /(?:^|[\s"'(])(?:[A-Za-z]:[\\/]|\\\\)|(?:^|[\\/])\.\.(
 const executableCommandPattern = /\b(?:spawn|exec)(?:\s|$)|\b(?:curl|powershell|bash|sh|cmd|npm\s+run|node\s+|python\s+|npx\s+|docker\s+|podman\s+)/iu;
 const rawAuthPattern = /(bearer\s+[A-Za-z0-9._-]{12,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|ya29\.)/iu;
 
-export const sampleExternalBridgePermissionStore = createPermissionGrantStore({
-  runId: "run.bridge.001",
-  grants: [
-    { id: "grant.bridge.network", family: "network", targets: ["http://127.0.0.1:49153"] },
-    { id: "grant.bridge.external", family: "externalProviders", targets: ["vault:externalRuntimeCredential"] }
-  ]
-}, { now: "2026-06-12T00:00:00.000Z" });
+export const sampleExternalBridgePermissionStore = createPermissionGrantStore(
+  {
+    runId: "run.bridge.001",
+    grants: [
+      { id: "grant.bridge.network", family: "network", targets: ["http://127.0.0.1:49153"] },
+      { id: "grant.bridge.external", family: "externalProviders", targets: ["vault:externalRuntimeCredential"] }
+    ]
+  },
+  { now: "2026-06-12T00:00:00.000Z" }
+);
 
 export const sampleExternalBridgeRequest = Object.freeze({
   bridgeId: "bridge.n8n.local",
@@ -56,6 +59,7 @@ export const sampleExternalBridgeRequest = Object.freeze({
   }
 });
 
+/** @param {any} request @param {any} options */
 export function createExternalBridgeReview(request = sampleExternalBridgeRequest, options = {}) {
   const errors = [];
   const source = String(request?.source ?? "");
@@ -63,7 +67,9 @@ export function createExternalBridgeReview(request = sampleExternalBridgeRequest
   const bridgeId = sanitizeId(request?.bridgeId ?? "bridge.local", "bridgeId", errors);
 
   if (!allowedSources.has(source)) {
-    errors.push(issue(blockedAutoStartSources.has(source) ? "external-bridge.autostart-source" : "external-bridge.source", "Bridge launch must originate from explicit user action."));
+    errors.push(
+      issue(blockedAutoStartSources.has(source) ? "external-bridge.autostart-source" : "external-bridge.source", "Bridge launch must originate from explicit user action.")
+    );
   }
   if (request?.userOptIn !== true) {
     errors.push(issue("external-bridge.opt-in", "Bridge launch requires explicit user opt-in."));
@@ -79,9 +85,15 @@ export function createExternalBridgeReview(request = sampleExternalBridgeRequest
   return sanitizeForExport({
     schemaVersion,
     ok,
-    status: ok ? "approved" : "blocked",
-    approvedForLaunch: ok,
+    status: ok ? "preflight-ready" : "blocked",
+    approvedForLaunch: false,
+    launchAuthorized: false,
+    separateBridgeAcceptanceRequired: true,
     startsBridge: false,
+    startsRuntime: false,
+    makesNetworkRequest: false,
+    writesFiles: false,
+    opensClient: false,
     bridgeId,
     runId,
     source: redactText(source),
@@ -92,8 +104,13 @@ export function createExternalBridgeReview(request = sampleExternalBridgeRequest
     shutdown,
     cleanup,
     userActions: ok
-      ? ["Review bridge descriptor.", "Confirm user-owned runtime is ready.", "Launch through approved native boundary.", "Use shutdown control before cleanup."]
-      : ["Resolve bridge guard blockers before launch."],
+      ? [
+          "Review the bridge descriptor as inert preflight evidence.",
+          "Keep the user-owned runtime outside this app.",
+          "Complete a separate bridge acceptance gate before any connection.",
+          "No bridge or runtime is started by this review."
+        ]
+      : ["Resolve bridge guard blockers before any separate bridge acceptance review."],
     errors: errors.map((error) => ({ code: error.code, message: redactText(error.message) }))
   });
 }
@@ -134,7 +151,15 @@ export function reviewExternalBridgeGuard() {
   });
   return {
     schemaVersion: "agentique.externalRuntimeBridgeGuardReview.v1",
-    ok: approved.ok && !deepLink.ok && !publicBind.ok && !unsafePayload.ok,
+    ok:
+      approved.ok &&
+      approved.status === "preflight-ready" &&
+      approved.approvedForLaunch === false &&
+      approved.launchAuthorized === false &&
+      approved.separateBridgeAcceptanceRequired === true &&
+      !deepLink.ok &&
+      !publicBind.ok &&
+      !unsafePayload.ok,
     approvedStatus: approved.status,
     blockedSources: deepLink.errors.map((error) => error.code),
     publicBindBlocked: publicBind.errors.some((error) => error.code === "external-bridge.public-bind"),
@@ -190,7 +215,17 @@ function reviewPayload(payload, errors) {
     errors.push(issue(code.startsWith("external-bridge.") ? code : "external-bridge.payload-secret", error.message));
   }
   return {
-    safe: errors.every((error) => !error.code.startsWith("external-bridge.") || !["external-bridge.unsafe-path", "external-bridge.command-payload", "external-bridge.raw-auth", "external-bridge.private-marker", "external-bridge.hidden-network"].includes(error.code)),
+    safe: errors.every(
+      (error) =>
+        !error.code.startsWith("external-bridge.") ||
+        ![
+          "external-bridge.unsafe-path",
+          "external-bridge.command-payload",
+          "external-bridge.raw-auth",
+          "external-bridge.private-marker",
+          "external-bridge.hidden-network"
+        ].includes(error.code)
+    ),
     descriptorOnly: payload?.descriptorOnly === true,
     schemaVersion: redactText(String(payload?.schemaVersion ?? "missing")),
     summary: redactText(String(payload?.target ?? "unknown"))
@@ -297,7 +332,5 @@ function sanitizeId(value, fieldName, errors) {
 }
 
 function issue(code, message) {
-  const error = new Error(redactText(message));
-  error.code = code;
-  return error;
+  return Object.assign(new Error(redactText(message)), { code });
 }

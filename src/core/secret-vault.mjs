@@ -1,3 +1,5 @@
+import { assertNoEncodedSensitiveMaterial, redactEvidenceText } from "./evidence-redaction-boundary.mjs";
+
 const vaultRefPattern = /^vault:[a-z][a-zA-Z0-9._-]{2,80}$/u;
 const sensitiveKeyPattern = /(secret|token|password|credential|privateKey|apiKey|authorization)/iu;
 const sensitiveValuePattern = /(inline-secret-value|bearer\s+[A-Za-z0-9._-]{12,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|ya29\.[A-Za-z0-9._-]+)/iu;
@@ -59,15 +61,12 @@ export function assertNoInlineSecrets(value, path = "value") {
 }
 
 export function redactText(value) {
-  const text = String(value ?? "");
-  if (sensitiveValuePattern.test(text)) {
-    return text.replace(sensitiveValuePattern, "redacted:inline-sensitive-material");
-  }
-  return text.replace(/vault:[a-z][a-zA-Z0-9._-]{2,80}/gu, "redacted:vault-reference");
+  return redactEvidenceText(value);
 }
 
 export function sanitizeForExport(value) {
   assertNoInlineSecrets(value);
+  assertNoEncodedSensitiveMaterialForValue(value);
   return sanitizeValue(value);
 }
 
@@ -90,12 +89,24 @@ function sanitizeValue(value) {
   if (typeof value === "string") return redactText(value);
   if (Array.isArray(value)) return value.map((item) => sanitizeValue(item));
   if (typeof value !== "object") return value;
-  return Object.fromEntries(Object.entries(value).map(([key, nested]) => {
-    if (sensitiveKeyPattern.test(key)) {
-      return [key, vaultRefPattern.test(String(nested)) ? redactText(nested) : "redacted:vault-reference"];
-    }
-    return [key, sanitizeValue(nested)];
-  }));
+  return Object.fromEntries(
+    Object.entries(value).map(([key, nested]) => {
+      if (sensitiveKeyPattern.test(key)) {
+        return [key, vaultRefPattern.test(String(nested)) ? redactText(nested) : "redacted:vault-reference"];
+      }
+      return [key, sanitizeValue(nested)];
+    })
+  );
+}
+
+function assertNoEncodedSensitiveMaterialForValue(value) {
+  if (typeof value === "string") return assertNoEncodedSensitiveMaterial(value);
+  if (Array.isArray(value)) {
+    for (const nested of value) assertNoEncodedSensitiveMaterialForValue(nested);
+  } else if (value && typeof value === "object") {
+    for (const nested of Object.values(value)) assertNoEncodedSensitiveMaterialForValue(nested);
+  }
+  return true;
 }
 
 function requireText(value, fieldName) {

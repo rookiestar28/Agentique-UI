@@ -3,8 +3,9 @@
   "workflowPath": ".github/workflows/draft-release.yml",
   "trigger": "workflow_dispatch",
   "publicationMode": "draft-only",
-  "requiredRunners": ["windows-latest", "macos-14", "ubuntu-22.04"],
-  "requiredBuildScripts": ["tauri:build:windows", "tauri:build:macos", "tauri:build:linux"],
+  "requiredRunners": ["windows-latest", "ubuntu-22.04"],
+  "requiredBuildScripts": ["tauri:build:windows", "tauri:build:linux"],
+  "skippedPlatforms": ["macos"],
   "requiredEvidence": ["full-validation", "checksums", "sbom", "cargo-metadata", "artifact-attestation", "draft-release"],
   "permissions": {
     "contents": "write",

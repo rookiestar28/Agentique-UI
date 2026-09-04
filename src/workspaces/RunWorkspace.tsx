@@ -1,6 +1,7 @@
 import { useI18n } from "../i18n/I18nProvider";
 import { ArtifactReceiptViewerPanel } from "./ArtifactReceiptViewerPanel";
 import { AdapterRegistryTrustPanel } from "./AdapterRegistryTrustPanel";
+import { AgentProtocolBridgePanel } from "./AgentProtocolBridgePanel";
 import { BrowserAutomationConsentGatePanel } from "./BrowserAutomationConsentGatePanel";
 import { DiagnosticsSupportBundlePanel } from "./DiagnosticsSupportBundlePanel";
 import { DurableRunLedgerPanel } from "./DurableRunLedgerPanel";
@@ -12,12 +13,16 @@ import { LogsArtifactWorkbenchPanel } from "./LogsArtifactWorkbenchPanel";
 import { LocalVaultSecretsPanel } from "./LocalVaultSecretsPanel";
 import { McpBridgeReadinessPanel } from "./McpBridgeReadinessPanel";
 import { MultiLaneExecutionReadinessPanel } from "./MultiLaneExecutionReadinessPanel";
+import { NativeApprovalConsentPanel } from "./NativeApprovalConsentPanel";
+import { NativeAsyncRunLifecyclePanel } from "./NativeAsyncRunLifecyclePanel";
+import { NativeDagSchedulerPanel } from "./NativeDagSchedulerPanel";
 import { PermissionCenterPolicyDiffPanel } from "./PermissionCenterPolicyDiffPanel";
 import { PythonNodeAdapterPackExpansionPanel } from "./PythonNodeAdapterPackExpansionPanel";
 import { RepoLocalTaskRunnerLanePanel } from "./RepoLocalTaskRunnerLanePanel";
 import { RootlessContainerPreflightGatePanel } from "./RootlessContainerPreflightGatePanel";
 import { RunDashboardQueueMonitorPanel } from "./RunDashboardQueueMonitorPanel";
 import { RuntimePrerequisiteReadinessPanel } from "./RuntimePrerequisiteReadinessPanel";
+import { SchedulerFencingPanel } from "./SchedulerFencingPanel";
 import { RunnerRevocationCancelControls } from "./RunnerRevocationCancelControls";
 import { WasmWasiSandboxGatePanel } from "./WasmWasiSandboxGatePanel";
 import { WatchdogHeartbeatSupervisorPanel } from "./WatchdogHeartbeatSupervisorPanel";
@@ -34,6 +39,7 @@ export function RunWorkspace({
   durableRunLedgerSurface,
   graphRunPlan,
   nodeLaunchPlan,
+  nativeApprovalConsentSurface,
   onApproveRunnerPermissions,
   onCancelRunner,
   onFailRunner,
@@ -44,6 +50,7 @@ export function RunWorkspace({
   onPermissionCenterScenario,
   onRunDashboardScenario,
   onLogsArtifactFilter,
+  onNativeApprovalScenario,
   onWatchdogSupervisorScenario,
   onRevokeRunnerPermissions,
   onSelectCuratedAdapterLane,
@@ -53,6 +60,7 @@ export function RunWorkspace({
   permissionCenterSurface,
   runDashboardQueueMonitorSurface,
   logsArtifactWorkbenchSurface,
+  agentProtocolBridge,
   mcpBridgeReadiness,
   wasmWasiSandboxGate,
   rootlessContainerPreflightGate,
@@ -144,11 +152,43 @@ export function RunWorkspace({
                 <span>{runnerSession.lastAction}</span>
                 {runnerSession.blockedReason ? <span>{runnerSession.blockedReason}</span> : <span>Scheduler evidence is ready for review.</span>}
               </div>
+              <NativeApprovalConsentPanel surface={nativeApprovalConsentSurface} onScenario={onNativeApprovalScenario} />
+              <NativeAsyncRunLifecyclePanel runId={runnerSession.runId} />
+              <section className="evidence-panel" aria-labelledby="native-wasm-sandbox-heading">
+                <div className="section-heading compact-heading">
+                  <p className="caption">Native WASM sandbox</p>
+                  <h3 id="native-wasm-sandbox-heading">Exact zero-ambient adapter</h3>
+                </div>
+                <div className="runner-status-grid" aria-label="Native WASM sandbox evidence">
+                  <div>
+                    <span>Module</span>
+                    <strong>SHA-256 32e9891ae7d3</strong>
+                  </div>
+                  <div>
+                    <span>Imports</span>
+                    <strong>Zero imports</strong>
+                  </div>
+                  <div>
+                    <span>Resources</span>
+                    <strong>Fuel + memory bounded</strong>
+                  </div>
+                  <div>
+                    <span>Permission</span>
+                    <strong>Artifact retention only</strong>
+                  </div>
+                </div>
+                <p className="surface-note">
+                  Fixed in-process execution only. No caller-selected module, WASI, filesystem, network, environment, clock, random, subprocess, shell, browser, provider, or
+                  package authority.
+                </p>
+              </section>
+              <NativeDagSchedulerPanel />
               <RunDashboardQueueMonitorPanel runDashboardQueueMonitorSurface={runDashboardQueueMonitorSurface} onRunDashboardScenario={onRunDashboardScenario} />
               <LogsArtifactWorkbenchPanel logsArtifactWorkbenchSurface={logsArtifactWorkbenchSurface} onLogsArtifactFilter={onLogsArtifactFilter} />
               <PermissionCenterPolicyDiffPanel permissionCenterSurface={permissionCenterSurface} onPermissionCenterScenario={onPermissionCenterScenario} />
               <RunnerRevocationCancelControls runnerControlSurface={runnerControlSurface} onRunnerControlAction={onRunnerControlAction} />
               <WatchdogHeartbeatSupervisorPanel watchdogSupervisorSurface={watchdogSupervisorSurface} onWatchdogSupervisorScenario={onWatchdogSupervisorScenario} />
+              <SchedulerFencingPanel />
               <DurableRunLedgerPanel durableRunLedgerSurface={durableRunLedgerSurface} onDurableRunLedgerAction={onDurableRunLedgerAction} />
               <div className="run-plan-gate" aria-label="Run plan gate summary">
                 <div>
@@ -404,6 +444,7 @@ export function RunWorkspace({
               </div>
               <ExternalHandoffPanel externalHandoffDescriptors={externalHandoffDescriptors} />
               <ExternalAgentClientPackExpansionPanel externalAgentClientPackExpansion={externalAgentClientPackExpansion} />
+              <AgentProtocolBridgePanel agentProtocolBridge={agentProtocolBridge} />
               <McpBridgeReadinessPanel mcpBridgeReadiness={mcpBridgeReadiness} />
               <WasmWasiSandboxGatePanel wasmWasiSandboxGate={wasmWasiSandboxGate} />
               <RootlessContainerPreflightGatePanel rootlessContainerPreflightGate={rootlessContainerPreflightGate} />

@@ -5,15 +5,12 @@
       "script": "scripts/release-smoke-windows.ps1",
       "artifactTypes": ["nsis", "msi"]
     },
-    "macos": {
-      "script": "scripts/release-smoke-macos.sh",
-      "artifactTypes": ["app", "dmg"]
-    },
     "linux": {
       "script": "scripts/release-smoke-linux.sh",
       "artifactTypes": ["deb", "rpm", "appimage"]
     }
   },
+  "skippedPlatforms": ["macos"],
   "requiredChecks": ["artifact", "signature", "install", "launch", "version", "update", "uninstall", "cleanup", "redacted-logs"],
   "failClosed": {
     "missingArtifact": true,

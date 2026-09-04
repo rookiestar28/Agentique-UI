@@ -2,7 +2,7 @@
 
 Status: configured workflow, publication remains draft-only and maintainer-gated.
 
-Agentique UI uses a manual GitHub Actions workflow to prepare draft desktop release artifacts. The workflow validates the public repository, builds platform bundles on Windows, macOS, and Linux runners, uploads artifacts for review, generates checksums and SBOM metadata, and requests artifact provenance attestations.
+Agentique UI uses a manual GitHub Actions workflow to prepare draft desktop release artifacts. The workflow validates the public repository, builds supported platform bundles on Windows and Linux runners, uploads artifacts for review, generates checksums and SBOM metadata, and requests artifact provenance attestations. macOS packaging is explicitly skipped and remains unverified and unsupported.
 
 ## Trigger And Publication Mode
 
@@ -13,7 +13,6 @@ The workflow is manual-only through `workflow_dispatch`. It does not create a st
 The workflow calls the public release build scripts:
 
 - `npm run tauri:build:windows`
-- `npm run tauri:build:macos`
 - `npm run tauri:build:linux`
 
 Each platform job runs its release gate before building.
@@ -32,7 +31,7 @@ Release artifacts remain draft review material until the platform gates, updater
 
 ## Action And Permission Policy
 
-The workflow uses reviewed official GitHub actions with major-version pins. Permissions are limited to contents, identity token, and attestations for draft release assembly and provenance. Signing secrets are not defined in the workflow and must be configured separately by repository owners before release-ready jobs can pass.
+The workflow uses reviewed official GitHub actions with major-version pins. Permissions are limited to contents, identity token, and attestations for draft release assembly and provenance. Signing secrets are not defined in the workflow and must be configured separately by repository owners before release-ready jobs can pass. Ephemeral test-key verification is not real production signing and cannot make a workflow run publishable.
 
 The release workflow gate is validated with:
 

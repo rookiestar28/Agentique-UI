@@ -5,16 +5,8 @@
     "noGoWhenAnyGateBlocked": true,
     "requirePublicSafeWorkflowRunIdForGo": true
   },
-  "requiredGates": [
-    "release-metadata",
-    "windows",
-    "macos",
-    "linux",
-    "updater",
-    "workflow",
-    "smoke",
-    "docs"
-  ],
+  "requiredGates": ["release-metadata", "windows", "linux", "updater", "workflow", "smoke", "docs"],
+  "skippedPlatforms": ["macos"],
   "publicationClaims": {
     "releasedInstaller": false,
     "signedUpdater": false,

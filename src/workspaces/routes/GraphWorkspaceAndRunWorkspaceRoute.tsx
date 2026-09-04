@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { reviewAdapterPack, sampleAdapterPack, sampleAdapterPolicy } from "../../core/adapter-pack-policy.mjs";
 import { resolveAdapterUpdate, reviewAdapterRegistryManifestTrustPolicy, sampleAdapterRegistry } from "../../core/adapter-registry.mjs";
 import { sampleLibraryState } from "../../core/library-store.mjs";
@@ -10,6 +10,7 @@ import { createDiagnosticsSupportBundleReview, reviewDiagnosticsSupportBundleGat
 import { createFunctionExpansionCloseoutReview, reviewFunctionExpansionCloseoutGate } from "../../core/function-expansion-closeout.mjs";
 import { createLocalVaultSecretsReview, reviewLocalVaultSecretsGate } from "../../core/local-vault-secrets-ux.mjs";
 import { createMcpBridgeReadinessDescriptor } from "../../core/mcp-bridge-readiness-descriptor.mjs";
+import { createAgentProtocolBridgeReview } from "../../core/agent-protocol-bridge.mjs";
 import { createPythonNodeAdapterPackExpansion } from "../../core/python-node-adapter-pack-expansion.mjs";
 import { createRootlessContainerPreflightReview, reviewRootlessContainerPreflightGate } from "../../core/rootless-container-preflight-gate.mjs";
 import { createRunFolderManifest, sampleRunFolderInput } from "../../core/run-folder.mjs";
@@ -20,9 +21,11 @@ import { applyWorkflowEdit, createWorkflowEditorState, redoWorkflowEdit, undoWor
 import { sampleWorkflowIr, validateWorkflowIr } from "../../core/workflow-ir.mjs";
 import { sampleSchedulableWorkflowIr } from "../../core/workflow-scheduler.mjs";
 import { createPermissionCenterSurface } from "../../core/permission-center-policy-diff.mjs";
+import { createNativeApprovalConsentSurface } from "../../core/native-approval-consent.mjs";
 import { useRunnerWorkspaceState } from "../../app-state/useRunnerWorkspaceState";
 import { createRepoLocalTaskRunnerLane } from "../../core/repo-local-task-runner-lane.mjs";
 import type { NavigationKey } from "../../ui/navigation";
+import type { NativeApprovalScenario } from "../TrustRunSettingsTypes";
 import { GraphWorkspace } from "../GraphWorkspace";
 import { RunWorkspace } from "../TrustRunSettingsWorkspaces";
 
@@ -31,6 +34,7 @@ type GraphRunRouteProps = {
 };
 
 export default function GraphWorkspaceAndRunWorkspaceRoute({ activeNav }: GraphRunRouteProps) {
+  const [nativeApprovalScenario, setNativeApprovalScenario] = useState<NativeApprovalScenario>("pending");
   const activeWorkflowIr = sampleSchedulableWorkflowIr;
   const blockedWorkflowIr = sampleWorkflowIr;
   const primaryResource = sampleLibraryState.resources[0];
@@ -115,6 +119,7 @@ export default function GraphWorkspaceAndRunWorkspaceRoute({ activeNav }: GraphR
   const adapterReview = useMemo(() => reviewAdapterPack(sampleAdapterPack, sampleAdapterPolicy, primaryResource), [primaryResource]);
   const adapterPackExpansion = useMemo(() => createPythonNodeAdapterPackExpansion(), []);
   const externalAgentClientPackExpansion = useMemo(() => createExternalAgentClientPackExpansion(), []);
+  const agentProtocolBridge = useMemo(() => createAgentProtocolBridgeReview(), []);
   const mcpBridgeReadiness = useMemo(() => createMcpBridgeReadinessDescriptor(), []);
   const wasmWasiSandboxGate = useMemo(
     () => ({
@@ -166,6 +171,7 @@ export default function GraphWorkspaceAndRunWorkspaceRoute({ activeNav }: GraphR
   const pythonLaunchPlan = useMemo(() => createSidecarLaunchPlan(samplePythonSidecarRequest), []);
   const nodeLaunchPlan = useMemo(() => createSidecarLaunchPlan(sampleNodeSidecarRequest), []);
   const permissionAudit = useMemo(() => evaluatePermissionBatch(samplePermissionPolicy, samplePermissionRequests), []);
+  const nativeApprovalConsentSurface = useMemo(() => createNativeApprovalConsentSurface(nativeApprovalScenario), [nativeApprovalScenario]);
   const permissionCenterBaseline = useMemo(() => createPermissionCenterSurface(), []);
   const activePermissionCenterSurface = permissionCenterSurface ?? permissionCenterBaseline;
   const diagnosticsSupportBundle = useMemo(
@@ -235,6 +241,7 @@ export default function GraphWorkspaceAndRunWorkspaceRoute({ activeNav }: GraphR
       graphRunPlan={graphRunPlan}
       platformCapabilityReview={platformCapabilityReview}
       nodeLaunchPlan={nodeLaunchPlan}
+      nativeApprovalConsentSurface={nativeApprovalConsentSurface}
       curatedAdapterLane={curatedAdapterLane}
       curatedAdapterRuntime={curatedAdapterRuntime}
       onApproveRunnerPermissions={handleApproveRunnerPermissions}
@@ -247,6 +254,7 @@ export default function GraphWorkspaceAndRunWorkspaceRoute({ activeNav }: GraphR
       onPermissionCenterScenario={handlePermissionCenterScenario}
       onRunDashboardScenario={handleRunDashboardScenario}
       onLogsArtifactFilter={handleLogsArtifactFilter}
+      onNativeApprovalScenario={setNativeApprovalScenario}
       onWorkflowTemplateBuilderScenario={handleWorkflowTemplateBuilderScenario}
       onWatchdogSupervisorScenario={handleWatchdogSupervisorScenario}
       onRevokeRunnerPermissions={handleRevokeRunnerPermissions}
@@ -262,6 +270,7 @@ export default function GraphWorkspaceAndRunWorkspaceRoute({ activeNav }: GraphR
       runHistoryEvidence={runHistoryEvidence}
       runDashboardQueueMonitorSurface={runDashboardQueueMonitorSurface}
       logsArtifactWorkbenchSurface={logsArtifactWorkbenchSurface}
+      agentProtocolBridge={agentProtocolBridge}
       mcpBridgeReadiness={mcpBridgeReadiness}
       wasmWasiSandboxGate={wasmWasiSandboxGate}
       rootlessContainerPreflightGate={rootlessContainerPreflightGate}

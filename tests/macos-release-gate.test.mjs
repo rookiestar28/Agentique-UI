@@ -9,26 +9,26 @@ import {
   validateMacosReleaseGate
 } from "../src/core/macos-release-gate.mjs";
 
-test("macOS release gate is valid but blocked without notarized artifacts", () => {
+test("macOS release gate is valid but explicitly skipped and unverified", () => {
   const result = validateMacosReleaseGate(readMacosReleaseInputs());
 
   assert.equal(result.ok, true);
   assert.equal(result.ready, false);
   assert.equal(result.publicationAllowed, false);
-  assert.deepEqual(result.bundleTargets, ["app", "dmg"]);
-  assert.ok(result.blockers.some((blocker) => blocker.code === "macos.artifact-missing"));
-  assert.ok(result.blockers.some((blocker) => blocker.code === "macos.notarization-missing"));
+  assert.equal(result.status, "skipped");
+  assert.equal(result.summary.macosVerified, false);
+  assert.ok(result.blockers.some((blocker) => blocker.code === "macos.owner-skipped"));
 });
 
-test("macOS release gate accepts complete path-neutral evidence", () => {
+test("macOS release gate cannot become ready from supplied evidence", () => {
   const inputs = readMacosReleaseInputs();
   const result = validateMacosReleaseGate({ ...inputs, evidence: sampleMacosReadyEvidence });
 
   assert.equal(result.ok, true);
-  assert.equal(result.ready, true);
-  assert.equal(result.publicationAllowed, true);
-  assert.equal(result.summary.notarization, "accepted");
-  assert.equal(result.summary.smoke, "passed");
+  assert.equal(result.ready, false);
+  assert.equal(result.publicationAllowed, false);
+  assert.equal(result.summary.notarization, "skipped");
+  assert.equal(result.summary.smoke, "skipped");
 });
 
 test("macOS release evidence rejects local path material", () => {

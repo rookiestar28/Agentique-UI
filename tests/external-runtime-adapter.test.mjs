@@ -1,19 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  assertExternalRuntimeDescriptorSafe,
-  createExternalRuntimeHandoff,
-  externalRuntimeTargets,
-  sampleExternalRuntimeHandoff
-} from "../src/core/external-runtime-adapter.mjs";
+import { assertExternalRuntimeDescriptorSafe, createExternalRuntimeHandoff, externalRuntimeTargets, sampleExternalRuntimeHandoff } from "../src/core/external-runtime-adapter.mjs";
 import { sampleWorkflowIr } from "../src/core/workflow-ir.mjs";
 
 function supportedWorkflow() {
   return {
     ...sampleWorkflowIr,
-    nodes: sampleWorkflowIr.nodes
-      .filter((node) => node.id !== "provider-sync")
-      .map((node) => (node.id === "preview" ? { ...node, type: "handoff" } : node)),
+    nodes: sampleWorkflowIr.nodes.filter((node) => node.id !== "provider-sync").map((node) => (node.id === "preview" ? { ...node, type: "handoff" } : node)),
     edges: sampleWorkflowIr.edges.filter((edge) => edge.to !== "provider-sync" && edge.from !== "provider-sync")
   };
 }
@@ -22,6 +15,8 @@ test("external runtime targets are explicit and descriptor-only", () => {
   assert.deepEqual(externalRuntimeTargets, ["n8n", "flowise", "dify", "comfyui"]);
   assert.equal(sampleExternalRuntimeHandoff.execution.willExecute, false);
   assert.equal(sampleExternalRuntimeHandoff.execution.startsBridge, false);
+  assert.equal(sampleExternalRuntimeHandoff.execution.nativeSchedulerAdmission, false);
+  assert.equal(sampleExternalRuntimeHandoff.execution.completedByApp, false);
   assert.equal(sampleExternalRuntimeHandoff.compatibility.universalRuntimeClaim, false);
 });
 
@@ -61,6 +56,8 @@ test("all supported targets produce no-execution descriptors", () => {
     assert.equal(descriptor.target, target);
     assert.equal(descriptor.execution.willExecute, false);
     assert.equal(descriptor.execution.makesNetworkRequest, false);
+    assert.equal(descriptor.execution.launchAuthorized, false);
+    assert.equal(descriptor.execution.externalExecutionStatus, "not-executed");
     assert.equal(descriptor.compatibility.universalRuntimeClaim, false);
   }
 });
@@ -78,8 +75,5 @@ test("unsupported targets and unsafe destinations fail closed", () => {
 });
 
 test("descriptor safety check rejects executable command text", () => {
-  assert.throws(
-    () => assertExternalRuntimeDescriptorSafe({ output: { copyText: "npm run external-runtime" } }),
-    /executable commands/u
-  );
+  assert.throws(() => assertExternalRuntimeDescriptorSafe({ output: { copyText: "npm run external-runtime" } }), /executable commands/u);
 });

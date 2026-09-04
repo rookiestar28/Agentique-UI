@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import { readGithubReleaseWorkflowInputs, validateGithubReleaseWorkflowGate } from "./github-release-workflow-gate.mjs";
 import { readLinuxReleaseInputs, validateLinuxReleaseGate } from "./linux-release-gate.mjs";
-import { readMacosReleaseInputs, validateMacosReleaseGate } from "./macos-release-gate.mjs";
 import { readReleaseDocsInputs, validateReleaseDocsGate } from "./release-docs-gate.mjs";
 import { readReleaseMetadata, validateReleaseMetadata } from "./release-metadata.mjs";
 import { readReleaseSmokeInputs, validateReleaseSmokeGate } from "./release-smoke-gate.mjs";
@@ -28,6 +27,9 @@ export function validateFinalReleaseGate(inputs = readFinalReleaseInputs()) {
   }
   if (!String(inputs.packageJson?.scripts?.["validate:release-final"] ?? "").includes("validate-release-final.mjs")) {
     findings.push(issue("final.package-script", "package.json must expose final release validation."));
+  }
+  if (JSON.stringify(inputs.spec?.skippedPlatforms) !== JSON.stringify(["macos"])) {
+    findings.push(issue("final.skipped-platforms", "Final release policy must record macOS as the sole skipped platform."));
   }
 
   const gates = buildGateResults();
@@ -81,6 +83,7 @@ export function validateFinalReleaseGate(inputs = readFinalReleaseInputs()) {
       requiredGates,
       missingRequiredGates,
       unexpectedGates,
+      skippedPlatforms: inputs.spec?.skippedPlatforms ?? [],
       supplyChainEvidence: gates.find((gate) => gate.name === "workflow")?.evidence ?? []
     }
   };
@@ -89,7 +92,6 @@ export function validateFinalReleaseGate(inputs = readFinalReleaseInputs()) {
 function buildGateResults() {
   const releaseMetadata = validateReleaseMetadata(readReleaseMetadata());
   const windows = validateWindowsReleaseGate(readWindowsReleaseInputs());
-  const macos = validateMacosReleaseGate(readMacosReleaseInputs());
   const linux = validateLinuxReleaseGate(readLinuxReleaseInputs());
   const updater = validateUpdaterReleaseGate(readUpdaterReleaseInputs());
   const workflow = validateGithubReleaseWorkflowGate(readGithubReleaseWorkflowInputs());
@@ -99,7 +101,6 @@ function buildGateResults() {
   return [
     normalizeGate("release-metadata", releaseMetadata, releaseMetadata.ok),
     normalizeGate("windows", windows, windows.ready),
-    normalizeGate("macos", macos, macos.ready),
     normalizeGate("linux", linux, linux.ready),
     normalizeGate("updater", updater, updater.ready),
     normalizeGate("workflow", workflow, workflow.ready),

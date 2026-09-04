@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "agentique.agentEvaluationCase.v1",
+  "id": "fixture.success",
+  "provenance": "repo-owned-inline",
+  "adapterId": "runtime-evidence.v1",
+  "timeoutMs": 5000,
+  "payload": { "scenario": "success" },
+  "expected": { "outcome": "succeeded" },
+  "checks": ["outcome-succeeded", "single-terminal", "projection-before-terminal", "checkpoint-committed", "cleanup-complete"],
+  "forbiddenEffects": ["network", "shell", "user-filesystem", "credential-read"],
+  "digest": "sha256:f89e1fb09ded2b6545590cbd8a14524072eac114d697006cb30c26c82d3f3744"
+}

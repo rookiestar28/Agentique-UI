@@ -57,8 +57,30 @@ let descriptor_only: false;
 "reproducibilityDigest"
 "redacted_json_string"
 "redact_json_value"
-fs::write(run_dir.join("logs").join("stdout.log"), redact_runner_text(stdout),)
-fs::write(run_dir.join("logs").join("stderr.log"), redact_runner_text(stderr),)
+"agentique.nativeRunFolderWriteReceipt.v2"
+"digestAlgorithm"
+"sha256"
+"entries"
+struct NativeRunFolderWriteReceipt {}
+enum NativeRunFolderFault { BeforeCommit }
+let fault = NativeRunFolderFault::BeforeCommit;
+fn sha256_bytes() {}
+fn bounded_redacted_run_text() {}
+let stdout_bytes = bounded_redacted_run_text(stdout);
+let stderr_bytes = bounded_redacted_run_text(stderr);
+fn contains_unsafe_run_material() {}
+fn validate_native_run_public_ref() {}
+fn read_bounded_native_run_file() {}
+fn validate_native_run_folder_at() {}
+fn write_native_run_folder_with_fault() {
+  fs::rename(&staging_dir, &final_dir);
+}
+let digest_algorithm: "sha256";
+fn read_native_run_artifact_evidence() {
+  validate_native_run_folder_at(&run_dir, &request.run_id);
+  validate_native_run_public_ref(path, &request.run_id);
+  read_bounded_native_run_file(&target, MAX_NATIVE_RUN_FILE_BYTES);
+}
 fn agentique_runner_artifacts() {
   read_native_run_artifact_evidence();
   let evidence = "artifacts.read artifact_evidence scoped_run_state approved_adapter_id approved_permission_profile_id RUNNER_NATIVE_SUCCEEDED_STATE RUNNER_NATIVE_FAILED_STATE";
@@ -74,7 +96,7 @@ fn agentique_runner_artifacts() {
         validate: "npm run validate:native-runner-artifact-readback"
       }
     },
-    nativeContract: "artifact evidence viewer metadata cleanup receipt reproducibility digest native-backed",
+    nativeContract: "artifact evidence viewer metadata cleanup receipt reproducibility digest native-backed atomic SHA-256 fail closed",
     runFolderContract: "",
     runHistorySource: "nativeBacked: true descriptorOnly: false viewerMetadata",
     runWorkspaceSource: "native backed runHistoryEvidence.boundary.nativeBacked"
@@ -89,6 +111,7 @@ export function reviewNativeRunnerArtifactReadback(input = readNativeRunnerArtif
   const runHistorySource = String(input.runHistorySource ?? "");
   const runWorkspaceSource = String(input.runWorkspaceSource ?? "");
   const artifactsBody = parseFunctionBody(rustSource, "agentique_runner_artifacts");
+  const readbackBody = parseFunctionBody(rustSource, "read_native_run_artifact_evidence");
   const errors = [];
 
   if (unsafeReceiptPattern.test(rustSource) || unsafeReceiptPattern.test(runHistorySource)) {
@@ -116,12 +139,27 @@ export function reviewNativeRunnerArtifactReadback(input = readNativeRunnerArtif
     viewerMetadata: rustSource.includes("NativeRunViewerMetadataReceipt") && rustSource.includes("artifact_viewers") && rustSource.includes("preview_mode"),
     cleanupReceipt:
       rustSource.includes("NativeRunCleanupEvidenceReceipt") && rustSource.includes("idempotent: true") && rustSource.includes("agentique.nativeRunFolderCleanupReceipt.v1"),
-    reproducibilityDigest: rustSource.includes("reproducibility_digest") && rustSource.includes("stable_native_digest") && rustSource.includes("reproducibilityDigest"),
+    reproducibilityDigest: rustSource.includes("reproducibility_digest") && rustSource.includes("stable_native_digest") && rustSource.includes("NativeRunFolderWriteReceipt"),
     redactedLogs:
-      /fs::write\s*\(\s*run_dir\.join\("logs"\)\.join\("stdout\.log"\)\s*,\s*redact_runner_text\(stdout\)\s*,\s*\)/su.test(rustSource) &&
-      /fs::write\s*\(\s*run_dir\.join\("logs"\)\.join\("stderr\.log"\)\s*,\s*redact_runner_text\(stderr\)\s*,\s*\)/su.test(rustSource) &&
+      rustSource.includes("bounded_redacted_run_text(stdout)") &&
+      rustSource.includes("bounded_redacted_run_text(stderr)") &&
       rustSource.includes("redacted_json_string") &&
       rustSource.includes("redact_json_value"),
+    atomicPublish:
+      rustSource.includes("NativeRunFolderFault::BeforeCommit") &&
+      rustSource.includes("write_native_run_folder_with_fault") &&
+      rustSource.includes("fs::rename(&staging_dir, &final_dir)"),
+    integrityValidated:
+      rustSource.includes("agentique.nativeRunFolderWriteReceipt.v2") &&
+      rustSource.includes("NativeRunFolderWriteReceipt") &&
+      rustSource.includes("sha256_bytes") &&
+      rustSource.includes('digest_algorithm: "sha256"') &&
+      readbackBody.includes("validate_native_run_folder_at(&run_dir, &request.run_id)"),
+    unsafeEvidenceFailsClosed:
+      readbackBody.includes("validate_native_run_public_ref") &&
+      rustSource.includes("contains_unsafe_run_material") &&
+      rustSource.includes("read_bounded_native_run_file") &&
+      !readbackBody.includes("safe_native_relative_ref"),
     historyNativeBacked: runHistorySource.includes("nativeBacked: true") && runHistorySource.includes("descriptorOnly: false") && runHistorySource.includes("viewerMetadata"),
     runWorkspaceLabel: runWorkspaceSource.includes("native backed") && runWorkspaceSource.includes("runHistoryEvidence.boundary.nativeBacked")
   };
@@ -143,7 +181,7 @@ export function reviewNativeRunnerArtifactReadback(input = readNativeRunnerArtif
     errors.push(issue("native-artifact.validate-chain", "npm run validate must include native runner artifact readback validation."));
   }
 
-  for (const phrase of ["artifact evidence", "viewer metadata", "cleanup receipt", "reproducibility digest", "native-backed"]) {
+  for (const phrase of ["artifact evidence", "viewer metadata", "cleanup receipt", "reproducibility digest", "native-backed", "atomic", "SHA-256", "fail closed"]) {
     if (!nativeContract.includes(phrase) && !runFolderContract.includes(phrase)) {
       errors.push(issue("native-artifact.contract", `Contract docs must mention ${phrase}.`));
     }

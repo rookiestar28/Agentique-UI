@@ -52,9 +52,6 @@ jobs:
           - platform: windows
             os: windows-latest
             build_script: tauri:build:windows
-          - platform: macos
-            os: macos-14
-            build_script: tauri:build:macos
           - platform: linux
             os: ubuntu-22.04
             build_script: tauri:build:linux

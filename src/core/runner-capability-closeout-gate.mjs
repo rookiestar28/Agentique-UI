@@ -1,4 +1,5 @@
 import { redactText } from "./secret-vault.mjs";
+import { reviewSupportedLocalClaimBoundary, supportedLocalClaimBoundary } from "./supported-local-claim-boundary.mjs";
 
 const schemaVersion = "agentique.runnerCapabilityCloseout.v1";
 const requiredValidationSteps = Object.freeze([
@@ -10,11 +11,13 @@ const requiredValidationSteps = Object.freeze([
   "validate:python-adapter-runner",
   "validate:node-adapter-runner",
   "validate:workflow-scheduler",
+  "validate:native-dag-scheduler",
   "validate:graph-run-execution-ui",
   "validate:external-runtime-bridge-guard",
   "validate:wasm-wasi-sandbox-gate",
   "validate:rootless-container-preflight-gate",
   "validate:desktop-runner-validation-gate",
+  "validate:supported-local-claim-boundary",
   "validate:public",
   "npm test"
 ]);
@@ -27,6 +30,7 @@ const requiredCapabilities = Object.freeze([
   "python-adapter",
   "node-adapter",
   "workflow-scheduler",
+  "native-dag-scheduler",
   "graph-run-controls",
   "external-bridge-guard",
   "wasm-preflight",
@@ -44,13 +48,11 @@ const unsafeTextPattern = new RegExp(
 export const sampleRunnerCapabilityCloseout = Object.freeze({
   schemaVersion,
   validationSteps: [...requiredValidationSteps],
-  capabilities: Object.fromEntries(requiredCapabilities.map((capability) => [
-    capability,
-    { status: "accepted", evidenceRef: "docs/validation/runner-capability-closeout.md" }
-  ])),
+  capabilities: Object.fromEntries(requiredCapabilities.map((capability) => [capability, { status: "accepted", evidenceRef: "docs/validation/runner-capability-closeout.md" }])),
   claimBoundary: {
     supportedLocalRunScope: "supported-local-only",
     supportedLocalRuns: true,
+    policy: supportedLocalClaimBoundary,
     universalRuntime: false,
     hostedRuntime: false,
     automaticExecution: false,
@@ -181,9 +183,14 @@ function reviewCapabilities(capabilities = {}, errors) {
 }
 
 function reviewClaimBoundary(claims = {}, errors) {
+  const policyReview = reviewSupportedLocalClaimBoundary(claims.policy);
   const normalized = {
     supportedLocalRunScope: String(claims.supportedLocalRunScope ?? ""),
     supportedLocalRuns: claims.supportedLocalRuns === true,
+    verifiedPlatforms: policyReview.verifiedPlatforms,
+    unverifiedPlatforms: policyReview.unverifiedPlatforms,
+    supportedExecutionLanes: policyReview.supportedExecutionLanes,
+    reviewOnlyLanes: policyReview.reviewOnlyLanes,
     universalRuntime: claims.universalRuntime === true,
     hostedRuntime: claims.hostedRuntime === true,
     automaticExecution: claims.automaticExecution === true,
@@ -194,8 +201,14 @@ function reviewClaimBoundary(claims = {}, errors) {
   if (normalized.supportedLocalRunScope !== "supported-local-only" || normalized.supportedLocalRuns !== true) {
     errors.push(issue("runner-closeout.local-scope", "Runner closeout must claim supported local-run scope only."));
   }
+  if (!policyReview.ok) {
+    errors.push(issue("runner-closeout.claim-policy", "Runner closeout must consume the exact supported-local platform and lane policy."));
+  }
   for (const [claim, value] of Object.entries(normalized)) {
-    if (!["supportedLocalRunScope", "supportedLocalRuns"].includes(claim) && value === true) {
+    if (
+      !["supportedLocalRunScope", "supportedLocalRuns", "verifiedPlatforms", "unverifiedPlatforms", "supportedExecutionLanes", "reviewOnlyLanes"].includes(claim) &&
+      value === true
+    ) {
       errors.push(issue("runner-closeout.claim-boundary", `${claim} must remain false at runner closeout.`));
     }
   }
@@ -225,7 +238,10 @@ function reviewPublicSafety(safety = {}, errors) {
     noSecretScan: safety.noSecretScan === "passed" ? "passed" : "blocked",
     privateMarkersAbsent: safety.privateMarkersAbsent === true,
     evidenceRefsPathNeutral: safety.evidenceRefsPathNeutral === true,
-    status: safety.publicBoundaryScan === "passed" && safety.noSecretScan === "passed" && safety.privateMarkersAbsent === true && safety.evidenceRefsPathNeutral === true ? "passed" : "blocked"
+    status:
+      safety.publicBoundaryScan === "passed" && safety.noSecretScan === "passed" && safety.privateMarkersAbsent === true && safety.evidenceRefsPathNeutral === true
+        ? "passed"
+        : "blocked"
   };
 }
 

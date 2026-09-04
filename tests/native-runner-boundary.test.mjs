@@ -20,12 +20,30 @@ test("native runner boundary accepts only approved command surface", () => {
   assert.equal(review.ok, true);
   assert.deepEqual(review.commands.registered, allowedNativeRunnerCommands);
   assert.deepEqual(review.commands.declared, allowedNativeRunnerCommands);
-  assert.equal(review.permissions.defaultCapabilityPermissions, 0);
+  assert.equal(review.permissions.defaultCapabilityPermissions, 2);
   assert.equal(review.transitionGate.prepareCreatesPendingRecord, true);
   assert.equal(review.transitionGate.startAllowsApprovedFixedLane, true);
   assert.equal(review.transitionGate.consumesApproval, true);
   assert.equal(review.transitionGate.willSpawnProcess, true);
   assert.equal(review.transitionGate.fixedNativePythonExecution, true);
+  assert.ok(review.commands.allowed.includes("agentique_runner_approval_proposal"));
+  assert.ok(review.commands.allowed.includes("agentique_runner_decide_approval"));
+  assert.ok(review.commands.allowed.includes("agentique_runner_revoke_permission"));
+  assert.ok(review.commands.allowed.includes("agentique_scheduler_start"));
+  assert.ok(review.commands.allowed.includes("agentique_scheduler_status"));
+  assert.ok(review.commands.allowed.includes("agentique_scheduler_cancel"));
+  assert.ok(review.commands.allowed.includes("agentique_scheduler_resume"));
+});
+
+test("native runner boundary requires the approved revocation command registration", () => {
+  const input = readNativeRunnerBoundaryInputs();
+  const review = reviewNativeRunnerBoundary({
+    ...input,
+    rustSource: input.rustSource.replace("            agentique_runner_revoke_permission,\n", "")
+  });
+
+  assert.equal(review.ok, false);
+  assert.ok(review.errors.some((error) => error.code === "native.command-missing"));
 });
 
 test("native runner boundary requires a fixed-lane transition gate", () => {
@@ -44,8 +62,8 @@ test("native runner boundary requires a fixed-lane transition gate", () => {
 test("native runner boundary rejects unapproved command registration", () => {
   const input = readNativeRunnerBoundaryInputs();
   const rustSource = input.rustSource.replace(
-    "agentique_runner_cleanup\n        ])",
-    'agentique_runner_cleanup,\n            agentique_runner_shell\n        ])\n\n#[tauri::command]\nfn agentique_runner_shell(request: RunnerCommandRequest) -> Result<RunnerCommandReceipt, String> {\n    runner_boundary_receipt("agentique_runner_shell", "blocked", RUNNER_START_BLOCKED_REASON, request)\n}'
+    "agentique_scheduler_resume\n        ])",
+    'agentique_scheduler_resume,\n            agentique_runner_shell\n        ])\n\n#[tauri::command]\nfn agentique_runner_shell(request: RunnerCommandRequest) -> Result<RunnerCommandReceipt, String> {\n    runner_boundary_receipt("agentique_runner_shell", "blocked", RUNNER_START_BLOCKED_REASON, request)\n}'
   );
   const review = reviewNativeRunnerBoundary({ ...input, rustSource });
   assert.equal(review.ok, false);
@@ -75,7 +93,7 @@ test("native runner boundary rejects broad capabilities and unsafe request field
   });
   assert.equal(review.ok, false);
   assert.ok(review.errors.some((error) => error.code === "native.request-field-forbidden"));
-  assert.ok(review.errors.some((error) => error.code === "native.permission-nonempty"));
+  assert.ok(review.errors.some((error) => error.code === "native.permission-set"));
   assert.ok(review.errors.some((error) => error.code === "native.permission-broad"));
 });
 
@@ -94,11 +112,11 @@ test("native runner boundary public contract documents no generic shell", () => 
   for (const phrase of [
     "opaque ids",
     "native-owned pending run record",
-    "native-controlled Python execution receipt",
-    "fixed local Python adapter",
+    "native-controlled adapter execution receipt",
+    "fixed local Python or Node adapter",
     "run folder evidence",
     "generic shell",
-    "default capability remains empty"
+    "default capability grants only Tauri event listen and unlisten"
   ]) {
     assert.match(text, new RegExp(escapeRegExp(phrase), "u"));
   }

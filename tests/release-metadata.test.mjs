@@ -14,9 +14,9 @@ test("release metadata synchronizes package Tauri and Cargo versions", () => {
   }
 });
 
-test("default Tauri capability still grants no runtime permissions", () => {
+test("default Tauri capability grants only lifecycle event subscription", () => {
   const capability = JSON.parse(fs.readFileSync("src-tauri/capabilities/default.json", "utf8"));
-  assert.deepEqual(capability.permissions, []);
+  assert.deepEqual(capability.permissions, ["core:event:allow-listen", "core:event:allow-unlisten"]);
 });
 
 test("release metadata validator detects version drift", () => {
@@ -27,4 +27,3 @@ test("release metadata validator detects version drift", () => {
   assert.equal(result.ok, false);
   assert.ok(result.findings.some((finding) => finding.code === "metadata.version-drift"));
 });
-

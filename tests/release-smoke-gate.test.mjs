@@ -29,12 +29,9 @@ test("release smoke gate accepts complete path-neutral evidence", () => {
 
 test("release smoke scripts contain fail-closed platform checks", () => {
   const windows = fs.readFileSync("scripts/release-smoke-windows.ps1", "utf8");
-  const macos = fs.readFileSync("scripts/release-smoke-macos.sh", "utf8");
   const linux = fs.readFileSync("scripts/release-smoke-linux.sh", "utf8");
 
   assert.match(windows, /Get-AuthenticodeSignature/u);
-  assert.match(macos, /codesign --verify/u);
-  assert.match(macos, /spctl --assess/u);
   assert.match(linux, /\*\.AppImage/u);
 });
 

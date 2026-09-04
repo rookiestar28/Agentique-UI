@@ -4,7 +4,7 @@ Status: guarded preflight only. This contract does not start a bridge or externa
 
 ## Purpose
 
-External runtime bridges are high-risk because they can connect Agentique UI to user-owned runtimes such as workflow tools, local clients, or provider adapters. A bridge can only be considered for launch after a fail-closed review proves explicit user intent, loopback-only networking, per-launch auth, safe descriptors, permission grants, shutdown, and cleanup.
+External runtime bridges are high-risk because they can connect Agentique UI to user-owned runtimes such as workflow tools, local clients, or provider adapters. This guard provides inert preflight evidence only. A separate bridge acceptance must exist before any future implementation may request connection or launch authority.
 
 ## Approval Requirements
 
@@ -22,7 +22,10 @@ External runtime bridges are high-risk because they can connect Agentique UI to 
 
 The guard returns `agentique.externalRuntimeBridgeGuard.v1` with:
 
-- `approvedForLaunch`
+- `status: preflight-ready` only when the inert review passes
+- `approvedForLaunch: false`
+- `launchAuthorized: false`
+- `separateBridgeAcceptanceRequired: true`
 - `startsBridge: false`
 - sanitized network summary
 - payload safety summary
@@ -30,7 +33,7 @@ The guard returns `agentique.externalRuntimeBridgeGuard.v1` with:
 - shutdown and cleanup readiness
 - redacted errors
 
-`startsBridge` remains false because the guard is a review gate, not a process launcher.
+`startsBridge` and `launchAuthorized` remain false because this guard is a review gate, not a process launcher. Preflight readiness is not launch approval, connection authority, bridge acceptance, or proof that a user-owned runtime was contacted.
 
 ## Non-Claims
 

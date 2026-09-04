@@ -15,6 +15,7 @@ export function readNativeRunnerCleanupRecoveryInputs(root = process.cwd()) {
   return {
     root: repoRoot,
     rustSource: readText(repoRoot, "src-tauri/src/lib.rs"),
+    adapterSource: readText(repoRoot, "adapters/python/echo_adapter.py"),
     packageJson: readJson(repoRoot, "package.json"),
     validationStageSource: readText(repoRoot, "src/core/validation-stage-reporting.mjs"),
     runHistorySource: readText(repoRoot, "src/core/run-history-evidence.mjs"),
@@ -24,6 +25,7 @@ export function readNativeRunnerCleanupRecoveryInputs(root = process.cwd()) {
 
 export function reviewNativeRunnerCleanupRecovery(input = readNativeRunnerCleanupRecoveryInputs()) {
   const rustSource = String(input.rustSource ?? "");
+  const adapterSource = String(input.adapterSource ?? "");
   const packageJson = input.packageJson ?? {};
   const validationStageSource = String(input.validationStageSource ?? "");
   const runHistorySource = String(input.runHistorySource ?? "");
@@ -31,7 +33,23 @@ export function reviewNativeRunnerCleanupRecovery(input = readNativeRunnerCleanu
   const cancelBody = parseFunctionBody(rustSource, "agentique_runner_cancel");
   const cleanupBody = parseFunctionBody(rustSource, "agentique_runner_cleanup");
   const replayBody = parseFunctionBody(rustSource, "native_replay_receipt");
+  const spawnBody = parseFunctionBody(rustSource, "spawn_fixed_native_adapter");
+  const cleanupReceiptBody = parseFunctionBody(rustSource, "native_cleanup_recovery_receipt");
+  const cleanupTransitionBody = parseFunctionBody(rustSource, "cleanup_recovery_transition");
+  const cleanupTestBody = parseFunctionBody(rustSource, "native_runner_cancel_timeout_cleanup_recovery");
+  const runtimeResolverBody = parseFunctionBody(rustSource, "resolve_fixed_python_executable");
+  const hostAdapterModeBody = parseFunctionBody(rustSource, "native_adapter_mode_for_host");
+  const debugAdapterModeBody = parseFunctionBody(rustSource, "debug_native_adapter_mode");
+  const runnerRequestBody = parseStructBody(rustSource, "RunnerCommandRequest");
   const errors = [];
+
+  const assignmentOffset = spawnBody.indexOf("process_tree_supervisor.assign_child(&child)");
+  const workloadOffset = spawnBody.indexOf("write_fixed_adapter_request(&mut child");
+  const evidenceDerivedReceipt =
+    cleanupReceiptBody.includes("process_tree_cleanup: cleanup.process_tree_cleanup") &&
+    cleanupReceiptBody.includes("orphan_count: cleanup.orphan_count") &&
+    !/process_tree_cleanup:\s*true/u.test(cleanupReceiptBody) &&
+    !/orphan_count:\s*(?:Some\s*\(\s*)?0/u.test(cleanupReceiptBody);
 
   if (unsafeReceiptPattern.test(rustSource) || unsafeReceiptPattern.test(runHistorySource) || unsafeReceiptPattern.test(runWorkspaceSource)) {
     errors.push(issue("native-cleanup.unsafe-receipt", "Native cleanup recovery must not expose raw local paths, secrets, or private workspace paths."));
@@ -39,12 +57,14 @@ export function reviewNativeRunnerCleanupRecovery(input = readNativeRunnerCleanu
 
   const cleanupRecovery = {
     nativeBacked:
-      rustSource.includes("agentique.nativeRunnerCleanupRecovery.v1") && rustSource.includes("NativeRunnerCleanupRecoveryReceipt") && /native_backed:\s*true/u.test(rustSource),
+      rustSource.includes("agentique.nativeRunnerCleanupRecovery.v2") && rustSource.includes("NativeRunnerCleanupRecoveryReceipt") && /native_backed:\s*true/u.test(rustSource),
     descriptorOnly: /descriptor_only:\s*true/u.test(rustSource) ? true : /descriptor_only:\s*false/u.test(rustSource) ? false : null,
     cancelCommandNativeBacked:
       cancelBody.includes("cleanup_recovery_transition") &&
       cancelBody.includes("cancel-cleanup") &&
-      cancelBody.includes("NativeRunState::Canceled") &&
+      /coordinator\s*\.\s*cancel_requested\s*\.\s*store\s*\(\s*true/u.test(cancelBody) &&
+      /coordinator\s*\.\s*terminal_intent/u.test(cancelBody) &&
+      cancelBody.includes("NativeRunState::Canceling") &&
       !/runner_boundary_receipt\s*\(/u.test(cancelBody),
     cleanupCommandIdempotent:
       cleanupBody.includes("cleanup_recovery_transition") &&
@@ -52,13 +72,77 @@ export function reviewNativeRunnerCleanupRecovery(input = readNativeRunnerCleanu
       cleanupBody.includes("NativeRunState::CleanedUp") &&
       cleanupBody.includes("NativeRunState::CleanupRequired") &&
       !/runner_boundary_receipt\s*\(/u.test(cleanupBody),
-    timeoutCleanup: rustSource.includes("simulate_native_timeout_for_tests") && rustSource.includes("timeout-cleanup") && rustSource.includes("NativeRunState::TimedOut"),
+    timeoutCleanup:
+      cleanupTestBody.includes("NativeAdapterTestMode::DescendantSleep") &&
+      cleanupTestBody.includes('wait_for_run_state("run.tree-timeout", &["timed-out"])') &&
+      cleanupTestBody.includes('timeout_cleanup.transition, "timeout-cleanup"'),
     restartRecovery:
       rustSource.includes("recover_stale_native_run_if_needed") &&
       rustSource.includes("restart-recovery") &&
       rustSource.includes("stale-incomplete-run") &&
       replayBody.includes("recover_stale_native_run_if_needed"),
-    noOrphanEvidence: /orphan_count:\s*0/u.test(rustSource) && rustSource.includes("process_tree_cleanup: true") && rustSource.includes("no-tested-platform-orphans"),
+    noOrphanEvidence:
+      evidenceDerivedReceipt && cleanupTestBody.includes("timeout_cleanup.orphan_count, Some(0)") && cleanupTestBody.includes("live_cancel_cleanup.orphan_count, Some(0)"),
+    windowsJobObjectContainment:
+      rustSource.includes("struct NativeProcessTreeSupervisor") &&
+      rustSource.includes("CreateJobObjectW") &&
+      rustSource.includes("SetInformationJobObject") &&
+      rustSource.includes("JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE") &&
+      rustSource.includes("AssignProcessToJobObject"),
+    assignmentBeforeWorkload: assignmentOffset >= 0 && workloadOffset >= 0 && assignmentOffset < workloadOffset,
+    processTreeTerminationQuery:
+      rustSource.includes("TerminateJobObject") &&
+      rustSource.includes("QueryInformationJobObject") &&
+      rustSource.includes("JobObjectBasicAccountingInformation") &&
+      rustSource.includes("windows-job-drain-timeout"),
+    evidenceDerivedReceipt,
+    realDescendantCoverage:
+      rustSource.includes("NativeAdapterTestMode::DescendantSleep") &&
+      adapterSource.includes('"descendant-sleep"') &&
+      adapterSource.includes("subprocess.Popen(") &&
+      adapterSource.includes('[sys.executable, "-c", "import time; time.sleep(30)"]') &&
+      cleanupTestBody.includes('wait_for_process_tree_count("run.tree-cancel", 2)') &&
+      cleanupTestBody.includes('wait_for_process_tree_count("run.tree-timeout", 2)'),
+    testModeNativeOnly:
+      !/\bmode\s*:/u.test(runnerRequestBody) &&
+      (rustSource.includes("start_native_run(request, NativeAdapterTestMode::Success") ||
+        (rustSource.includes("start_native_run(request, native_adapter_mode_for_host()") &&
+          hostAdapterModeBody.includes("#[cfg(debug_assertions)]") &&
+          hostAdapterModeBody.includes("#[cfg(not(debug_assertions))]") &&
+          hostAdapterModeBody.includes("NativeAdapterTestMode::Success") &&
+          debugAdapterModeBody.includes('Some("sleep")') &&
+          debugAdapterModeBody.includes('Some("exit-failure")'))) &&
+      !adapterSource.includes('request.get("executable")') &&
+      !adapterSource.includes('request.get("args")'),
+    restartFailsClosed:
+      rustSource.includes('NativeProcessCleanupObservation::unverified("restart-supervisor-unavailable")') &&
+      cleanupTransitionBody.includes("NativeRunState::CleanupRequired") &&
+      cleanupTransitionBody.includes('"cleanup.required"') &&
+      cleanupTestBody.includes("first.orphan_count, None") &&
+      cleanupTestBody.includes("!first.process_tree_cleanup"),
+    unixDedicatedProcessGroup:
+      rustSource.includes("process_group_id: AtomicI32") &&
+      rustSource.includes("command.process_group(0)") &&
+      rustSource.includes("libc::getpgid(child_id)") &&
+      rustSource.includes("observed_group != child_id") &&
+      rustSource.includes("child_id <= 0"),
+    unixGroupTerminationProbe:
+      rustSource.includes("libc::killpg(process_group_id, 0)") &&
+      rustSource.includes("libc::killpg(process_group_id, libc::SIGKILL)") &&
+      rustSource.includes("Some(libc::ESRCH)") &&
+      rustSource.includes("unix-process-group-drain-timeout") &&
+      rustSource.includes("unix-process-group-descendant-drained"),
+    crossPlatformDescendantCoverage:
+      /#\[cfg\(any\(target_os = "windows", unix\)\)\]\s*#\[test\]\s*fn native_runner_cancel_timeout_cleanup_recovery/u.test(rustSource) &&
+      cleanupTestBody.includes("wait_for_unix_process_tree_active") &&
+      cleanupTestBody.includes("NativeAdapterTestMode::DescendantExit") &&
+      adapterSource.includes('"descendant-exit"'),
+    noShellOrPackageFallback:
+      runtimeResolverBody.includes('["python", "python3"]') && !/["'](?:sh|bash|zsh|cmd|powershell|npm|pnpm|yarn|pip|brew|apt)["']/u.test(runtimeResolverBody),
+    missingRuntimeDeterministic:
+      rustSource.includes("fn fixed_python_runtime_missing_is_deterministic_without_fallback") &&
+      rustSource.includes("agentique-intentionally-missing-python-runtime") &&
+      rustSource.includes("Python interpreter was not available for the fixed native adapter."),
     pathNeutralReceiptRefs:
       rustSource.includes("cleanup-recovery-receipt.json") &&
       rustSource.includes("cleanup-receipt.json") &&
@@ -100,6 +184,23 @@ export function reviewNativeRunnerCleanupRecovery(input = readNativeRunnerCleanu
 
 function parseFunctionBody(source, functionName) {
   const start = source.indexOf(`fn ${functionName}`);
+  if (start < 0) return "";
+  const open = source.indexOf("{", start);
+  if (open < 0) return "";
+  let depth = 0;
+  for (let index = open; index < source.length; index += 1) {
+    const character = source[index];
+    if (character === "{") depth += 1;
+    if (character === "}") {
+      depth -= 1;
+      if (depth === 0) return source.slice(open, index + 1);
+    }
+  }
+  return "";
+}
+
+function parseStructBody(source, structName) {
+  const start = source.indexOf(`struct ${structName}`);
   if (start < 0) return "";
   const open = source.indexOf("{", start);
   if (open < 0) return "";

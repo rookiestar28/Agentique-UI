@@ -1,8 +1,8 @@
 # macOS Signing And Notarization Gate
 
-Status: configured gate, publication blocked until macOS signing and notarization evidence exists.
+Status: skipped, unverified, and unsupported by current owner direction.
 
-Agentique UI uses Tauri's macOS app and DMG bundle targets. A public macOS release requires Developer ID signing, Apple notarization, a stapled ticket, and quarantine launch smoke evidence from a macOS runner.
+Agentique UI does not build or validate macOS packages in the current supported distribution scope. The retained policy describes requirements that would apply only after a future explicit scope change. No current app/DMG, Developer ID, notarization, stapling, or quarantine-launch result exists.
 
 ## Build Entry
 

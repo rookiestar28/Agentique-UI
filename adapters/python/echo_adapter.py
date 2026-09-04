@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 import os
+import subprocess
 import sys
 import time
 
@@ -24,6 +25,20 @@ def main():
     sleep_ms = int(request.get("sleepMs", 0) or 0)
 
     if mode == "sleep":
+        time.sleep(max(sleep_ms, 0) / 1000)
+
+    if mode in ("descendant-sleep", "descendant-exit"):
+        # IMPORTANT: this fixed native-test mode proves process-tree containment. It never accepts
+        # executable or argument input and must remain unreachable from renderer commands.
+        subprocess.Popen(
+            [sys.executable, "-c", "import time; time.sleep(30)"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            env={"PYTHONNOUSERSITE": "1", **{key: os.environ[key] for key in ("SystemRoot", "WINDIR") if key in os.environ}},
+        )
+
+    if mode == "descendant-sleep":
         time.sleep(max(sleep_ms, 0) / 1000)
 
     if mode == "secret":

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "agentique.agentEvaluationCase.v1",
+  "id": "fixture.checkpoint",
+  "provenance": "repo-owned-inline",
+  "adapterId": "runtime-evidence.v1",
+  "timeoutMs": 5000,
+  "payload": { "scenario": "checkpoint" },
+  "expected": { "outcome": "succeeded" },
+  "checks": ["checkpoint-committed", "single-terminal", "cleanup-complete"],
+  "forbiddenEffects": ["network", "shell", "user-filesystem", "credential-read"],
+  "digest": "sha256:b9fcecc5919be83bbc3f4b43ba898d8580e76277148eaaddca811c569b526834"
+}

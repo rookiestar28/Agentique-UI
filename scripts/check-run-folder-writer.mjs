@@ -19,6 +19,9 @@ if (!review.ok) {
 if ((review.summary.files ?? 0) < 7) {
   findings.push("Writer must materialize the expected run folder files.");
 }
+if (review.summary.atomicPublished !== true || review.summary.integrityValidated !== true) {
+  findings.push("Writer must atomically publish and validate the committed SHA-256 inventory.");
+}
 
 if (findings.length > 0) {
   console.error(JSON.stringify({ status: "failed", findings }, null, 2));

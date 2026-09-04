@@ -28,40 +28,53 @@ const closeout = readText("docs/validation/runner-capability-closeout.md");
 const packageJson = JSON.parse(readText("package.json"));
 const review = reviewRunnerCapabilityCloseoutGate();
 
-requireIncludes(moduleText, [
-  "agentique.runnerCapabilityCloseout.v1",
-  "requiredValidationSteps",
-  "runner-capability-contract",
-  "native-command-boundary",
-  "python-adapter",
-  "node-adapter",
-  "wasm-preflight",
-  "container-preflight",
-  "supported-local-only",
-  "productionDesktopRuntime"
-], "runner capability closeout module");
+requireIncludes(
+  moduleText,
+  [
+    "agentique.runnerCapabilityCloseout.v1",
+    "requiredValidationSteps",
+    "runner-capability-contract",
+    "native-command-boundary",
+    "python-adapter",
+    "node-adapter",
+    "wasm-preflight",
+    "container-preflight",
+    "supported-local-only",
+    "supportedLocalClaimBoundary",
+    "productionDesktopRuntime"
+  ],
+  "runner capability closeout module"
+);
 
-requireIncludes(tests, [
-  "runner capability closeout accepts supported local-only scope",
-  "missing runner validation steps fail closed",
-  "capability records must be accepted and path-neutral",
-  "release and runtime overclaims are blocked",
-  "public safety checks must pass",
-  "closeout document states supported local-only scope and blocked release claims"
-], "runner capability closeout tests");
+requireIncludes(
+  tests,
+  [
+    "runner capability closeout accepts supported local-only scope",
+    "missing runner validation steps fail closed",
+    "capability records must be accepted and path-neutral",
+    "release and runtime overclaims are blocked",
+    "public safety checks must pass",
+    "closeout document states supported local-only scope and blocked release claims"
+  ],
+  "runner capability closeout tests"
+);
 
-requireIncludes(closeout, [
-  "Runner Capability Closeout",
-  "supported-local-only",
-  "runner capability contract and no-overclaim gate",
-  "Graph and Run workspace controls",
-  "WASM/WASI preflight gate",
-  "rootless container preflight gate",
-  "desktop runner evidence gate",
-  "production desktop runtime",
-  "signed updater channel",
-  "public-boundary and no-secret checks"
-], "runner capability closeout doc");
+requireIncludes(
+  closeout,
+  [
+    "Runner Capability Closeout",
+    "supported-local-only",
+    "runner capability contract and no-overclaim gate",
+    "Graph and Run workspace controls",
+    "WASM/WASI preflight gate",
+    "rootless container preflight gate",
+    "desktop runner evidence gate",
+    "production desktop runtime",
+    "signed updater channel",
+    "public-boundary and no-secret checks"
+  ],
+  "runner capability closeout doc"
+);
 
 if (!review.ok || review.acceptedStatus !== "accepted") {
   failures.push("runner capability closeout gate must accept the complete sample closeout");
@@ -78,8 +91,12 @@ for (const entry of requiredValidateEntries) {
   }
 }
 
-if (!String(packageJson.scripts?.["validate:runner-capability-closeout"] ?? "").includes("check-runner-capability-closeout.mjs")) {
+const runnerCloseoutCommand = String(packageJson.scripts?.["validate:runner-capability-closeout"] ?? "");
+if (!runnerCloseoutCommand.includes("check-runner-capability-closeout.mjs")) {
   failures.push("package scripts must define validate:runner-capability-closeout");
+}
+if (!runnerCloseoutCommand.includes("validate:supported-local-claim-boundary")) {
+  failures.push("runner capability closeout must invoke the supported-local claim boundary");
 }
 
 if (/\bR\d{4}\b/u.test(closeout)) {
@@ -91,16 +108,17 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(JSON.stringify({
-  status: "passed",
-  checked: [
-    "src/core/runner-capability-closeout-gate.mjs",
-    "tests/runner-capability-closeout-gate.test.mjs",
-    "docs/validation/runner-capability-closeout.md",
-    "package.json"
-  ],
-  summary: review.summary
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      status: "passed",
+      checked: ["src/core/runner-capability-closeout-gate.mjs", "tests/runner-capability-closeout-gate.test.mjs", "docs/validation/runner-capability-closeout.md", "package.json"],
+      summary: review.summary
+    },
+    null,
+    2
+  )
+);
 
 function readText(filePath) {
   return fs.readFileSync(filePath, "utf8");

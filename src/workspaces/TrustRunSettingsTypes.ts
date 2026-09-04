@@ -1,5 +1,4 @@
 export type AnyRecord = Record<string, any>;
-
 export type RunnerControlAction = "ready" | "revoked-start" | "stale-approval" | "cancel" | "force-kill" | "cleanup-resolved";
 export type DurableRunLedgerAction = "replay" | "migrate" | "corrupt" | "export";
 export type WatchdogSupervisorScenario = "healthy" | "timeout" | "cancel-escalation" | "forced-cleanup" | "terminal-idempotent";
@@ -18,6 +17,7 @@ export type HumanApprovalResumeRerunScenario =
   | "retry-blocked-cleanup"
   | "cancel-idempotent"
   | "cleanup-resolved";
+export type NativeApprovalScenario = "pending" | "approved" | "denied" | "expired" | "revoked" | "consumed" | "mismatched";
 export type VerifyWorkspaceProps = {
   capabilityReview: AnyRecord;
   capabilityRows: AnyRecord[];
@@ -26,7 +26,6 @@ export type VerifyWorkspaceProps = {
   validation: { ok: boolean };
   verificationChecklist: Array<{ label: string; status: string }>;
 };
-
 export type RunWorkspaceProps = {
   adapterReview: AnyRecord;
   adapterPackExpansion: AnyRecord;
@@ -38,6 +37,7 @@ export type RunWorkspaceProps = {
   durableRunLedgerSurface: AnyRecord;
   graphRunPlan: AnyRecord;
   nodeLaunchPlan: AnyRecord;
+  nativeApprovalConsentSurface: AnyRecord;
   onApproveRunnerPermissions: () => void;
   onCancelRunner: () => void;
   onFailRunner: () => void;
@@ -48,6 +48,7 @@ export type RunWorkspaceProps = {
   onPermissionCenterScenario: (scenario: PermissionCenterScenario) => void;
   onRunDashboardScenario: (scenario: RunDashboardScenario) => void;
   onLogsArtifactFilter: (filter: LogsArtifactFilter) => void;
+  onNativeApprovalScenario: (scenario: NativeApprovalScenario) => void;
   onWorkflowTemplateBuilderScenario: (scenario: WorkflowTemplateBuilderScenario) => void;
   onWatchdogSupervisorScenario: (scenario: WatchdogSupervisorScenario) => void;
   onRevokeRunnerPermissions: () => void;
@@ -58,6 +59,7 @@ export type RunWorkspaceProps = {
   permissionCenterSurface: AnyRecord;
   runDashboardQueueMonitorSurface: AnyRecord;
   logsArtifactWorkbenchSurface: AnyRecord;
+  agentProtocolBridge: AnyRecord;
   mcpBridgeReadiness: AnyRecord;
   wasmWasiSandboxGate: AnyRecord;
   rootlessContainerPreflightGate: AnyRecord;
@@ -126,7 +128,6 @@ export type RunWorkspaceProps = {
     };
   };
 };
-
 export type SettingsWorkspaceProps = {
   configDraft: AnyRecord;
   configExport: AnyRecord;

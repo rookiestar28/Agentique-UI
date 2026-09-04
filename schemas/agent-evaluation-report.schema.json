@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentique.local/schemas/agent-evaluation-report.schema.json",
+  "title": "Agentique Agent Evaluation Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "generatedAt",
+    "status",
+    "candidate",
+    "fixture",
+    "outcome",
+    "deterministic",
+    "humanReview",
+    "metrics",
+    "cleanup",
+    "artifacts",
+    "traceDigest",
+    "nonClaims"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "agentique.agentEvaluationReport.v1" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["passed", "failed", "interrupted"] },
+    "candidate": { "type": "object" },
+    "fixture": { "type": "object" },
+    "outcome": { "type": "string" },
+    "deterministic": { "type": "object" },
+    "humanReview": { "type": "object" },
+    "metrics": { "type": "object" },
+    "cleanup": { "type": "object" },
+    "artifacts": { "type": "array", "maxItems": 32 },
+    "traceDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "nonClaims": { "type": "object" }
+  }
+}

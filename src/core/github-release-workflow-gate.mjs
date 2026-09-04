@@ -31,6 +31,10 @@ export function validateGithubReleaseWorkflowGate({ spec, workflowText, packageJ
   if (workflowText.includes("pull_request_target:") || workflowText.includes("schedule:")) {
     findings.push(issue("workflow.unsafe-trigger", "Release workflow must not use unsafe automatic release triggers."));
   }
+  if (JSON.stringify(spec?.skippedPlatforms) !== JSON.stringify(["macos"]) ||
+      workflowText.includes("macos-14") || workflowText.includes("tauri:build:macos")) {
+    findings.push(issue("workflow.platform-policy", "Draft release workflow must require Windows/Linux and explicitly skip macOS."));
+  }
   for (const [permission, level] of Object.entries(spec?.permissions ?? {})) {
     if (!new RegExp(`${escapeRegExp(permission)}:\\s*${escapeRegExp(level)}`, "u").test(workflowText)) {
       findings.push(issue("workflow.permission-missing", `Workflow permission missing: ${permission}:${level}.`));

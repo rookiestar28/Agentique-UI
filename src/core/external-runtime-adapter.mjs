@@ -45,6 +45,7 @@ export const sampleExternalRuntimeHandoff = createExternalRuntimeHandoff(sampleW
   createdAt: "2026-06-11T00:20:00.000Z"
 });
 
+/** @param {any} workflowIr @param {string} target @param {any} options */
 export function createExternalRuntimeHandoff(workflowIr, target, options = {}) {
   const manifest = externalRuntimeAdapterManifests.find((entry) => entry.target === String(target));
   if (!manifest) {
@@ -59,7 +60,8 @@ export function createExternalRuntimeHandoff(workflowIr, target, options = {}) {
   try {
     assertNoInlineSecrets(workflowIr);
   } catch (error) {
-    return failedDescriptor(target, error.code ?? "external-runtime.inline-secret", error.message);
+    const failure = /** @type {Error & { code?: string }} */ (error);
+    return failedDescriptor(target, failure.code ?? "external-runtime.inline-secret", failure.message);
   }
 
   const validation = validateWorkflowIr(workflowIr);
@@ -124,7 +126,48 @@ export function assertExternalRuntimeDescriptorSafe(descriptor) {
   if (/\b(?:spawn|exec)(?:\s|$)|\b(?:curl|powershell|bash|npm\s+run|python\s+)/iu.test(text)) {
     throw issue("external-runtime.command-output", "External runtime descriptor must not include executable commands.");
   }
+  assertNoExecutionShape(descriptor?.execution);
   return true;
+}
+
+function assertNoExecutionShape(execution) {
+  const keys = [
+    "completedByApp",
+    "executionClass",
+    "externalExecutionStatus",
+    "launchAuthorized",
+    "makesNetworkRequest",
+    "nativeSchedulerAdmission",
+    "opensClient",
+    "requiresUserReview",
+    "separateBridgeAcceptanceRequired",
+    "startsBridge",
+    "startsRuntime",
+    "willExecute",
+    "writesFiles"
+  ];
+  if (!execution || typeof execution !== "object" || Array.isArray(execution) || JSON.stringify(Object.keys(execution).sort()) !== JSON.stringify(keys)) {
+    throw issue("external-runtime.execution-shape", "External runtime execution receipt contains missing or unknown fields.");
+  }
+  if (
+    execution.executionClass !== "external-user-owned-handoff" ||
+    execution.externalExecutionStatus !== "not-executed" ||
+    execution.requiresUserReview !== true ||
+    execution.separateBridgeAcceptanceRequired !== true ||
+    [
+      execution.willExecute,
+      execution.nativeSchedulerAdmission,
+      execution.startsBridge,
+      execution.startsRuntime,
+      execution.makesNetworkRequest,
+      execution.writesFiles,
+      execution.opensClient,
+      execution.launchAuthorized,
+      execution.completedByApp
+    ].some((flag) => flag !== false)
+  ) {
+    throw issue("external-runtime.contradictory-state", "External runtime execution receipt must remain inert, uncompleted, and separately gated.");
+  }
 }
 
 function collectUnsupportedNodes(workflowIr, manifest, validation) {
@@ -132,9 +175,7 @@ function collectUnsupportedNodes(workflowIr, manifest, validation) {
   const nodes = workflowIr?.nodes ?? [];
   const unsupported = [];
   for (const node of nodes) {
-    const validatorRejected = validation.errors.some((error) => (
-      error.code === "workflow.unsupported-node" && error.message.includes(node.id)
-    ));
+    const validatorRejected = validation.errors.some((error) => error.code === "workflow.unsupported-node" && error.message.includes(node.id));
     if (validatorRejected || !accepted.has(node.type)) {
       unsupported.push({
         id: redactText(node.id),
@@ -206,10 +247,18 @@ function validateDestination(destination) {
 
 function noExecution() {
   return {
+    executionClass: "external-user-owned-handoff",
     willExecute: false,
+    nativeSchedulerAdmission: false,
     startsBridge: false,
+    startsRuntime: false,
     makesNetworkRequest: false,
     writesFiles: false,
+    opensClient: false,
+    launchAuthorized: false,
+    completedByApp: false,
+    externalExecutionStatus: "not-executed",
+    separateBridgeAcceptanceRequired: true,
     requiresUserReview: true
   };
 }
@@ -231,9 +280,7 @@ function isoDate(value) {
 }
 
 function issue(code, message) {
-  const error = new Error(message);
-  error.code = code;
-  return error;
+  return Object.assign(new Error(message), { code });
 }
 
 function clone(value) {

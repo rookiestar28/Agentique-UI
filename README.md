@@ -25,12 +25,17 @@ Agentique UI is the local-first desktop workspace for Agentique resources. It he
 - Source-first local workspace: React/Vite UI with Tauri desktop metadata and app-window launcher support.
 - Public-safe import path: untrusted import intents, scoped package verification, local library records, readback-aligned resource identity, and first-class n8n, Dify, and LangGraph format intake.
 - Real workflow graph surface: pan/zoom/fit controls, visible nodes and edges, node inspector, validation overlays, unsupported-node reporting, and non-blocking Graph overlays.
-- Supported local-run scope: deterministic run-plan review, Permission Center policy diff, Run Dashboard and Queue Monitor, start/cancel/status controls, event timelines, human approval checkpoints with resume/rerun review, run-folder manifests, Logs and Artifact Workbench, cleanup receipts, run history, and signed Python/Node adapter lanes.
+- Supported local-run scope: deterministic run-plan review, Permission Center policy diff, Run Dashboard and Queue Monitor, start/cancel/status/resume controls, event timelines, checkpointed human approval interrupts, run-folder manifests, Logs and Artifact Workbench, cleanup receipts, run history, the fixed native Python and Node adapter lanes, and deterministic native orchestration of fixed-adapter attempts.
+- Fixed native Python and Node local execution is supported for source validation on Windows and Linux only.
+- The fixed native DAG scheduler supports pre-approved attempts and checkpointed human-approval interrupts on Windows and Linux only.
+- macOS local execution remains unverified and is not currently supported.
+- The earlier workflow scheduler model remains review-only evidence, not a native execution lane.
 - Review-only expansion gates: adapter registry trust policy, repo-local task lane, external agent-client descriptors, MCP bridge readiness descriptors, WASM/WASI sandbox preflight, rootless container preflight, browser automation consent review, local vault references, and descriptor-only diagnostics support bundles.
 - Explicit local language choice: Settings can switch app chrome and workspace controls across the initial static catalog without browser-language auto-detection or remote translation services.
 - Execution evidence discipline: source-preserving round-trip handoff, release-grade execution validation pack, and secondary workflow format compatibility backlog stay documented without widening runtime claims.
 - Companion package alignment: read-only readback badges, no-execution validator proof, canonical source-package download acquisition proof, browser-local intake scanning, and review-only uploader previews.
 - Release discipline: installer, updater, package, smoke, provenance, rollback, and public-boundary gates remain explicit and fail closed until evidence exists.
+- Distribution verification covers the Windows and Linux package set with canonical manifest, artifact digest, signature, freshness, channel, version, and rollback-floor checks. Tests use only an in-memory ephemeral key; real production signing and the production desktop runtime remain blocked.
 
 ## Workspace Features
 
@@ -39,7 +44,7 @@ Agentique UI is the local-first desktop workspace for Agentique resources. It he
 - **Verify** checks resource bundles, support modes, capability manifests, signatures, companion validator proof, and trust boundaries.
 - **Preview** renders safe static previews, companion uploader drafts, and patch previews without loading arbitrary local bytes, submitting uploads, or executing resource code.
 - **Graph** visualizes Agentique Workflow IR on a real canvas with fit/zoom/pan, node selection, risk indicators, closeable inspector, accepted run-plan evidence, and minimized Runner controls.
-- **Run** exposes the supported-local-only runner path: scoped permission approval, Permission Center policy diff, Run Dashboard and Queue Monitor, start/cancel controls, status readback, event timeline, human approval resume/rerun review, run history, logs, artifacts, and cleanup evidence.
+- **Run** exposes the supported-local-only runner path: scoped permission approval, Permission Center policy diff, Run Dashboard and Queue Monitor, fixed native DAG start/status/cancel/resume controls, event timeline, checkpointed human-approval interrupts, run history, logs, artifacts, and cleanup evidence.
 - **Handoff** prepares external runtime, agent-client, MCP readiness, and source-preserving round-trip descriptors without starting bridges automatically.
 - **Settings** surfaces release readiness, adapter review, permission policy, multi-lane readiness, vault/redaction posture, diagnostics support-bundle posture, and distribution blockers.
 
@@ -137,7 +142,7 @@ Agentique UI is a local workspace for resources and workflow evidence. [`agentiq
 - [`agentique.io`](https://www.agentique.io) owns catalog discovery, upload, scan, review, moderation, publication state, distribution metadata, signatures/checksums, and public readback.
 - Agentique UI owns local workspace behavior: import checks, package verification, library records, static preview, workflow graph inspection, supported permission-gated local runs, and export/handoff.
 - The current source scope includes React/Vite workspace UI, Tauri desktop metadata, browser app-window launcher, first-class n8n, Dify, and LangGraph intake, static preview, workflow graph canvas, Run, Settings, Permission Center policy diff, Run Dashboard and Queue Monitor, Logs and Artifact Workbench, workflow template and run-plan builder review, adapter registry review, Python/Node adapter evidence, handoff surfaces, source-preserving descriptors, release gates, and public-safe support docs.
-- Local runs are limited to `supported-local-only`: the resource must declare the correct support mode, use a signed allowlisted adapter, receive explicit permissions, and produce bounded redacted logs/artifacts plus cleanup evidence.
+- Local runs are limited to `supported-local-only`: the resource must declare the correct support mode, use a fixed native-owned Python or Node adapter on a verified Windows or Linux environment, receive explicit permissions, and produce bounded redacted logs/artifacts plus cleanup evidence.
 - The runner is not a general shell, package installer, browser-data bridge, hosted runtime, universal workflow runtime, or production desktop release. Unsupported resources remain inspectable through preview, validation, export, and handoff paths.
 - MCP, WASM/WASI, rootless container, and browser automation surfaces are readiness or consent review gates only unless a separate runtime evidence gate accepts execution. They do not start bridges, execute WebAssembly, start containers, pull images, launch browsers, connect browser profiles, or automate external providers.
 - Diagnostics support bundle review is descriptor-only. It does not create archives, upload support tickets, collect raw logs, collect raw artifacts, collect browser data, or collect environment snapshots.
@@ -151,7 +156,7 @@ Agentique UI is a local workspace for resources and workflow evidence. [`agentiq
 
 Initial publication is source-first: GitHub source, docs, build instructions, and validation evidence can be public before signed installers exist.
 
-Desktop distribution remains evidence-gated. Public installer or updater publication stays No-Go until platform-specific signing, notarization where applicable, updater metadata, checksums, provenance, clean install/update/uninstall smoke, and maintainer review are complete. The final installer/updater release gate therefore still reports `publicationAllowed=false`.
+Desktop distribution remains evidence-gated for Windows and Linux. Public installer or updater publication stays No-Go until real production signing, updater metadata, checksums, provenance, clean install/update/uninstall smoke, and maintainer review are complete. macOS packaging is skipped and remains unverified and unsupported. The final installer/updater release gate therefore still reports `publicationAllowed=false`.
 
 ## Security Boundary
 
@@ -161,7 +166,7 @@ The default posture is no execution and no ambient local access. Supported local
 - shell execution is blocked by default,
 - secrets and environment variables are not forwarded implicitly,
 - external runtimes require explicit adapters and support-mode boundaries,
-- supported local runs require signed allowlisted adapters and scoped grants,
+- supported local execution is limited to the fixed native-owned Python adapter on verified Windows and Linux environments and requires scoped grants,
 - Permission Center, Run Dashboard, Logs and Artifact Workbench, local vault references, and diagnostics support bundle surfaces must stay redacted and path-neutral,
 - MCP, WASM/WASI, rootless container, and browser automation gates remain review/preflight-only until separate runtime evidence is accepted,
 - n8n, Dify, and LangGraph are the only currently validated first-class workflow import formats,

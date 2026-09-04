@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentique.dev/schemas/scheduler-fencing-state.schema.json",
+  "title": "Agentique Scheduler Fencing State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "revision", "nextFence", "schedulerStarted", "admission", "limits", "tasks", "claims", "requestIds", "history"],
+  "properties": {
+    "schemaVersion": { "const": "agentique.schedulerFencingState.v1" },
+    "revision": { "type": "integer", "minimum": 0 },
+    "nextFence": { "type": "integer", "minimum": 1 },
+    "schedulerStarted": { "const": false },
+    "admission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "reason"],
+      "properties": {
+        "state": { "enum": ["closed", "open"] },
+        "reason": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{1,95}$" }
+      }
+    },
+    "limits": { "type": "object" },
+    "tasks": { "type": "array", "maxItems": 32, "items": { "type": "object" } },
+    "claims": { "type": "array", "maxItems": 64, "items": { "type": "object" } },
+    "requestIds": { "type": "array", "maxItems": 256, "items": { "type": "object" } },
+    "history": { "type": "array", "maxItems": 256, "items": { "type": "object" } }
+  }
+}

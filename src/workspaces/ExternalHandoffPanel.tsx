@@ -13,6 +13,23 @@ export function ExternalHandoffPanel({ externalHandoffDescriptors }: ExternalHan
         <p className="caption">External handoff</p>
         <h2>Descriptor evidence</h2>
       </div>
+      <div className="external-handoff-grid compact" aria-label="External handoff execution classification">
+        <div>
+          <span>Local execution</span>
+          <strong>Supported fixed lanes only</strong>
+          <small>Native scheduler admission is separately enforced</small>
+        </div>
+        <div>
+          <span>External handoff</span>
+          <strong>Not executed by Agentique UI</strong>
+          <small>User-owned destination</small>
+        </div>
+        <div>
+          <span>Bridge authority</span>
+          <strong>Not authorized</strong>
+          <small>Separate bridge acceptance required</small>
+        </div>
+      </div>
       <div className="external-handoff-grid">
         <div>
           <span>Descriptors</span>

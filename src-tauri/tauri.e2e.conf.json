@@ -1,0 +1,6 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run build && npm run preview:e2e",
+    "devUrl": "http://127.0.0.1:4173"
+  }
+}

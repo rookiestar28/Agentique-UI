@@ -8,6 +8,10 @@ This closeout records the public Agentique UI runner capability boundary. The UI
 
 The accepted scope is `supported-local-only`.
 
+Accepted execution scope: fixed native Python and Node plus deterministic fixed-adapter DAG orchestration with checkpointed approval interrupts on Windows and Linux only.
+
+macOS remains unverified; the earlier scheduler model remains review-only.
+
 Covered capabilities:
 
 - runner capability contract and no-overclaim gate;
@@ -16,8 +20,9 @@ Covered capabilities:
 - permission grants, revocation, and audit checks;
 - run folder writer, artifacts, logs, and cleanup receipts;
 - signed Python adapter runner;
-- signed Node adapter runner;
-- allowlisted Workflow IR scheduler;
+- fixed signed Node adapter execution with native manifest, approval, cleanup, and evidence parity;
+- Workflow IR scheduler model review, without live native scheduling authority;
+- deterministic native DAG scheduling over pre-approved fixed-adapter attempts and checkpointed human-approval interrupts;
 - Graph and Run workspace controls for approve, start, cancel, status, logs, and artifacts;
 - external runtime bridge guard;
 - WASM/WASI preflight gate;
@@ -36,6 +41,7 @@ The closeout requires the full local validation chain:
 - Python adapter runner validation;
 - Node adapter runner validation;
 - workflow scheduler validation;
+- native DAG scheduler validation;
 - Graph and Run UI validation;
 - external runtime bridge guard validation;
 - WASM/WASI sandbox gate validation;

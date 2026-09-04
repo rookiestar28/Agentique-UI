@@ -13,7 +13,7 @@ test("GitHub release workflow gate validates draft release structure", () => {
   assert.equal(result.publicationAllowed, false);
   assert.equal(result.status, "configured");
   assert.ok(result.summary.runners.includes("windows-latest"));
-  assert.ok(result.summary.runners.includes("macos-14"));
+  assert.equal(result.summary.runners.includes("macos-14"), false);
   assert.ok(result.summary.runners.includes("ubuntu-22.04"));
   assert.deepEqual(result.summary.evidence, [
     "full-validation",

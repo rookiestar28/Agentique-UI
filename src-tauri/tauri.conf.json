@@ -20,12 +20,12 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://www.agentique.io"
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost https://www.agentique.io"
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "msi", "app", "dmg", "deb", "rpm", "appimage"],
+    "targets": ["nsis", "msi", "deb", "rpm", "appimage"],
     "publisher": "Agentique",
     "category": "DeveloperTool",
     "shortDescription": "Local-first workspace for Agentique resources.",

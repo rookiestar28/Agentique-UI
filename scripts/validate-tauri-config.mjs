@@ -5,6 +5,7 @@ const config = JSON.parse(fs.readFileSync("src-tauri/tauri.conf.json", "utf8"));
 const capability = JSON.parse(fs.readFileSync("src-tauri/capabilities/default.json", "utf8"));
 
 const findings = [];
+const allowedPermissions = ["core:event:allow-listen", "core:event:allow-unlisten"];
 
 if (config.identifier !== "io.agentique.ui") {
   findings.push("identifier must be io.agentique.ui");
@@ -18,8 +19,9 @@ if (config.bundle?.createUpdaterArtifacts !== false) {
   findings.push("createUpdaterArtifacts must remain false until updater signing is configured");
 }
 
-if (!Array.isArray(config.bundle?.targets) || !config.bundle.targets.includes("nsis") || !config.bundle.targets.includes("dmg") || !config.bundle.targets.includes("appimage")) {
-  findings.push("bundle targets must explicitly cover Windows, macOS, and Linux");
+const requiredBundleTargets = ["nsis", "msi", "deb", "rpm", "appimage"];
+if (!Array.isArray(config.bundle?.targets) || JSON.stringify(config.bundle.targets) !== JSON.stringify(requiredBundleTargets)) {
+  findings.push("bundle targets must exactly cover the supported Windows and Linux packages");
 }
 
 if (!String(config.app?.security?.csp ?? "").includes("default-src 'self'")) {
@@ -30,8 +32,8 @@ if (!String(config.build?.devUrl ?? "").startsWith("http://127.0.0.1:")) {
   findings.push("devUrl must bind to loopback");
 }
 
-if (Array.isArray(capability.permissions) && capability.permissions.length !== 0) {
-  findings.push("UI Lite default capability must not grant runtime permissions");
+if (JSON.stringify(capability.permissions) !== JSON.stringify(allowedPermissions)) {
+  findings.push("default capability must grant only event listen and unlisten");
 }
 
 if (findings.length > 0) {

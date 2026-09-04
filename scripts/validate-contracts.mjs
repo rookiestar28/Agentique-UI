@@ -41,7 +41,10 @@ const contractPairs = [
   ["schemas/deep-link-intent.schema.json", "examples/deep-link-intent.valid.json"],
   ["schemas/scoped-download-ticket.schema.json", "examples/scoped-download-ticket.valid.json"],
   ["schemas/ui-companion-readback.schema.json", "examples/companion-readback.valid.json"],
-  ["schemas/runner-capability.schema.json", "examples/runner-capability.valid.json"]
+  ["schemas/runner-capability.schema.json", "examples/runner-capability.valid.json"],
+  ["schemas/run-protocol-event.schema.json", "examples/run-protocol-event.valid.json"],
+  ["schemas/heddle-package-feasibility-receipt.schema.json", "examples/heddle-package-feasibility-receipt.valid.json"],
+  ["schemas/native-approval-consent-receipt.schema.json", "examples/native-approval-consent-receipt.valid.json"]
 ].filter(([schemaPath, examplePath]) => fs.existsSync(schemaPath) && fs.existsSync(examplePath));
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {

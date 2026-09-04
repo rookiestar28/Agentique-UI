@@ -5,6 +5,9 @@ const sourceMapPolicy = "local-inspection";
 
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    entries: ["index.html"]
+  },
   server: {
     host: "127.0.0.1",
     port: 5173,

@@ -1,7 +1,8 @@
 {
   "schemaVersion": "agentique.updaterReleaseGate.v1",
   "manifestSchema": "release/updater-manifest.schema.json",
-  "requiredPlatforms": ["windows-x86_64", "darwin-aarch64", "linux-x86_64"],
+  "requiredPlatforms": ["windows-x86_64", "linux-x86_64"],
+  "skippedPlatforms": ["darwin-aarch64"],
   "keyCustody": {
     "privateKeyStorage": "external-secret-store",
     "publicKeyConfigTiming": "after-final-release-url",

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentique.example/schemas/native-approval-consent-receipt.schema.json",
+  "title": "Agentique native approval consent proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "proposalId", "proposalDigest", "status", "policyOwner", "presentationOwner", "requestedBy", "createdAt", "expiresAt", "effect"],
+  "properties": {
+    "schemaVersion": { "const": "agentique.nativeApprovalConsent.v1" },
+    "proposalId": { "$ref": "#/$defs/id" },
+    "proposalDigest": { "$ref": "#/$defs/digest" },
+    "status": { "const": "pending" },
+    "policyOwner": { "const": "agentique-native-host" },
+    "presentationOwner": { "const": "agentique-ui" },
+    "requestedBy": { "$ref": "#/$defs/id" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "expiresAt": { "type": "string", "format": "date-time" },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "adapterId",
+        "runtimeId",
+        "manifestDigest",
+        "actionId",
+        "targetRefs",
+        "risk",
+        "capabilityCeiling",
+        "capabilities",
+        "credentialNames",
+        "distributionMode",
+        "abortPath",
+        "hidden"
+      ],
+      "properties": {
+        "address": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["productId", "resourceId", "sessionId", "runId"],
+          "properties": {
+            "productId": { "$ref": "#/$defs/id" },
+            "resourceId": { "$ref": "#/$defs/id" },
+            "sessionId": { "$ref": "#/$defs/id" },
+            "runId": { "$ref": "#/$defs/id" }
+          }
+        },
+        "adapterId": { "$ref": "#/$defs/id" },
+        "runtimeId": { "$ref": "#/$defs/id" },
+        "manifestDigest": { "$ref": "#/$defs/digest" },
+        "actionId": { "$ref": "#/$defs/id" },
+        "targetRefs": { "type": "array", "minItems": 1, "maxItems": 16, "uniqueItems": true, "items": { "$ref": "#/$defs/ref" } },
+        "risk": { "enum": ["low", "medium", "high"] },
+        "capabilityCeiling": { "type": "array", "minItems": 1, "maxItems": 16, "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["family", "action", "target"],
+            "properties": {
+              "family": { "$ref": "#/$defs/id" },
+              "action": { "$ref": "#/$defs/id" },
+              "target": { "$ref": "#/$defs/ref" }
+            }
+          }
+        },
+        "credentialNames": { "type": "array", "maxItems": 16, "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "distributionMode": { "const": "bundled-fixed" },
+        "abortPath": { "const": "agentique-runner-cancel" },
+        "hidden": { "const": false }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "minLength": 3, "maxLength": 96, "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "ref": { "type": "string", "minLength": 3, "maxLength": 160, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$" }
+  }
+}

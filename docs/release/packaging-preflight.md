@@ -7,9 +7,8 @@ The release packaging preflight is an evidence matrix. It does not build install
 Required evidence families:
 
 - Windows installer artifact evidence.
-- macOS package, signing, notarization, and stapling evidence.
 - Linux package evidence.
-- Signing and notarization status.
+- Signing and update-integrity status.
 - Updater metadata and signature evidence.
 - SHA-256 checksums.
 - SBOM and provenance evidence.
@@ -25,3 +24,6 @@ npm run validate:release-packaging-preflight -- --require-ready
 ```
 
 That command must fail until every required evidence family is present and public-safe. Passing the normal preflight validation is not a release approval.
+
+Supported packaging scope is Windows and Linux. macOS is skipped and remains unverified and
+unsupported. Test-key integrity checks never substitute for real production signing.

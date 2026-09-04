@@ -3,15 +3,33 @@ import path from "node:path";
 
 export const allowedNativeRunnerCommands = Object.freeze([
   "agentique_runner_prepare",
+  "agentique_runner_approval_proposal",
+  "agentique_runner_decide_approval",
   "agentique_runner_start",
+  "agentique_runner_revoke_permission",
   "agentique_runner_cancel",
   "agentique_runner_status",
   "agentique_runner_logs",
   "agentique_runner_artifacts",
-  "agentique_runner_cleanup"
+  "agentique_runner_cleanup",
+  "agentique_runner_checkpoint_history",
+  "agentique_runner_time_travel_prepare",
+  "agentique_scheduler_start",
+  "agentique_scheduler_status",
+  "agentique_scheduler_cancel",
+  "agentique_scheduler_resume"
 ]);
 
 const allowedCommandSet = new Set(allowedNativeRunnerCommands);
+const allowedCommandOrder = new Map(allowedNativeRunnerCommands.map((command, index) => [command, index]));
+const nativeCommandRequestTypes = new Map([
+  ["agentique_runner_decide_approval", "NativeApprovalDecisionRequest"],
+  ["agentique_runner_time_travel_prepare", "NativeTimeTravelPrepareRequest"],
+  ["agentique_scheduler_start", "native_dag_scheduler::NativeDagStartRequest"],
+  ["agentique_scheduler_status", "native_dag_scheduler::NativeDagCommandRequest"],
+  ["agentique_scheduler_cancel", "native_dag_scheduler::NativeDagCommandRequest"],
+  ["agentique_scheduler_resume", "native_dag_scheduler::NativeDagResumeRequest"]
+]);
 const approvedTransitionGate = Object.freeze({
   state: "fixed-lane-transition",
   approvedAdapterId: "adapter.local-python",
@@ -26,7 +44,7 @@ const forbiddenRequestFieldPattern = /\b(?:path|cwd|args|env|environment|script|
 const forbiddenPermissionPattern = /\b(?:shell|process|command|fs:|filesystem|path:|allow-execute|allow-spawn)\b/iu;
 const frontendInvokePattern = /\binvoke\s*\(\s*["'`]([^"'`]+)["'`]/gu;
 const allowedRequestFields = new Set(["resource_id", "session_id", "run_id", "command_id", "adapter_id", "approval_id", "permission_profile_id", "permission_grant_id"]);
-const allowedCommandNewArgs = new Set(["&python_executable", "candidate"]);
+const allowedCommandNewArgs = new Set(["&executable", "candidate"]);
 
 export function readNativeRunnerBoundaryInputs(root = process.cwd()) {
   return {
@@ -65,8 +83,9 @@ export function reviewNativeRunnerBoundary(input = readNativeRunnerBoundaryInput
   }
 
   for (const command of declaredCommands) {
-    if (!/\brequest\s*:\s*RunnerCommandRequest\b/u.test(command.signature)) {
-      errors.push(issue("native.command-shape", `${command.name} must accept a single RunnerCommandRequest.`));
+    const requestType = nativeCommandRequestTypes.get(command.name) ?? "RunnerCommandRequest";
+    if (!new RegExp(`\\brequest\\s*:\\s*${requestType}\\b`, "u").test(command.signature)) {
+      errors.push(issue("native.command-shape", `${command.name} must accept a single ${requestType}.`));
     }
   }
 
@@ -100,8 +119,8 @@ export function reviewNativeRunnerBoundary(input = readNativeRunnerBoundaryInput
   }
   errors.push(...validateNativeProcessUsage(rustSource));
 
-  if (!/runner_transition_receipt[\s\S]*false[\s\S]*None/u.test(rustSource) || !/execute_fixed_python_adapter/u.test(rustSource)) {
-    errors.push(issue("native.spawn-receipt", "Native runner receipts must distinguish non-start no-spawn receipts from the fixed native Python launch receipt."));
+  if (!/runner_transition_receipt[\s\S]*false[\s\S]*None/u.test(rustSource) || !/spawn_fixed_native_adapter/u.test(rustSource)) {
+    errors.push(issue("native.spawn-receipt", "Native runner receipts must distinguish non-start no-spawn receipts from fixed native adapter launch receipts."));
   }
   errors.push(...transitionGate.errors);
 
@@ -149,7 +168,8 @@ function reviewTransitionGate(rustSource) {
   const result = {
     prepareCreatesPendingRecord: /NativeRunRecord/u.test(text) && /PendingApproval/u.test(text) && /pending-approval/u.test(text),
     startAllowsApprovedFixedLane: /adapter\.local-python/u.test(text) && /permission\.local-python\.minimal/u.test(text) && /native-controlled-ready/u.test(text),
-    fixedNativePythonExecution: /execute_fixed_python_adapter/u.test(text) && /agentique\.nativePythonExecutionReceipt\.v1/u.test(text),
+    fixedNativePythonExecution:
+      /execute_fixed_python_adapter/u.test(text) && /spawn_fixed_native_adapter/u.test(text) && /agentique\.nativeAdapterExecutionReceipt\.v1/u.test(text),
     consumesApproval: /approval_consumed/u.test(text) && /approval_consumed\s*=\s*true/u.test(text),
     rejectsRevokedAdapter: /adapter\.local-python\.revoked/u.test(text),
     rejectsBroadPermissionProfile: /permissionProfileId is not the fixed minimal native runner profile/u.test(text),
@@ -168,7 +188,7 @@ function reviewTransitionGate(rustSource) {
     result.fixedNativePythonExecution !== true ||
     result.nonStartWillSpawnProcessFalse !== true
   ) {
-    result.errors.push(issue("native.transition-gate", "Native runner must implement the fixed-lane native Python execution gate before start can be accepted."));
+    result.errors.push(issue("native.transition-gate", "Native runner must implement the fixed-lane native adapter execution gate before start can be accepted."));
   }
   return result;
 }
@@ -178,7 +198,7 @@ function validateNativeProcessUsage(rustSource) {
   const args = [...String(rustSource ?? "").matchAll(/Command::new\s*\(([^)]*)\)/gu)].map((entry) => entry[1].trim());
   for (const arg of args) {
     if (!allowedCommandNewArgs.has(arg)) {
-      errors.push(issue("native.process-spawn", "Native process construction must be limited to fixed Python executable resolution and the fixed helper launch."));
+      errors.push(issue("native.process-spawn", "Native process construction must be limited to fixed adapter executable resolution and fixed helper launch."));
     }
   }
   if (/Command::new\s*\(\s*request\./u.test(rustSource) || /tokio::process/iu.test(rustSource)) {
@@ -192,8 +212,11 @@ function validateNativeProcessUsage(rustSource) {
 
 function validateCapability(capability, errors) {
   const permissions = Array.isArray(capability?.permissions) ? capability.permissions : [];
-  if (permissions.length !== 0) {
-    errors.push(issue("native.permission-nonempty", "Default capability must not grant runtime permissions."));
+  // CRITICAL: the lifecycle client needs official Tauri event subscription, but any broader
+  // capability would turn renderer content into filesystem, shell, or process authority.
+  const allowedPermissions = ["core:event:allow-listen", "core:event:allow-unlisten"];
+  if (JSON.stringify(permissions) !== JSON.stringify(allowedPermissions)) {
+    errors.push(issue("native.permission-set", "Default capability must grant only event listen and unlisten."));
   }
   for (const permission of permissions) {
     if (forbiddenPermissionPattern.test(String(permission))) {
@@ -225,14 +248,20 @@ function validateFrontendInvokes(frontendSources, errors) {
 function parseRegisteredCommands(rustSource) {
   const match = rustSource.match(/generate_handler!\s*\[([\s\S]*?)\]/u);
   if (!match) return [];
-  return [...new Set([...match[1].matchAll(/\b(agentique_runner_[a-z_]+)\b/gu)].map((entry) => entry[1]))];
+  return orderCommands([...new Set([...match[1].matchAll(/\b(agentique_(?:runner|scheduler)_[a-z_]+)\b/gu)].map((entry) => entry[1]))]);
 }
 
 function parseDeclaredCommands(rustSource) {
-  return [...rustSource.matchAll(/#\s*\[\s*tauri::command\s*\]\s*fn\s+(agentique_runner_[a-z_]+)\s*\(([^)]*)\)/gu)].map((entry) => ({
-    name: entry[1],
-    signature: entry[2]
-  }));
+  return [...rustSource.matchAll(/#\s*\[\s*tauri::command\s*\]\s*fn\s+(agentique_(?:runner|scheduler)_[a-z_]+)\s*\(([^)]*)\)/gu)]
+    .map((entry) => ({
+      name: entry[1],
+      signature: entry[2]
+    }))
+    .sort((left, right) => (allowedCommandOrder.get(left.name) ?? Number.MAX_SAFE_INTEGER) - (allowedCommandOrder.get(right.name) ?? Number.MAX_SAFE_INTEGER));
+}
+
+function orderCommands(commands) {
+  return commands.sort((left, right) => (allowedCommandOrder.get(left) ?? Number.MAX_SAFE_INTEGER) - (allowedCommandOrder.get(right) ?? Number.MAX_SAFE_INTEGER));
 }
 
 function parseRunnerRequestBody(rustSource) {

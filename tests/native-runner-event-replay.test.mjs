@@ -10,8 +10,27 @@ test("native runner event replay validation gate passes", () => {
   assert.equal(review.replay.descriptorOnly, false);
   assert.equal(review.replay.statusCommandReplays, true);
   assert.equal(review.replay.logsCommandReplays, true);
+  assert.equal(review.replay.restartDurable, true);
+  assert.equal(review.replay.persistedBeforePublication, true);
   assert.equal(review.replay.redactedAndPathNeutral, true);
   assert.deepEqual(review.replay.requiredEvents, ["prepare.accepted", "approval.pending", "start.accepted", "adapter.launching", "run-folder.written", "run.succeeded"]);
+});
+
+test("native event replay rejects process-local-only or publish-before-persist implementations", () => {
+  const input = readNativeRunnerEventReplayInputs();
+  const publishBeforePersist = reviewNativeRunnerEventReplay({
+    ...input,
+    rustSource: input.rustSource.replace("persist_native_event_record(request, &event)?;", "")
+  });
+  const processLocalOnly = reviewNativeRunnerEventReplay({
+    ...input,
+    rustSource: input.rustSource.replace("fn read_durable_native_events(", "fn read_process_local_events(")
+  });
+
+  assert.equal(publishBeforePersist.ok, false);
+  assert.ok(publishBeforePersist.errors.some((error) => error.code === "native-event.persisted-before-publication"));
+  assert.equal(processLocalOnly.ok, false);
+  assert.ok(processLocalOnly.errors.some((error) => error.code === "native-event.restart-durable"));
 });
 
 test("native event replay rejects descriptor-only live claims", () => {

@@ -9,12 +9,14 @@ import {
 } from "../src/core/external-runtime-bridge-guard.mjs";
 import { revokePermissionGrant } from "../src/core/permission-grants.mjs";
 
-test("explicit opt-in localhost bridge review is approved without starting a bridge", () => {
+test("explicit opt-in localhost bridge review is preflight-ready without launch authority", () => {
   const review = createExternalBridgeReview(sampleExternalBridgeRequest);
 
   assert.equal(review.ok, true);
-  assert.equal(review.status, "approved");
-  assert.equal(review.approvedForLaunch, true);
+  assert.equal(review.status, "preflight-ready");
+  assert.equal(review.approvedForLaunch, false);
+  assert.equal(review.launchAuthorized, false);
+  assert.equal(review.separateBridgeAcceptanceRequired, true);
   assert.equal(review.startsBridge, false);
   assert.equal(review.network.bindHost, "127.0.0.1");
   assert.equal(review.network.auth, "per-launch-token");
@@ -77,10 +79,7 @@ test("unsafe payloads are rejected before bridge approval", () => {
 
 test("payload safety helper accepts loopback descriptor and rejects commands", () => {
   assert.equal(assertExternalBridgePayloadSafe({ callbackUrl: "http://127.0.0.1:49153/health", descriptorOnly: true }), true);
-  assert.throws(
-    () => assertExternalBridgePayloadSafe({ copyText: "powershell start bridge" }),
-    /executable commands/u
-  );
+  assert.throws(() => assertExternalBridgePayloadSafe({ copyText: "powershell start bridge" }), /executable commands/u);
 });
 
 test("permission preflight must pass for bridge launch", () => {
@@ -107,11 +106,11 @@ test("shutdown and cleanup plans are required", () => {
   assert.ok(review.errors.some((error) => error.code === "external-bridge.cleanup-required"));
 });
 
-test("bridge guard review summary proves approved and blocked lanes", () => {
+test("bridge guard review summary proves preflight-ready and blocked lanes", () => {
   const summary = reviewExternalBridgeGuard();
 
   assert.equal(summary.ok, true);
-  assert.equal(summary.approvedStatus, "approved");
+  assert.equal(summary.approvedStatus, "preflight-ready");
   assert.equal(summary.publicBindBlocked, true);
   assert.equal(summary.unsafePayloadBlocked, true);
   assert.equal(summary.summary.startsBridge, false);

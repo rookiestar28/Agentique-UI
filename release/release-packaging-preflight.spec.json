@@ -7,9 +7,8 @@
   },
   "requiredEntries": [
     "windows-installer",
-    "macos-package",
     "linux-package",
-    "signing-and-notarization",
+    "signing-and-update-integrity",
     "updater-metadata",
     "checksums",
     "sbom-and-provenance",
@@ -18,6 +17,7 @@
     "public-boundary-scan",
     "owner-review"
   ],
+  "skippedPlatforms": ["macos"],
   "blockedPublicationClaims": {
     "releasedInstaller": false,
     "signedUpdater": false,

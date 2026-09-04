@@ -19,12 +19,13 @@ test("tauri config has release bundle metadata and loopback-only dev server", ()
   const config = JSON.parse(fs.readFileSync("src-tauri/tauri.conf.json", "utf8"));
   assert.equal(config.bundle.active, true);
   assert.equal(config.bundle.createUpdaterArtifacts, false);
+  assert.deepEqual(config.bundle.targets, ["nsis", "msi", "deb", "rpm", "appimage"]);
   assert.equal(config.build.devUrl, "http://127.0.0.1:5173");
   assert.match(config.app.security.csp, /default-src 'self'/);
 });
 
 test("default Tauri capability grants no resource execution permission", () => {
   const capability = JSON.parse(fs.readFileSync("src-tauri/capabilities/default.json", "utf8"));
-  assert.deepEqual(capability.permissions, []);
+  assert.deepEqual(capability.permissions, ["core:event:allow-listen", "core:event:allow-unlisten"]);
   assert.match(capability.description, /no resource execution/i);
 });

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "agentique.agentEvaluationCase.v1",
+  "id": "fixture.denial",
+  "provenance": "repo-owned-inline",
+  "adapterId": "runtime-evidence.v1",
+  "timeoutMs": 5000,
+  "payload": { "scenario": "denial" },
+  "expected": { "outcome": "denied" },
+  "checks": ["permission-denied", "single-terminal", "cleanup-complete"],
+  "forbiddenEffects": ["network", "shell", "user-filesystem", "credential-read"],
+  "digest": "sha256:6e570152006e4b38a77050a012941e5ea28c7cc2e9cadaf5a7fbfb31bec05cca"
+}

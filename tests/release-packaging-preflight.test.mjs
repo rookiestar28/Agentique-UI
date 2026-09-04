@@ -23,9 +23,8 @@ test("release packaging preflight reports a no-go evidence matrix before artifac
 
   const entryNames = result.matrix.map((entry) => entry.name);
   assert.ok(entryNames.includes("windows-installer"));
-  assert.ok(entryNames.includes("macos-package"));
   assert.ok(entryNames.includes("linux-package"));
-  assert.ok(entryNames.includes("signing-and-notarization"));
+  assert.ok(entryNames.includes("signing-and-update-integrity"));
   assert.ok(entryNames.includes("updater-metadata"));
   assert.ok(entryNames.includes("checksums"));
   assert.ok(entryNames.includes("sbom-and-provenance"));

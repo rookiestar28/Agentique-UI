@@ -29,7 +29,6 @@ Use `npm run dev` only when a raw browser tab is needed for automation, screensh
 Future public releases must provide:
 
 - Windows NSIS/MSI artifacts with verified signature and timestamp evidence,
-- macOS app/DMG artifacts with Developer ID signing, notarization, stapling, and quarantine launch evidence,
 - Linux deb/rpm/AppImage artifacts with package metadata, dependency, and AppImage compatibility evidence,
 - checksums,
 - SBOM and provenance,
@@ -38,3 +37,7 @@ Future public releases must provide:
 ## Updates
 
 No signed update channel is published yet. Updater metadata remains blocked until key custody, final release endpoint, signatures, `latest.json`, download checks, no-update behavior, bad-signature rejection, and rollback evidence pass.
+
+Supported distribution scope is Windows and Linux. macOS packaging and environment validation are
+skipped and remain unverified and unsupported. Runtime-ephemeral test keys exercise the verifier;
+they are not real production signing and cannot establish a released installer or updater.

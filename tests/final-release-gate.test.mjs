@@ -16,6 +16,8 @@ test("final release gate reports No-Go while release evidence is incomplete", ()
   assert.ok(result.gates.some((gate) => gate.name === "updater" && gate.ready === false));
   assert.ok(result.gates.some((gate) => gate.name === "smoke" && gate.ready === false));
   assert.ok(result.gates.some((gate) => gate.name === "docs" && gate.ready === true));
+  assert.equal(result.gates.some((gate) => gate.name === "macos"), false);
+  assert.deepEqual(result.summary.skippedPlatforms, ["macos"]);
   assert.ok(result.summary.supplyChainEvidence.includes("sbom"));
   assert.ok(result.summary.supplyChainEvidence.includes("artifact-attestation"));
 });

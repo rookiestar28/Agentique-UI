@@ -244,11 +244,14 @@ function reviewPrerequisiteSources(supportSources, platformCoverage) {
     },
     runFolder: {
       ok:
-        /agentique\.runFolderWriteReceipt\.v1/u.test(runFolderWriter) &&
-        /agentique\.runFolderCleanupReceipt\.v1/u.test(runFolderWriter) &&
+        /agentique\.runFolderWriteReceipt\.v2/u.test(runFolderWriter) &&
+        /agentique\.runFolderCleanupReceipt\.v2/u.test(runFolderWriter) &&
+        /digestAlgorithm:\s*"sha256"/u.test(runFolderWriter) &&
+        /validateCommittedRunFolder/u.test(runFolderWriter) &&
+        /renameSync\(stagingAbs,\s*finalAbs\)/u.test(runFolderWriter) &&
         /cleanupRunFolder/u.test(runFolderWriter),
-      writeReceipt: /agentique\.runFolderWriteReceipt\.v1/u.test(runFolderWriter),
-      cleanupReceipt: /agentique\.runFolderCleanupReceipt\.v1/u.test(runFolderWriter),
+      writeReceipt: /agentique\.runFolderWriteReceipt\.v2/u.test(runFolderWriter),
+      cleanupReceipt: /agentique\.runFolderCleanupReceipt\.v2/u.test(runFolderWriter),
       cleanupOk: /cleanupRunFolder/u.test(runFolderWriter)
     },
     logRedaction: {

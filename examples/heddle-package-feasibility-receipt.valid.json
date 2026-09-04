@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "agentique.heddlePackageFeasibility.v1",
+  "assessedAt": "2026-09-04",
+  "sourceCommit": "298864eb3d5b30aa10384ca5f8a8be67fb665f02",
+  "recordedDisposition": ["NO_ADOPT"],
+  "productRequirements": {
+    "allowsUserInstalledNode": false,
+    "needsHttpSseTransport": false,
+    "protocolOwner": "agentique"
+  },
+  "candidates": {
+    "runtime": {
+      "name": "@heddleagent/runtime",
+      "version": "7.1.0",
+      "expectedIntegrity": "sha512-CB3FXphO8tk/pcgl50t6Oy6OvU3NTdatueJBA7U/scbojyHEHGx6cnJx1ozPR/edP4XnMx8Y5pOFA44DV342Qw==",
+      "observedIntegrity": "sha512-CB3FXphO8tk/pcgl50t6Oy6OvU3NTdatueJBA7U/scbojyHEHGx6cnJx1ozPR/edP4XnMx8Y5pOFA44DV342Qw==",
+      "license": "MIT",
+      "engine": "node >=20",
+      "exports": [".", "./runs", "./runs/http-sse", "./advanced", "./cli", "./heartbeat/testing", "./package.json"],
+      "lifecycleScripts": [],
+      "tarballBytes": 1501851,
+      "unpackedBytes": 7261334,
+      "installedBytes": 80481237,
+      "browserOrEntrypointBundleBytes": 17772,
+      "fileCount": 2304,
+      "lockPackageCount": 187,
+      "installedPackageCount": 168,
+      "directDependencyCount": 22,
+      "binaryPackageCount": 7,
+      "advisories": { "info": 0, "low": 0, "moderate": 0, "high": 0, "critical": 0 },
+      "defaultEffects": {
+        "network": 0,
+        "listener": 0,
+        "credentialEnvironment": 0,
+        "arbitraryFilesystem": 0,
+        "childProcess": 0,
+        "residualHandles": 0
+      },
+      "probeElapsedMs": 47.72,
+      "packagedNodeRuntime": false,
+      "closesAcceptedProductGap": false,
+      "protocol": {
+        "completeAddress": false,
+        "conflictingDuplicateRejection": false,
+        "contiguousSequence": true,
+        "safePayloadBoundary": false,
+        "singleTerminal": true
+      }
+    },
+    "runClient": {
+      "name": "@heddleagent/run-client",
+      "version": "6.0.0",
+      "expectedIntegrity": "sha512-SNdXnnpSH7vPaKgk0pKmbiYxxxWynsV4PL+dP3N9jmVNEuq37RoOodv5qQL6TL31sqX5Xgj5P8g5ide7NYoITg==",
+      "observedIntegrity": "sha512-SNdXnnpSH7vPaKgk0pKmbiYxxxWynsV4PL+dP3N9jmVNEuq37RoOodv5qQL6TL31sqX5Xgj5P8g5ide7NYoITg==",
+      "license": "MIT",
+      "engine": "browser-safe ESM",
+      "exports": [".", "./http-sse", "./package.json"],
+      "lifecycleScripts": [],
+      "tarballBytes": 20049,
+      "unpackedBytes": 85737,
+      "installedBytes": 6031184,
+      "browserOrEntrypointBundleBytes": 94737,
+      "fileCount": 31,
+      "lockPackageCount": 4,
+      "installedPackageCount": 4,
+      "directDependencyCount": 3,
+      "binaryPackageCount": 0,
+      "advisories": { "info": 0, "low": 0, "moderate": 0, "high": 0, "critical": 0 },
+      "defaultEffects": {
+        "network": 0,
+        "listener": 0,
+        "credentialEnvironment": 0,
+        "arbitraryFilesystem": 0,
+        "childProcess": 0,
+        "residualHandles": 0
+      },
+      "probeElapsedMs": 81.68,
+      "packagedNodeRuntime": true,
+      "closesAcceptedProductGap": false,
+      "protocol": {
+        "completeAddress": false,
+        "conflictingDuplicateRejection": false,
+        "contiguousSequence": true,
+        "safePayloadBoundary": false,
+        "singleTerminal": true
+      }
+    }
+  },
+  "comparison": {
+    "conceptOnly": "Retain the accepted Agentique protocol with no new package, transport, runtime prerequisite, or public contract change.",
+    "runClientOnly": "The client is small but would duplicate protocol validation and add an unjustified transport or adapter surface while lacking complete-address, conflicting-duplicate, and payload-safety guarantees.",
+    "runtimeSidecar": "The narrow runs export is inert in the probe, but distribution still requires a packaged Node runtime and an 80 MB installed dependency surface without closing an accepted product gap."
+  },
+  "rollback": "No product dependency was added; retain the Agentique protocol and remove only disposable audit material.",
+  "notes": "Public source was reviewed; private-source companion packages were excluded. No provider, model, tool, MCP, uploaded code, credential, production endpoint, or lifecycle script was used."
+}

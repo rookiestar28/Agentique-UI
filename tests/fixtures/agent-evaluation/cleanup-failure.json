@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "agentique.agentEvaluationCase.v1",
+  "id": "fixture.cleanup-failure",
+  "provenance": "repo-owned-inline",
+  "adapterId": "runtime-evidence.v1",
+  "timeoutMs": 5000,
+  "payload": { "scenario": "cleanup-failure" },
+  "expected": { "outcome": "failed" },
+  "checks": ["single-terminal"],
+  "forbiddenEffects": ["network", "shell", "user-filesystem", "credential-read"],
+  "digest": "sha256:280aa2b3b4b038995bb81fdd439ade19d6073314d3932414a48d38b377419e77"
+}

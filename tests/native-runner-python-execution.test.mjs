@@ -23,6 +23,7 @@ test("native runner Python execution is fixed-helper only", () => {
   assert.equal(review.execution.writesRunFolder, true);
   assert.equal(review.execution.redactsLogs, true);
   assert.equal(review.execution.receiptPathNeutral, true);
+  assert.equal(review.execution.settlesCompletionErrors, true);
 });
 
 test("native runner Python execution rejects generic process broadening", () => {
@@ -61,4 +62,17 @@ test("native runner Python execution stays independent from shell plugin and ext
   assert.equal(weakened.ok, false);
   assert.ok(weakened.errors.some((error) => error.code === "native-python.shell-plugin"));
   assert.ok(weakened.errors.some((error) => error.code === "native-python.external-bin"));
+});
+
+test("native runner Python execution rejects dropped completion errors", () => {
+  const input = readNativeRunnerPythonExecutionInputs();
+  const weakened = reviewNativeRunnerPythonExecution({
+    ...input,
+    rustSource: input.rustSource.replace(
+      "let _ = settle_native_adapter_completion(\n                        &request,\n                        &adapter_id,",
+      "let _ = Ok::<bool, String>(true); // completion result discarded\n                    let _discarded = (\n                        &request,\n                        &adapter_id,"
+    )
+  });
+  assert.equal(weakened.ok, false);
+  assert.ok(weakened.errors.some((error) => error.code === "native-python.settles-completion-errors"));
 });

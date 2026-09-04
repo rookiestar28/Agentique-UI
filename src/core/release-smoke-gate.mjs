@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { assertNoInlineSecrets, redactText } from "./secret-vault.mjs";
 
 export const releaseSmokeSchemaVersion = "agentique.releaseSmokeGate.v1";
-export const requiredSmokePlatforms = Object.freeze(["windows", "macos", "linux"]);
+export const requiredSmokePlatforms = Object.freeze(["windows", "linux"]);
 const localPathPattern = /(?:^|[\s"'(])(?:[A-Za-z]:[\\/]|\\\\|\/[A-Za-z0-9_.-])|(?:^|[\\/])\.\.(?:[\\/]|$)|\.\.[\\/]/u;
 
 export const sampleSmokeBlockedEvidence = Object.freeze({
@@ -10,7 +10,6 @@ export const sampleSmokeBlockedEvidence = Object.freeze({
   releaseVersion: "0.1.0",
   platforms: {
     windows: {},
-    macos: {},
     linux: {}
   }
 });
@@ -41,7 +40,6 @@ export function readReleaseSmokeInputs({
     packageJson: JSON.parse(fs.readFileSync(packagePath, "utf8")),
     scripts: Object.fromEntries([
       ["windows", "scripts/release-smoke-windows.ps1"],
-      ["macos", "scripts/release-smoke-macos.sh"],
       ["linux", "scripts/release-smoke-linux.sh"]
     ].map(([platform, scriptPath]) => [platform, fs.readFileSync(scriptPath, "utf8")]))
   };
@@ -63,6 +61,10 @@ export function validateReleaseSmokeGate({ spec, packageJson, scripts, evidence 
   if (!String(packageJson?.scripts?.["validate:release-smoke"] ?? "").includes("validate-release-smoke.mjs")) {
     gateFindings.push(issue("smoke.package-script", "package.json must expose release smoke validation."));
   }
+  if (JSON.stringify(Object.keys(spec?.platforms ?? {})) !== JSON.stringify(requiredSmokePlatforms) ||
+      JSON.stringify(spec?.skippedPlatforms) !== JSON.stringify(["macos"])) {
+    gateFindings.push(issue("smoke.platform-policy", "Release smoke scope must require Windows/Linux and explicitly skip macOS."));
+  }
   for (const platform of requiredSmokePlatforms) {
     const platformSpec = spec?.platforms?.[platform];
     if (!platformSpec?.script || !scripts?.[platform]) {
@@ -77,9 +79,6 @@ export function validateReleaseSmokeGate({ spec, packageJson, scripts, evidence 
     }
     if (platform === "windows" && !scriptText.includes("Get-AuthenticodeSignature")) {
       gateFindings.push(issue("smoke.signature-check-missing", "Windows smoke script must verify Authenticode signature."));
-    }
-    if (platform === "macos" && (!scriptText.includes("codesign --verify") || !scriptText.includes("spctl --assess"))) {
-      gateFindings.push(issue("smoke.signature-check-missing", "macOS smoke script must verify codesign and Gatekeeper assessment."));
     }
     if (platform === "linux" && !scriptText.includes("*.AppImage")) {
       gateFindings.push(issue("smoke.appimage-check-missing", "Linux smoke script must handle AppImage artifacts."));

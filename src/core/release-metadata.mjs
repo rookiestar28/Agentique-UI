@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-export const requiredBundleTargets = Object.freeze(["nsis", "msi", "app", "dmg", "deb", "rpm", "appimage"]);
+export const requiredBundleTargets = Object.freeze(["nsis", "msi", "deb", "rpm", "appimage"]);
 
 export function readReleaseMetadata({ packagePath = "package.json", lockPath = "package-lock.json", tauriPath = "src-tauri/tauri.conf.json", cargoPath = "src-tauri/Cargo.toml" } = {}) {
   return {
@@ -48,6 +48,9 @@ export function validateReleaseMetadata(metadata = readReleaseMetadata()) {
   } else {
     for (const target of requiredBundleTargets) {
       if (!targets.includes(target)) findings.push(issue("metadata.target-missing", `bundle target missing: ${target}`));
+    }
+    for (const target of targets) {
+      if (!requiredBundleTargets.includes(target)) findings.push(issue("metadata.target-unsupported", `bundle target is outside supported Windows/Linux scope: ${target}`));
     }
   }
 

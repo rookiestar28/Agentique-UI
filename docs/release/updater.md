@@ -4,6 +4,11 @@ Status: configured gate, publication blocked until signing key custody and relea
 
 Agentique UI uses an evidence-gated updater policy. Updater artifacts and static `latest.json` publication must not be enabled until the release owner has finalized key custody, release URL, platform signatures, download verification, and rollback behavior.
 
+The required updater platform set is Windows x86_64 and Linux x86_64. macOS is skipped and remains
+unverified and unsupported. Repository tests use an in-memory ephemeral key to verify signatures,
+digests, freshness, channel, version, and rollback policy. This does not establish production
+signing, configure a public key or endpoint, or authorize downloads and installation.
+
 ## Current Configuration
 
 `createUpdaterArtifacts` stays disabled until updater signing is configured. The app also does not configure a public updater key or endpoint yet. This prevents a development repository from accidentally publishing update metadata ahead of signing and rollback evidence.

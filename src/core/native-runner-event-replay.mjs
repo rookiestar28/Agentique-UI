@@ -12,7 +12,8 @@ export function readNativeRunnerEventReplayInputs(root = process.cwd()) {
     rustSource: readText(repoRoot, "src-tauri/src/lib.rs"),
     runnerEventStreamSource: readText(repoRoot, "src/core/runner-event-stream.mjs"),
     packageJson: readJson(repoRoot, "package.json"),
-    nativeContract: readText(repoRoot, "docs/contracts/native-runner-boundary.md")
+    nativeContract: readText(repoRoot, "docs/contracts/native-runner-boundary.md"),
+    asyncContract: readText(repoRoot, "docs/contracts/native-async-run-lifecycle.md")
   };
 }
 
@@ -21,6 +22,7 @@ export function reviewNativeRunnerEventReplay(input = readNativeRunnerEventRepla
   const runnerEventStreamSource = String(input.runnerEventStreamSource ?? "");
   const packageJson = input.packageJson ?? {};
   const nativeContract = String(input.nativeContract ?? "");
+  const asyncContract = String(input.asyncContract ?? "");
   const errors = [];
 
   if (unsafePayloadPattern.test(rustSource)) {
@@ -33,6 +35,13 @@ export function reviewNativeRunnerEventReplay(input = readNativeRunnerEventRepla
       errors.push(issue("native-event.missing-event", `Native replay is missing required event: ${eventType}.`));
     }
   }
+
+  const recordStart = rustSource.indexOf("fn record_native_event(");
+  const replayStart = rustSource.indexOf("fn event_replay_for(", recordStart);
+  const recordSource = recordStart >= 0 && replayStart > recordStart ? rustSource.slice(recordStart, replayStart) : "";
+  const persistIndex = recordSource.indexOf("persist_native_event_record(request, &event)?;");
+  const memoryIndex = recordSource.indexOf("events.push(event.clone())");
+  const emitIndex = recordSource.indexOf("app.emit(NATIVE_RUNNER_EVENT_NAME, event)");
 
   const replay = {
     nativeBacked:
@@ -47,6 +56,13 @@ export function reviewNativeRunnerEventReplay(input = readNativeRunnerEventRepla
     replayable: rustSource.includes("replayable: true"),
     statusCommandReplays: /fn\s+agentique_runner_status[\s\S]*native_replay_receipt[\s\S]*replay\.status/u.test(rustSource),
     logsCommandReplays: /fn\s+agentique_runner_logs[\s\S]*native_replay_receipt[\s\S]*replay\.logs/u.test(rustSource),
+    restartDurable:
+      rustSource.includes("agentique.nativeRunnerDurableEvent.v1") &&
+      rustSource.includes("fn persist_native_event_record(") &&
+      rustSource.includes("fn read_durable_native_events(") &&
+      rustSource.includes("fn native_event_ledger_dir(") &&
+      /restart-durable/iu.test(asyncContract),
+    persistedBeforePublication: persistIndex >= 0 && persistIndex < memoryIndex && memoryIndex < emitIndex,
     redactedAndPathNeutral:
       rustSource.includes("MAX_NATIVE_EVENT_COUNT") &&
       rustSource.includes("safe_event_text") &&
@@ -62,6 +78,8 @@ export function reviewNativeRunnerEventReplay(input = readNativeRunnerEventRepla
     replayable: replay.replayable,
     statusCommandReplays: replay.statusCommandReplays,
     logsCommandReplays: replay.logsCommandReplays,
+    restartDurable: replay.restartDurable,
+    persistedBeforePublication: replay.persistedBeforePublication,
     redactedAndPathNeutral: replay.redactedAndPathNeutral,
     descriptorSampleSeparated: replay.descriptorSampleSeparated
   })) {
@@ -81,7 +99,7 @@ export function reviewNativeRunnerEventReplay(input = readNativeRunnerEventRepla
     errors.push(issue("native-event.validate-chain", "npm run validate must include native runner event replay validation."));
   }
 
-  for (const phrase of ["native event", "replay", "bounded", "redacted", "descriptor-only"]) {
+  for (const phrase of ["native event", "replay", "bounded", "redacted", "descriptor-only", "restart-durable"]) {
     if (!nativeContract.includes(phrase)) {
       errors.push(issue("native-event.contract", `Native contract must mention ${phrase}.`));
     }

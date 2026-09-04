@@ -56,7 +56,7 @@ Before any installable desktop claim, future evidence must cover:
 The UI Lite baseline remains non-executing:
 
 - Tauri package bundling is disabled for the current baseline.
-- Default Tauri capability grants no runtime permissions.
+- Default Tauri capability grants only event listen and unlisten for the fixed lifecycle channel.
 - Resource bytes are not imported after failed verification.
 - Static preview escapes or metadata-renders untrusted content.
 - Handoff descriptors do not execute commands or start bridges.

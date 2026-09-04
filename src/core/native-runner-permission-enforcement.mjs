@@ -63,16 +63,29 @@ export function reviewNativeRunnerPermissionEnforcement(input = readNativeRunner
       rustSource.includes("native_permission_grant_records") &&
       rustSource.includes("store_native_permission_grant") &&
       rustSource.includes("consume_native_permission_grant"),
+    prepareCreatesProposalWithoutGrant:
+      rustSource.includes("permission.proposal-pending") && rustSource.includes("permission_grant_id: None") && rustSource.includes("NativeApprovalProposalRecord"),
+    explicitDecisionOwnsGrant:
+      rustSource.includes("fn agentique_runner_decide_approval") && rustSource.includes("explicit_user_action: true") && rustSource.includes("validate_native_approval_for_start"),
+    legacyIdentifiersNonAuthorizing: rustSource.includes("legacy approvalId is non-authorizing without an explicit decision record"),
     startRequiresGrantId:
       /permission_grant_id\s*:\s*Option\s*<\s*String\s*>/u.test(requestBody) && /permissionGrantId is required before the fixed adapter lane can start/u.test(rustSource),
     consumesGrant: /grant\.consumed\s*=\s*true/u.test(rustSource) && /permission\.preflight-allowed/u.test(rustSource),
     revokedBlocked: /permissionGrantId has been revoked before native start/u.test(rustSource) && /revoke_native_permission_grant_for_tests/u.test(rustSource),
     expiredBlocked: /permissionGrantId expired before native start/u.test(rustSource) && /expire_native_permission_grant_for_tests/u.test(rustSource),
+    productRevocationCommand: rustSource.includes("fn agentique_runner_revoke_permission") && rustSource.includes('"agentique_runner_revoke_permission"'),
+    liveRevocationStopsExactHandle:
+      rustSource.includes("validate_native_permission_grant_for_revocation") &&
+      rustSource.includes("mark_native_permission_grant_revoked") &&
+      rustSource.includes("authorization withdrawal must serialize its durable revocation event") &&
+      rustSource.includes('"permission.revoked"'),
     scopedToRun:
       /grant\.resource_id\s*==\s*request\.resource_id/u.test(rustSource) &&
       /grant\.session_id\s*==\s*request\.session_id/u.test(rustSource) &&
       /grant\.run_id\s*==\s*request\.run_id/u.test(rustSource) &&
-      /grant\.grant_id\s*==\s*run_record\.permission_grant_id/u.test(rustSource),
+      rustSource.includes("grant.proposal_id == run_record.approval_id") &&
+      rustSource.includes("run_record.permission_grant_id.as_deref() == Some(grant.grant_id.as_str())") &&
+      rustSource.includes("proposal.proposal_digest == grant.proposal_digest"),
     redactedAndPathNeutral:
       rustSource.includes("target_refs") &&
       rustSource.includes("redacted: true") &&
@@ -101,7 +114,17 @@ export function reviewNativeRunnerPermissionEnforcement(input = readNativeRunner
     errors.push(issue("native-permission.validate-chain", "npm run validate must include native runner permission enforcement validation."));
   }
 
-  for (const phrase of ["permissionGrantId", "native-owned permission grant", "revoked", "expired", "browser data", "generic shell"]) {
+  for (const phrase of [
+    "permissionGrantId",
+    "native-owned permission grant",
+    "explicit approve",
+    "prepare creates only",
+    "non-authorizing evidence",
+    "revoked",
+    "expired",
+    "browser data",
+    "generic shell"
+  ]) {
     if (!nativeContract.includes(phrase) && !permissionContract.includes(phrase)) {
       errors.push(issue("native-permission.contract", `Contract docs must mention ${phrase}.`));
     }

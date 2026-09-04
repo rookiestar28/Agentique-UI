@@ -1,6 +1,7 @@
 {
   "schemaVersion": "agentique.macosReleaseGate.v1",
   "platform": "macos",
+  "scopeStatus": "skipped-unverified",
   "bundleTargets": ["app", "dmg"],
   "buildCommand": "npm run tauri:build:macos",
   "artifactPolicy": {

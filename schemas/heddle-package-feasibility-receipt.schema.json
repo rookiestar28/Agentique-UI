@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentique.dev/schemas/heddle-package-feasibility-receipt.schema.json",
+  "title": "Heddle package feasibility receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "assessedAt", "sourceCommit", "recordedDisposition", "productRequirements", "candidates", "comparison", "rollback", "notes"],
+  "properties": {
+    "schemaVersion": { "const": "agentique.heddlePackageFeasibility.v1" },
+    "assessedAt": { "type": "string", "format": "date" },
+    "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "recordedDisposition": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "enum": ["ADOPT_RUNTIME_SIDECAR", "ADOPT_RUN_CLIENT_ONLY", "NO_ADOPT"]
+      }
+    },
+    "productRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowsUserInstalledNode", "needsHttpSseTransport", "protocolOwner"],
+      "properties": {
+        "allowsUserInstalledNode": { "const": false },
+        "needsHttpSseTransport": { "const": false },
+        "protocolOwner": { "const": "agentique" }
+      }
+    },
+    "candidates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime", "runClient"],
+      "properties": {
+        "runtime": { "$ref": "#/$defs/candidate" },
+        "runClient": { "$ref": "#/$defs/candidate" }
+      }
+    },
+    "comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["conceptOnly", "runClientOnly", "runtimeSidecar"],
+      "properties": {
+        "conceptOnly": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "runClientOnly": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "runtimeSidecar": { "type": "string", "minLength": 1, "maxLength": 512 }
+      }
+    },
+    "rollback": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "notes": { "type": "string", "minLength": 1, "maxLength": 512 }
+  },
+  "$defs": {
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "expectedIntegrity",
+        "observedIntegrity",
+        "license",
+        "engine",
+        "exports",
+        "lifecycleScripts",
+        "tarballBytes",
+        "unpackedBytes",
+        "installedBytes",
+        "browserOrEntrypointBundleBytes",
+        "fileCount",
+        "lockPackageCount",
+        "installedPackageCount",
+        "directDependencyCount",
+        "binaryPackageCount",
+        "advisories",
+        "defaultEffects",
+        "probeElapsedMs",
+        "packagedNodeRuntime",
+        "closesAcceptedProductGap",
+        "protocol"
+      ],
+      "properties": {
+        "name": { "enum": ["@heddleagent/runtime", "@heddleagent/run-client"] },
+        "version": { "enum": ["7.1.0", "6.0.0"] },
+        "expectedIntegrity": { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$" },
+        "observedIntegrity": { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$" },
+        "license": { "const": "MIT" },
+        "engine": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "exports": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 64 }
+        },
+        "lifecycleScripts": { "type": "array", "maxItems": 0 },
+        "tarballBytes": { "type": "integer", "minimum": 1 },
+        "unpackedBytes": { "type": "integer", "minimum": 1 },
+        "installedBytes": { "type": "integer", "minimum": 1 },
+        "browserOrEntrypointBundleBytes": { "type": "integer", "minimum": 1 },
+        "fileCount": { "type": "integer", "minimum": 1 },
+        "lockPackageCount": { "type": "integer", "minimum": 1 },
+        "installedPackageCount": { "type": "integer", "minimum": 1 },
+        "directDependencyCount": { "type": "integer", "minimum": 0 },
+        "binaryPackageCount": { "type": "integer", "minimum": 0 },
+        "advisories": { "$ref": "#/$defs/advisories" },
+        "defaultEffects": { "$ref": "#/$defs/effects" },
+        "probeElapsedMs": { "type": "number", "minimum": 0 },
+        "packagedNodeRuntime": { "type": "boolean" },
+        "closesAcceptedProductGap": { "type": "boolean" },
+        "protocol": { "$ref": "#/$defs/protocol" }
+      }
+    },
+    "advisories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["info", "low", "moderate", "high", "critical"],
+      "properties": {
+        "info": { "type": "integer", "minimum": 0 },
+        "low": { "type": "integer", "minimum": 0 },
+        "moderate": { "type": "integer", "minimum": 0 },
+        "high": { "type": "integer", "minimum": 0 },
+        "critical": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "effects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["network", "listener", "credentialEnvironment", "arbitraryFilesystem", "childProcess", "residualHandles"],
+      "properties": {
+        "network": { "const": 0 },
+        "listener": { "const": 0 },
+        "credentialEnvironment": { "const": 0 },
+        "arbitraryFilesystem": { "const": 0 },
+        "childProcess": { "const": 0 },
+        "residualHandles": { "const": 0 }
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completeAddress", "conflictingDuplicateRejection", "contiguousSequence", "safePayloadBoundary", "singleTerminal"],
+      "properties": {
+        "completeAddress": { "type": "boolean" },
+        "conflictingDuplicateRejection": { "type": "boolean" },
+        "contiguousSequence": { "type": "boolean" },
+        "safePayloadBoundary": { "type": "boolean" },
+        "singleTerminal": { "type": "boolean" }
+      }
+    }
+  }
+}

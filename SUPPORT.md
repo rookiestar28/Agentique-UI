@@ -18,12 +18,16 @@ Do not include credentials, tokens, signing material, private keys, personal acc
 
 Supported today:
 
+- Supported local execution: fixed native Python and Node on Windows and Linux source-validation environments only.
+- Supported native orchestration: deterministic fixed-adapter DAGs with pre-approved attempts or checkpointed human-approval interrupts on Windows and Linux only.
+- macOS local execution is unverified and unsupported.
+- The workflow scheduler model remains review-only evidence.
 - source checkout,
 - public validation scripts,
 - contract and release-gate review,
 - UI development and app-style local browser-window testing,
-- supported-local-only runner validation, Permission Center policy diff review, Run Dashboard and Queue Monitor review, Graph/Run control debugging, human approval resume/rerun review, Logs and Artifact Workbench review, and cleanup evidence review,
-- adapter registry, signed Python/Node adapter lane, repo-local task lane, external agent-client descriptor, MCP readiness descriptor, WASM/WASI preflight, rootless container preflight, browser automation consent, local vault reference, and diagnostics support-bundle descriptor review,
+- supported-local-only runner validation, deterministic native DAG start/status/cancel/resume, Permission Center policy diff review, Run Dashboard and Queue Monitor review, Graph/Run control debugging, checkpointed human-approval interrupt review, Logs and Artifact Workbench review, and cleanup evidence review,
+- adapter registry, fixed Python/Node native execution diagnostics, repo-local task lane, external agent-client descriptor, MCP readiness descriptor, WASM/WASI preflight, rootless container preflight, browser automation consent, local vault reference, and diagnostics support-bundle descriptor review,
 - first-class n8n, Dify, and LangGraph import validation plus source-preserving handoff evidence review.
 
 Not supported yet:
@@ -38,3 +42,8 @@ Not supported yet:
 - support-bundle archive creation, upload, telemetry, support ticket integration, raw log collection, raw artifact collection, or environment snapshot collection,
 - raw local secret storage, OAuth token exchange, or ambient environment import,
 - support for unsigned third-party artifacts as trusted releases.
+
+The repository verifies Windows/Linux distribution-integrity behavior with runtime-ephemeral test
+keys. This does not replace real production signing or establish a released installer, signed
+updater, or production desktop runtime. macOS packaging is skipped and remains unverified and
+unsupported.

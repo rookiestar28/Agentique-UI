@@ -132,6 +132,22 @@ test("sidecar gate rejects native start receipts that are no longer fixed-lane n
   assertFailure(review.validation, "sidecar.transition-receipt");
 });
 
+test("sidecar gate rejects a run-folder prerequisite without atomic v2 integrity", () => {
+  const input = readNativeRunnerSidecarGateInputs();
+  const review = reviewNativeRunnerSidecarGate({
+    ...input,
+    supportSources: {
+      ...input.supportSources,
+      runFolderWriter: input.supportSources.runFolderWriter
+        .replaceAll("agentique.runFolderWriteReceipt.v2", "agentique.runFolderWriteReceipt.v1")
+        .replace("fs.renameSync(stagingAbs, finalAbs)", "fs.mkdirSync(finalAbs)")
+    }
+  });
+
+  assert.equal(review.validation.ok, false);
+  assertFailure(review.validation, "sidecar.run-folder");
+});
+
 test("sidecar gate rejects weakened sidecar contract shape", () => {
   const input = readNativeRunnerSidecarGateInputs();
   const weakenedContract = clone(nativeRunnerSidecarContract);

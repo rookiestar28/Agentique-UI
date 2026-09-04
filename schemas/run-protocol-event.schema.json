@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.agentique.io/ui/run-protocol-event.v1.schema.json",
+  "title": "Agentique Run Protocol Event",
+  "type": "object",
+  "required": ["schemaVersion", "address", "sequence", "occurredAt", "kind", "payload"],
+  "properties": {
+    "schemaVersion": { "const": "agentique.runProtocolEvent.v1" },
+    "address": { "$ref": "#/$defs/address" },
+    "sequence": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+    "occurredAt": { "type": "string", "format": "date-time", "maxLength": 30 },
+    "kind": { "enum": ["activity", "result", "cancelled", "error"] },
+    "payload": { "type": "object" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "activity" } }, "required": ["kind"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/activityPayload" } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "result" } }, "required": ["kind"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/resultPayload" } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "cancelled" } }, "required": ["kind"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/cancelledPayload" } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "error" } }, "required": ["kind"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/errorPayload" } } }
+    }
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "token": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|[._:-](?=[A-Za-z0-9])){0,127}$"
+    },
+    "safeText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "address": {
+      "type": "object",
+      "required": ["schemaVersion", "productScopeId", "sessionId", "resourceId", "runId"],
+      "properties": {
+        "schemaVersion": { "const": "agentique.runAddress.v1" },
+        "productScopeId": { "$ref": "#/$defs/token" },
+        "sessionId": { "$ref": "#/$defs/token" },
+        "resourceId": { "$ref": "#/$defs/token" },
+        "runId": { "$ref": "#/$defs/token" }
+      },
+      "unevaluatedProperties": false
+    },
+    "activityPayload": {
+      "type": "object",
+      "required": ["activityType", "message"],
+      "properties": {
+        "activityType": { "$ref": "#/$defs/token" },
+        "message": { "$ref": "#/$defs/safeText" },
+        "progress": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "unevaluatedProperties": false
+    },
+    "resultPayload": {
+      "type": "object",
+      "required": ["summary", "artifactIds"],
+      "properties": {
+        "summary": { "$ref": "#/$defs/safeText" },
+        "artifactIds": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/token" }
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "cancelledPayload": {
+      "type": "object",
+      "required": ["reasonCode", "message"],
+      "properties": {
+        "reasonCode": { "enum": ["host-shutdown", "policy-revoked", "timeout", "user-requested"] },
+        "message": { "$ref": "#/$defs/safeText" }
+      },
+      "unevaluatedProperties": false
+    },
+    "errorPayload": {
+      "type": "object",
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": { "enum": ["adapter-failed", "internal-error", "permission-denied", "timeout", "unavailable"] },
+        "message": { "$ref": "#/$defs/safeText" },
+        "retryable": { "type": "boolean" }
+      },
+      "unevaluatedProperties": false
+    }
+  }
+}

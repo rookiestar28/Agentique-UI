@@ -20,6 +20,10 @@ Public reports should include:
 
 ## Local Runner Boundary
 
+The supported execution lanes are the fixed native Python and Node adapters plus their deterministic native DAG scheduler on verified Windows and Linux environments only.
+
+macOS is unverified and is not a supported local-execution platform.
+
 Supported local runs require explicit resource capability review, signed allowlisted adapters, scoped permission grants, Permission Center policy review, bounded logs/artifacts, run dashboard evidence, artifact workbench review, and cleanup evidence. Generic shell access, browser-data access, ambient environment forwarding, unsigned adapter execution, and automatic execution of arbitrary downloaded resources remain blocked.
 
 The currently validated first-class workflow import formats are n8n, Dify, and LangGraph. Secondary workflow formats remain backlog/reference only and are not supported import options or execution targets.
@@ -28,7 +32,7 @@ The currently validated first-class workflow import formats are n8n, Dify, and L
 
 MCP bridge readiness, WASM/WASI sandbox review, rootless container review, and browser automation consent are guarded review or preflight gates only. They do not start bridges, execute WebAssembly, start containers, pull images, build images, launch browsers, attach browser profiles, import browser storage, or automate external providers.
 
-Python and Node adapter lanes are limited to signed allowlisted adapter evidence. Repo-local task lane and external agent-client pack surfaces remain review and descriptor flows, not package lifecycle execution or automatic install flows.
+Scheduler models do not grant executable authority; only the fixed native DAG scheduler can launch attempts after native approval validation. A checkpointed approval interrupt pauses before spawn, then accepts only an exact native decision and one-use grant; denial, drift, expiry, revocation, replay, or coordinator loss launches nothing. That native scheduler accepts no executable, path, argument, script, environment, shell, or package action; each initial run or retry consumes its own explicit one-use grant. The earlier workflow scheduler model remains review-only. The fixed Node lane launches only its native-owned packaged helper: package managers, lifecycle scripts, inline scripts, broad subprocess, and automatic install remain blocked. Repo-local task lane and external agent-client pack surfaces remain review and descriptor flows.
 
 ## Vault And Diagnostics Boundary
 
@@ -38,4 +42,4 @@ Diagnostics support bundle review is descriptor-only. It must remain bounded and
 
 ## Release Security Boundary
 
-A public desktop release requires signed platform artifacts, signed updater metadata, checksums, SBOM/provenance, clean-environment smoke evidence, and maintainer review. Until that evidence exists, installer and updater claims remain blocked.
+A public desktop release requires real production signing for supported Windows and Linux artifacts, signed updater metadata, checksums, SBOM/provenance, clean-environment smoke evidence, and maintainer review. Until that evidence exists, installer, updater, and production runtime claims remain blocked. macOS packaging and environment validation are skipped and remain unverified and unsupported.

@@ -29,6 +29,22 @@ test("validation stage reporting contract covers the full validation surface", (
       );
     }
   }
+  assert.ok(
+    report.stages.some((stage) => stage.id === "runner-foundations" && stage.commands.includes("npm run validate:native-dag-scheduler")),
+    "native DAG scheduler validation must execute inside the authoritative staged gate"
+  );
+  assert.ok(
+    report.stages.some((stage) => stage.id === "runner-foundations" && stage.commands.includes("npm run validate:native-approval-interrupt")),
+    "native approval interrupt validation must execute inside the authoritative staged gate"
+  );
+  assert.ok(
+    report.stages.some((stage) => stage.id === "platform-graph-boundaries" && stage.commands.includes("npm run validate:external-runtime-handoff-non-execution")),
+    "external runtime handoff non-execution validation must execute inside the authoritative staged gate"
+  );
+  assert.ok(
+    report.stages.some((stage) => stage.id === "platform-graph-boundaries" && stage.commands.includes("npm run validate:agent-protocol-bridge")),
+    "agent protocol bridge validation must execute inside the authoritative staged gate"
+  );
 });
 
 test("validation stage order keeps tooling and build gates in deterministic sequence", () => {
@@ -44,6 +60,8 @@ test("validation stage order keeps tooling and build gates in deterministic sequ
   ]);
   assertCommandOrder(commandTexts, [
     "npm run validate:external-handoff-descriptors",
+    "npm run validate:external-runtime-handoff-non-execution",
+    "npm run validate:agent-protocol-bridge",
     "npm run validate:external-agent-client-pack-expansion",
     "npm run validate:mcp-bridge-readiness-descriptor",
     "npm run validate:multi-lane-execution-readiness"
@@ -61,6 +79,7 @@ test("validation stage order keeps tooling and build gates in deterministic sequ
     "npm run validate:release-workflow",
     "npm run validate:release-docs",
     "npm run validate:release-packaging-preflight",
+    "npm run validate:desktop-distribution-integrity",
     "npm run validate:release-smoke"
   ]);
   assertCommandOrder(commandTexts, ["npm run validate:release-smoke", "npm run validate:rebuilt-workspace-closeout", "npm run validate:release-final"]);

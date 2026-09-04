@@ -39,10 +39,6 @@ export const sampleUpdaterReadyEvidence = Object.freeze({
         signature: "signature-windows-base64",
         url: "https://example.com/agentique-ui/v0.1.1/windows-installer.exe"
       },
-      "darwin-aarch64": {
-        signature: "signature-macos-base64",
-        url: "https://example.com/agentique-ui/v0.1.1/macos-app.tar.gz"
-      },
       "linux-x86_64": {
         signature: "signature-linux-base64",
         url: "https://example.com/agentique-ui/v0.1.1/linux.AppImage.tar.gz"
@@ -51,12 +47,10 @@ export const sampleUpdaterReadyEvidence = Object.freeze({
   },
   signatureFiles: [
     { platform: "windows-x86_64", fileName: "windows-installer.exe.sig" },
-    { platform: "darwin-aarch64", fileName: "macos-app.tar.gz.sig" },
     { platform: "linux-x86_64", fileName: "linux.AppImage.tar.gz.sig" }
   ],
   downloadChecks: [
     { platform: "windows-x86_64", downloaded: true, signatureVerified: true, versionMatches: true },
-    { platform: "darwin-aarch64", downloaded: true, signatureVerified: true, versionMatches: true },
     { platform: "linux-x86_64", downloaded: true, signatureVerified: true, versionMatches: true }
   ],
   versionChecks: {
@@ -106,6 +100,10 @@ export function validateUpdaterReleaseGate({
   }
   if (!Array.isArray(spec?.requiredPlatforms) || spec.requiredPlatforms.length === 0) {
     gateFindings.push(issue("updater.platforms", "Updater release spec must list required platforms."));
+  }
+  if (JSON.stringify(spec?.requiredPlatforms) !== JSON.stringify(["windows-x86_64", "linux-x86_64"]) ||
+      JSON.stringify(spec?.skippedPlatforms) !== JSON.stringify(["darwin-aarch64"])) {
+    gateFindings.push(issue("updater.platform-policy", "Updater scope must require Windows/Linux and explicitly skip macOS."));
   }
   if (spec?.keyCustody?.privateKeyStorage !== "external-secret-store" || spec?.keyCustody?.privateKeysInRepository !== false) {
     gateFindings.push(issue("updater.key-custody-policy", "Updater private key custody must be external-only."));
@@ -176,6 +174,8 @@ export function validateUpdaterReleaseGate({
     summary: {
       createUpdaterArtifacts: tauriConfig?.bundle?.createUpdaterArtifacts === true,
       platforms: requiredPlatforms.length,
+      requiredPlatforms,
+      skippedPlatforms: spec?.skippedPlatforms ?? [],
       signatureFiles: Array.isArray(evidence?.signatureFiles) ? evidence.signatureFiles.length : 0,
       downloadChecks: Array.isArray(evidence?.downloadChecks) ? evidence.downloadChecks.length : 0,
       rollback: evidence?.failureModeTests?.rollbackTested === true ? "tested" : "blocked"

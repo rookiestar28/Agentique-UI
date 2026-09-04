@@ -17,6 +17,8 @@ test("updater gate is valid but blocked while updater artifacts are disabled", (
   assert.equal(result.publicationAllowed, false);
   assert.ok(result.blockers.some((blocker) => blocker.code === "updater.artifacts-disabled"));
   assert.ok(result.blockers.some((blocker) => blocker.code === "updater.latest-json-invalid"));
+  assert.deepEqual(result.summary.requiredPlatforms, ["windows-x86_64", "linux-x86_64"]);
+  assert.deepEqual(result.summary.skippedPlatforms, ["darwin-aarch64"]);
 });
 
 test("updater latest.json schema accepts complete platform entries", () => {

@@ -9,11 +9,15 @@ const approvedManifest = Object.freeze({
   version: "0.1.0",
   digestPrefix: "cccccccccccc",
   signatureStatus: "verified",
-  executableRef: "native-bundled-local-python-adapter"
+  executableRef: "native-bundled-local-python-adapter",
+  permissionProfileId: "permission.local-python.minimal",
+  permissionCeiling: ["files:workspace-runs", "subprocess:fixed-adapter-only", "artifact-retention:7d"],
+  timeoutSeconds: 30,
+  cleanupPolicy: "native-process-tree-required"
 });
 
 const requestOverridePattern =
-  /\b(?:manifest|digest|signature|runtime|support_mode|supportMode|executable|executable_path|path|cwd|args|env|environment|shell|script|command_line)\s*:/iu;
+  /\b(?:manifest|digest|signature|runtime|support_mode|supportMode|executable|executable_path|permission_ceiling|permissionCeiling|timeout_seconds|timeoutSeconds|cleanup_policy|cleanupPolicy|path|cwd|args|env|environment|shell|script|command_line)\s*:/iu;
 const unsafeExecutableRefPattern = /(^[A-Za-z]:[\\/]|^\/|\\|\/|(?:^|[\\/])\.\.(?:[\\/]|$)|~|\$|\s)/u;
 
 export function readNativeRunnerAdapterManifestInputs(root = process.cwd()) {
@@ -41,7 +45,14 @@ export function reviewNativeRunnerAdapterManifest(input = readNativeRunnerAdapte
       /\badapter_manifest_id\b/u.test(rustSource) &&
       /\badapter_manifest_digest\b/u.test(rustSource) &&
       /\bagentique_runner_prepare[\s\S]*?review_adapter_manifest/u.test(rustSource),
-    startRevalidatesManifest: /\bagentique_runner_start[\s\S]*?review_adapter_manifest/u.test(rustSource)
+    startRevalidatesManifest: /\bagentique_runner_start[\s\S]*?review_adapter_manifest/u.test(rustSource),
+    permissionCeilingBound:
+      /\bpermission_profile_id\b/u.test(rustSource) && /\bpermission_ceiling\b/u.test(rustSource) && /permission ceiling is broader or mismatched/u.test(rustSource),
+    timeoutBound: /\btimeout_seconds\b/u.test(rustSource) && /NATIVE_RUN_TIMEOUT\.as_secs\(\)/u.test(rustSource) && /timeout does not match native enforcement/u.test(rustSource),
+    cleanupBound:
+      /\bcleanup_policy\b/u.test(rustSource) &&
+      /manifest\.cleanup_policy\s*!=\s*expected\.cleanup_policy/u.test(rustSource) &&
+      /cleanup policy does not match native enforcement/u.test(rustSource)
   };
 
   const failClosed = {
@@ -52,10 +63,22 @@ export function reviewNativeRunnerAdapterManifest(input = readNativeRunnerAdapte
     incompatiblePlatform: /platform compatibility is incomplete/u.test(rustSource),
     wrongRuntime: /wrong runtime/u.test(rustSource),
     wrongSupportMode: /wrong support mode/u.test(rustSource),
-    unsafeExecutableRef: /executableRef[\s\S]*path or command ref/u.test(rustSource) || /executable reference is not allowlisted/u.test(rustSource)
+    unsafeExecutableRef: /executableRef[\s\S]*path or command ref/u.test(rustSource) || /executable reference is not allowlisted/u.test(rustSource),
+    broadPermissionCeiling: /permission ceiling is broader or mismatched/u.test(rustSource),
+    timeoutMismatch: /timeout does not match native enforcement/u.test(rustSource),
+    cleanupMismatch: /cleanup policy does not match native enforcement/u.test(rustSource)
   };
 
-  if (!manifest.nativeOwned || !manifest.redactedReceipt || !manifest.pathNeutralExecutableRef || !manifest.prepareStoresManifest || !manifest.startRevalidatesManifest) {
+  if (
+    !manifest.nativeOwned ||
+    !manifest.redactedReceipt ||
+    !manifest.pathNeutralExecutableRef ||
+    !manifest.prepareStoresManifest ||
+    !manifest.startRevalidatesManifest ||
+    !manifest.permissionCeilingBound ||
+    !manifest.timeoutBound ||
+    !manifest.cleanupBound
+  ) {
     errors.push(issue("manifest.native-owned", "Native runner must own, review, store, and redact the fixed adapter manifest."));
   }
   if (requestOverridePattern.test(requestBody)) {

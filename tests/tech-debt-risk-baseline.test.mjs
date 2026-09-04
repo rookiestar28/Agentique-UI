@@ -43,10 +43,10 @@ test("technical debt risk baseline records measured current risks", () => {
   assert.ok(baseline.measurements.i18nCatalogLoading.centralIndex.bytes <= 12000);
   assert.equal(baseline.measurements.typeLintFormatBaseline.ok, true);
   assert.equal(baseline.measurements.typeLintFormatBaseline.node.matchesTooling, true);
-  assert.equal(baseline.measurements.typeLintFormatBaseline.configs.controlledCheckJsFiles, 87);
+  assert.equal(baseline.measurements.typeLintFormatBaseline.configs.controlledCheckJsFiles, 101);
   assert.equal(baseline.measurements.validationStageReporting.ok, true);
   assert.equal(baseline.measurements.validationStageReporting.summary.stages, 7);
-  assert.equal(baseline.measurements.validationStageReporting.summary.commands, 97);
+  assert.equal(baseline.measurements.validationStageReporting.summary.commands, 104);
   assert.equal(baseline.measurements.liveDataBoundary.ok, true);
   assert.equal(baseline.measurements.liveDataBoundary.summary.providers, 5);
   assert.equal(baseline.measurements.liveDataBoundary.productionCredentialsRequired, false);

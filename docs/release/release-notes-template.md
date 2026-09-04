@@ -11,7 +11,7 @@ Describe the public user-facing changes.
 List platform artifacts only after release gates pass:
 
 - Windows:
-- macOS:
+- macOS: skipped, unverified, and unsupported unless a future release explicitly changes scope.
 - Linux:
 
 ## Verification

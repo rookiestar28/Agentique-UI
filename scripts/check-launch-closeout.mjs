@@ -35,6 +35,7 @@ const packageJson = JSON.parse(readText("package.json"));
 const tauriConfig = JSON.parse(readText("src-tauri/tauri.conf.json"));
 const capability = JSON.parse(readText("src-tauri/capabilities/default.json"));
 const controlledRuntimeApiFiles = new Set(["src/core/python-adapter-runner.mjs", "src/core/node-adapter-runner.mjs"]);
+const controlledTauriInvokeFiles = new Set(["src/core/tauri-native-async-run-client.ts", "src/core/tauri-native-dag-scheduler-client.ts"]);
 
 requireIncludes(
   closeout,
@@ -113,8 +114,8 @@ if (tauriConfig.bundle?.createUpdaterArtifacts !== false) {
   failures.push("updater artifacts must remain disabled until updater signing evidence exists");
 }
 
-if (!Array.isArray(capability.permissions) || capability.permissions.length !== 0) {
-  failures.push("default Tauri capability must not grant permissions");
+if (JSON.stringify(capability.permissions) !== JSON.stringify(["core:event:allow-listen", "core:event:allow-unlisten"])) {
+  failures.push("default Tauri capability must grant only event listen and unlisten");
 }
 
 for (const [label, text] of [
@@ -193,6 +194,13 @@ function scanSourceForRuntimeBypass(dir) {
     ]) {
       if (rule.pattern.test(text)) {
         if (rule.id === "child-process" && controlledRuntimeApiFiles.has(rel)) continue;
+        if (
+          rule.id === "tauri-invoke" &&
+          controlledTauriInvokeFiles.has(rel) &&
+          text.includes("allowedNativeCommands") &&
+          text.includes("if (!allowedNativeCommands.has(command))")
+        )
+          continue;
         findings.push(`${rel} uses forbidden runtime API: ${rule.id}`);
       }
     }

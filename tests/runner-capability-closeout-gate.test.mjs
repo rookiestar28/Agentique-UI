@@ -1,11 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import {
-  reviewRunnerCapabilityCloseout,
-  reviewRunnerCapabilityCloseoutGate,
-  sampleRunnerCapabilityCloseout
-} from "../src/core/runner-capability-closeout-gate.mjs";
+import { reviewRunnerCapabilityCloseout, reviewRunnerCapabilityCloseoutGate, sampleRunnerCapabilityCloseout } from "../src/core/runner-capability-closeout-gate.mjs";
 
 test("runner capability closeout accepts supported local-only scope", () => {
   const review = reviewRunnerCapabilityCloseout(sampleRunnerCapabilityCloseout);
@@ -13,7 +9,10 @@ test("runner capability closeout accepts supported local-only scope", () => {
   assert.equal(review.ok, true);
   assert.equal(review.status, "accepted");
   assert.equal(review.summary.supportedLocalRunScope, "supported-local-only");
-  assert.equal(review.summary.acceptedCapabilities, 13);
+  assert.deepEqual(review.claimBoundary.verifiedPlatforms, ["windows", "linux"]);
+  assert.deepEqual(review.claimBoundary.unverifiedPlatforms, ["macos"]);
+  assert.deepEqual(review.claimBoundary.supportedExecutionLanes, ["fixed-native-python", "fixed-native-node", "fixed-native-dag-scheduler"]);
+  assert.equal(review.summary.acceptedCapabilities, 14);
   assert.equal(review.summary.releaseClaimsBlocked, true);
   assert.equal(review.summary.publicSafety, "passed");
 });
@@ -46,14 +45,11 @@ test("release and runtime overclaims are blocked", () => {
   const review = reviewRunnerCapabilityCloseout({
     ...sampleRunnerCapabilityCloseout,
     claimBoundary: {
+      ...sampleRunnerCapabilityCloseout.claimBoundary,
       supportedLocalRunScope: "universal",
-      supportedLocalRuns: true,
       universalRuntime: true,
       hostedRuntime: true,
-      automaticExecution: true,
-      productionDesktopRuntime: true,
-      installerUpdater: true,
-      paidCloudRuntime: true
+      productionDesktopRuntime: true
     },
     releaseBoundary: {
       windowsInstaller: "ready",
@@ -68,6 +64,22 @@ test("release and runtime overclaims are blocked", () => {
   assert.ok(review.errors.some((error) => error.code === "runner-closeout.local-scope"));
   assert.ok(review.errors.some((error) => error.code === "runner-closeout.claim-boundary"));
   assert.ok(review.errors.some((error) => error.code === "runner-closeout.release-boundary"));
+});
+
+test("generic local-run booleans cannot bypass exact platform and lane policy", () => {
+  const policy = structuredClone(sampleRunnerCapabilityCloseout.claimBoundary.policy);
+  policy.verifiedPlatforms.push("macos");
+  policy.supportedExecutionLanes.push("fixed-native-node");
+  const review = reviewRunnerCapabilityCloseout({
+    ...sampleRunnerCapabilityCloseout,
+    claimBoundary: {
+      ...sampleRunnerCapabilityCloseout.claimBoundary,
+      policy
+    }
+  });
+
+  assert.equal(review.ok, false);
+  assert.ok(review.errors.some((error) => error.code === "runner-closeout.claim-policy"));
 });
 
 test("public safety checks must pass", () => {

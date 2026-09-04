@@ -36,7 +36,7 @@ export function reviewNativeRunnerPythonExecution(input = readNativeRunnerPython
   const permissions = Array.isArray(defaultCapability?.permissions) ? defaultCapability.permissions : [];
   const errors = [];
 
-  const genericCommandArgs = commandNewArgs.filter((arg) => arg !== "&python_executable" && arg !== "candidate");
+  const genericCommandArgs = commandNewArgs.filter((arg) => arg !== "&executable" && arg !== "candidate");
   if (genericCommandArgs.length > 0 || /Command::new\s*\(\s*request\./u.test(rustSource)) {
     errors.push(issue("native-python.generic-process", "Native execution must use only the fixed Python helper command construction."));
   }
@@ -62,9 +62,9 @@ export function reviewNativeRunnerPythonExecution(input = readNativeRunnerPython
   const execution = {
     fixedAdapterId,
     runtime: "python",
-    nativeStartLaunches: /agentique_runner_start[\s\S]*execute_fixed_python_adapter\s*\(/u.test(rustSource),
+    nativeStartLaunches: /agentique_runner_start[\s\S]*spawn_fixed_native_adapter\s*\(/u.test(rustSource) && /fn execute_fixed_python_adapter\s*\(/u.test(rustSource),
     launchesOnlyFixedHelper:
-      commandNewArgs.includes("&python_executable") &&
+      commandNewArgs.includes("&executable") &&
       /resolve_fixed_python_executable/u.test(rustSource) &&
       /fixed_python_adapter_script_path/u.test(rustSource) &&
       /echo_adapter\.py/u.test(rustSource) &&
@@ -79,9 +79,15 @@ export function reviewNativeRunnerPythonExecution(input = readNativeRunnerPython
       /build_minimal_adapter_env/u.test(rustSource) &&
       /PYTHONNOUSERSITE/u.test(rustSource) &&
       !/std::env::vars\s*\(/u.test(rustSource),
-    writesRunFolder: /write_native_run_folder/u.test(rustSource) && /agentique\.nativeRunFolderWriteReceipt\.v1/u.test(rustSource) && /logs\/stdout\.log/u.test(rustSource),
+    writesRunFolder: /write_native_run_folder/u.test(rustSource) && /agentique\.nativeRunFolderWriteReceipt\.v2/u.test(rustSource) && /logs\/stdout\.log/u.test(rustSource),
     redactsLogs: /redact_runner_text/u.test(rustSource) && /redacted:inline-sensitive-material/u.test(rustSource),
     receiptPathNeutral: /root_ref/u.test(rustSource) && /native-python-runner/u.test(rustSource) && !localPathReceiptPattern.test(rustSource),
+    settlesCompletionErrors:
+      /let completion\s*=\s*complete_fixed_native_adapter\s*\(/u.test(rustSource) &&
+      /let completion\s*=\s*complete_fixed_native_adapter\s*\([\s\S]{0,400}?let _ = settle_native_adapter_completion\s*\([\s\S]{0,160}?&adapter_id/u.test(rustSource) &&
+      /fn settle_native_adapter_completion\s*\(/u.test(rustSource) &&
+      /Err\(_\)\s*=>\s*\(NativeRunState::Failed, None\)/u.test(rustSource) &&
+      /commit_native_run_terminal\([\s\S]*?execution\.as_ref\(\)/u.test(rustSource),
     shellPluginPresent: shellPluginPattern.test(cargoToml) || shellPluginPattern.test(JSON.stringify(packageJson)),
     externalBinCount: externalBin.length
   };
@@ -93,7 +99,8 @@ export function reviewNativeRunnerPythonExecution(input = readNativeRunnerPython
     minimalEnv: execution.minimalEnv,
     writesRunFolder: execution.writesRunFolder,
     redactsLogs: execution.redactsLogs,
-    receiptPathNeutral: execution.receiptPathNeutral
+    receiptPathNeutral: execution.receiptPathNeutral,
+    settlesCompletionErrors: execution.settlesCompletionErrors
   })) {
     if (ok !== true) {
       errors.push(issue(`native-python.${kebab(name)}`, `Native Python execution gate is missing ${name}.`));

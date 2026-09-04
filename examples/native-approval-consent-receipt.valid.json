@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "agentique.nativeApprovalConsent.v1",
+  "proposalId": "proposal.21239dc1cac4fd609ec8b8b2",
+  "proposalDigest": "21239dc1cac4fd609ec8b8b2cdfa312e72b04082c358c88b2139c842adef7c6f",
+  "status": "pending",
+  "policyOwner": "agentique-native-host",
+  "presentationOwner": "agentique-ui",
+  "requestedBy": "agentique-fixed-engine",
+  "createdAt": "2026-09-04T00:00:00.000Z",
+  "expiresAt": "2026-09-04T00:15:00.000Z",
+  "effect": {
+    "address": {
+      "productId": "agentique-ui",
+      "resourceId": "resource.native-consent-001",
+      "sessionId": "session.native-consent-001",
+      "runId": "run.native-consent-001"
+    },
+    "adapterId": "adapter.local-python",
+    "runtimeId": "agentique-fixed-engine",
+    "manifestDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "actionId": "adapter.run",
+    "targetRefs": ["workspace:inputs", "workspace:runs"],
+    "risk": "medium",
+    "capabilityCeiling": ["files", "subprocess", "artifactRetention"],
+    "capabilities": [
+      { "family": "files", "action": "read", "target": "workspace:inputs" },
+      { "family": "files", "action": "write", "target": "workspace:runs" },
+      { "family": "subprocess", "action": "start", "target": "adapter:adapter.local-python" },
+      { "family": "artifactRetention", "action": "retain", "target": "artifact-retention:7d" }
+    ],
+    "credentialNames": [],
+    "distributionMode": "bundled-fixed",
+    "abortPath": "agentique-runner-cancel",
+    "hidden": false
+  }
+}
