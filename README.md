@@ -4,6 +4,9 @@
 
 # Agentique UI
 
+> [!WARNING]
+> **Discontinued.** The agentique.io service was shut down on 2026-11-27 and this repository is no longer maintained. It is archived and kept read-only for reference. Features that contact agentique.io no longer work.
+
 Agentique UI is the local-first desktop workspace for Agentique resources. It helps users import, verify, inspect, preview, run supported local workflows, and hand off resources from [`agentique.io`](https://www.agentique.io) without turning the website into a hosted execution service.
 
 ## Last Update
